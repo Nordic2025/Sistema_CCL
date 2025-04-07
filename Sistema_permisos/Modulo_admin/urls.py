@@ -20,4 +20,4 @@ urlpatterns = [
     path('eliminar_areas/<int:id>/', views.eliminar_areas_view, name='eliminar_area'),
 ]
 
-#Prueba de git
+#PRUEBA 2
