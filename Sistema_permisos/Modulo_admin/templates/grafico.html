@@ -1,0 +1,80 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Reporte{% endblock %}
+
+{% block content %}
+<div class="container main-content" style="margin-bottom: 30px;">
+    <h1 style="margin-top: 30px; margin-left: 10px; font-size: 2rem;">Panel de Administrador | Permisos</h1>  
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Permisos por Área</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="grafico" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar si las variables existen
+        console.log("Datos de áreas:", {{ nombre_areas|default:"[]"|safe }});
+        console.log("Datos de permisos:", {{ cantidad_permisos|default:"[]"|safe }});
+        
+        // Crear el gráfico
+        Highcharts.chart('grafico', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Total de Permisos por Área'
+            },
+            xAxis: {
+                categories: {{ nombre_areas|default:"[]"|safe }},
+                crosshair: true,
+                title: {
+                    text: 'Áreas'
+                }
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Cantidad de Permisos'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y}</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.y}'
+                    }
+                }
+            },
+            series: [{
+                name: 'Permisos',
+                data: {{ cantidad_permisos|default:"[]"|safe }},
+                colorByPoint: true
+            }]
+        });
+    });
+</script>
+{% endblock %}

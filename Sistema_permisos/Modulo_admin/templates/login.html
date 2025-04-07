@@ -1,0 +1,62 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sweetalert2.min.css' %}">
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <title>Gestion Permisos Colegio Concepcion | {% block title %}{% endblock %}</title>
+</head>
+
+<body>
+  <header class="encabezado_principal">
+    <img src="{% static 'images/logo_ccl.png' %}" alt="Logo Colegio Concepcion" class="logoCCL">
+    <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
+    <div class="btn_login">
+        <a href="{% url 'Modulo_admin:admin' %}">
+            <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
+        </a>
+    </div>
+  </header>
+
+  <div class="centrar_card">
+      <div class="card card_login">
+        <h1 class="h1_login">Iniciar Sesión</h1>
+        <form method="POST" action="{% url 'Modulo_admin:login_admin' %}" class="card_body_login">
+              {% csrf_token %}
+              {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+              {% endif %}
+              <label class="usuario">RUT</label>
+              <input type="text" class="Login_input" name="username" id="username" placeholder="Ingrese su usuario" required />
+              <label class="contraseña">Contraseña:</label>
+              <input type="password" class="Login_input" name="password" id="password" placeholder="Ingrese su contraseña" required />
+              <button type="submit" class="btn login_btn btn-primary">Iniciar Sesión</button>
+              <a href="{% url 'principal' %}" class="btn btn-warning login_btn" style="color:white;">Volver</a>
+              
+          </form>
+      </div>
+  </div>
+
+  <footer class="footer">
+      Copyright © Colegio Concepcion - Linares 2025
+  </footer> 
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  {% if messages %}
+    {% for message in messages %}
+      <script>
+        mensaje('{{ message.tags }}', '{{ message }}');
+      </script>
+    {% endfor %}
+  {% endif %}
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Regreso Registrado - Colegio Concepción Linares
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-door-open me-2"></i>Regreso Registrado
+                    </h3>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <div>
+                        <h2 class="mb-4 display-3" style="font-weight: bold;">¡Bienvenido de vuelta!</h2>
+                        <div class="alert alert-success p-3 mb-4">
+                            <p class="mb-1">Su regreso ha sido registrado correctamente</p>
+                            <h5 class="my-3">Código: <strong>{{ registro.codigo_registro }}</strong></h5>
+                        </div>
+                        
+                        <div class="card mb-4 bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Detalles del registro</h5>
+                                <ul class="list-group list-group-flush text-start">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Funcionario:</span> 
+                                        <span>{{ registro.nombre }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Hora de salida:</span> 
+                                        <span>{{ registro.hora_salida|date:"d/m/Y H:i:s" }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Hora de regreso:</span> 
+                                        <span class="text-success fw-bold">{{ registro.hora_regreso|date:"d/m/Y H:i:s" }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Duración:</span> 
+                                        <span id="duracion-formato">
+                                            <!-- Usaremos JavaScript para formatear la duración -->
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Volver al menú principal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular la duración en segundos
+    const salida = new Date("{{ registro.hora_salida|date:'Y-m-d H:i:s' }}");
+    const regreso = new Date("{{ registro.hora_regreso|date:'Y-m-d H:i:s' }}");
+    const duracionMs = regreso - salida;
+    
+    // Convertir a horas, minutos y segundos
+    const segundosTotales = Math.floor(duracionMs / 1000);
+    const horas = Math.floor(segundosTotales / 3600);
+    const minutos = Math.floor((segundosTotales % 3600) / 60);
+    const segundos = segundosTotales % 60;
+    
+    // Formatear la duración
+    let duracionTexto = '';
+    
+    if (horas > 0) {
+        duracionTexto += horas + (horas === 1 ? ' hora' : ' horas');
+    }
+    
+    if (minutos > 0 || horas > 0) {
+        if (horas > 0) duracionTexto += ' ';
+        duracionTexto += minutos + (minutos === 1 ? ' minuto' : ' minutos');
+    }
+    
+    // Siempre mostrar los segundos
+    if ((minutos > 0 || horas > 0) && segundos > 0) duracionTexto += ' ';
+    if (segundos > 0 || (horas === 0 && minutos === 0)) {
+        duracionTexto += segundos + (segundos === 1 ? ' segundo' : ' segundos');
+    }
+    
+    // Mostrar la duración formateada
+    document.getElementById('duracion-formato').textContent = duracionTexto;
+});
+</script>
+{% endblock %}

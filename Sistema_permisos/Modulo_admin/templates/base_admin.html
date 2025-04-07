@@ -1,0 +1,83 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sweetalert2.min.css' %}">
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+
+    <title>{% block title %} {% endblock %}</title>
+</head>
+
+<style>
+    .no {
+        display: block
+      }
+</style>
+
+<body>
+    <header class="encabezado_principal">
+        <button class="abrirMenubtn" onclick="abrirMenu()">☰</button>
+        <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
+        <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
+        <li class="nav-item dropdown no">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <form method="POST" action="{% url 'Modulo_admin:logout_admin' %}">
+                        {% csrf_token %}
+                        <button class="dropdown-item text-danger" type="submit">Cerrar sesión</button>
+                    </form>
+                    
+                </li>
+            </ul>
+            <form id="logout-form" action="#" method="post" style="display: none;">
+                <input type="hidden" name="csrfmiddlewaretoken" value="Yr4L9QJLDYn0EBe7X4uxOaiAgtQXorQXtUzBJQSJrmQLVgFVsnJ0PSSDHddzEizn">
+            </form>
+        </li>
+    </header>
+
+    <div id="menuLateral" class="menuLateral">
+        
+        <a href="javascript:void(0)" class="cerrarMenubtn" onclick="cerrarMenu()"><img src="{% static "icon/x.svg" %}" alt="Cerrar menú" class="menu_icono"></a>
+        
+        <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
+        
+        <a href="{% url 'Modulo_admin:grafico' %}" style="margin-top: 60px;"><img src="{% static "icon/hogar.svg" %}" alt="Logo de Inicio" class="menu_icono" >Inicio</a>
+        <a href="{% url 'Modulo_admin:historial_permisos' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono"> Tabla General</a>
+        <a href="{% url 'Modulo_admin:historial_salidas' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono">Tabla de Salidas</a>
+        <a href="{% url 'Modulo_admin:administradores' %}"><img src="{% static "icon/usuarios.svg" %}" alt="Logo de Administrador" class="menu_icono">Administradores</a>
+        <a href="{% url 'Modulo_admin:area' %}"><img src="{% static "icon/area.svg" %}" alt="Logo de Área" class="menu_icono">Área</a>
+    </div>
+    
+    <main class="contenido">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        Copyright © Colegio Concepcion - Linares 2025
+    </footer>
+
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                mensaje('{{ message.tags }}', '{{ message }}');
+            </script>
+        {% endfor %}
+
+    {% endif %}
+
+</body>
+</html> 

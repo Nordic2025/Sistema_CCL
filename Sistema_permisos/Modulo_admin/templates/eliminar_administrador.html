@@ -1,0 +1,11 @@
+{% extends "base_admin.html" %}
+{% load static %}
+
+{% if messages %}
+{% for message in messages %}
+    <script>
+        mensaje('{{ message.tags }}', '{{ message }}');
+    </script>
+{% endfor %}
+
+{% endif %}

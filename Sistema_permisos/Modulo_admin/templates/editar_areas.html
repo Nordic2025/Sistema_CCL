@@ -1,0 +1,31 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+
+{% block title %}
+Editar Área
+{% endblock %}
+
+{% block content %}
+
+<div class="col-md-4 offset-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h4>Editar Área</h4>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="form-group">{{ field.label_tag }} {{ field }}</div>
+          {% endfor %}
+          <div>
+            <button type="submit" class="btn btn-primary">
+              Guardar Área
+            </button>
+            <a href="{% url 'Modulo_admin:area' %}" class="btn btn-danger">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Ingresos Colegio Concepcion Linares
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Registrar Regreso</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label for="codigo_registro" class="form-label">Código de Registro:</label>
+                            <input type="text" class="form-control" id="codigo_registro" name="codigo_registro" 
+                                   placeholder="Ingrese su código" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Registrar Regreso</button>
+                    </form>
+
+                    {% if error %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al inicio
+                        </a>
+                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#recuperarCodigoModal">
+                            <i class="fas fa-key"></i> ¿Olvidó su código?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para recuperar código -->
+<div class="modal fade" id="recuperarCodigoModal" tabindex="-1" aria-labelledby="recuperarCodigoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="recuperarCodigoModalLabel">Recuperar Código de Permiso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Modificamos el formulario para prevenir el envío por defecto -->
+                <form id="formRecuperarCodigo" method="post" action="{% url 'Modulo_funcionarios:recuperar_codigo_ajax' %}" onsubmit="return false;">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label for="rut" class="form-label">Ingrese su RUT:</label>
+                        <input type="text" class="form-control" id="rut" name="rut" 
+                               placeholder="Ej: 12.345.678-9" required>
+                        <small class="form-text text-muted">Ingrese su RUT con formato XX.XXX.XXX-X</small>
+                    </div>
+                    <div id="resultadoBusqueda" class="mt-3"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnBuscarCodigo">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para manejar la búsqueda AJAX y formateo de RUT -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para realizar la búsqueda
+    function buscarCodigo() {
+        const form = document.getElementById('formRecuperarCodigo');
+        const formData = new FormData(form);
+        const resultadoDiv = document.getElementById('resultadoBusqueda');
+        
+        // Mostrar indicador de carga
+        resultadoDiv.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Buscando código...</p>
+            </div>
+        `;
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.codigo) {
+                resultadoDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading">¡Código encontrado!</h5>
+                        <p>Su código de ingreso es:</p>
+                        <h3 class="text-center my-3">${data.codigo}</h3>
+                        <p class="mb-0">Utilice este código para registrar su regreso.</p>
+                    </div>
+                `;
+            } else if (data.error) {
+                resultadoDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Error</h5>
+                        <p>${data.error}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultadoDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Error de conexión</h5>
+                    <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
+                </div>
+            `;
+        });
+    }
+
+    // NUEVA FUNCIONALIDAD: Formateo automático de RUT
+    const rutInput = document.getElementById('rut');
+    
+    // Función para formatear automáticamente el RUT
+    function formatearRut(rut) {
+        // Eliminar puntos y guiones
+        let valor = rut.replace(/\./g, '').replace(/-/g, '');
+        
+        // Obtener dígito verificador
+        let dv = valor.slice(-1);
+        
+        // Obtener cuerpo del RUT
+        let rutCuerpo = valor.slice(0, -1);
+        
+        // Formatear RUT con puntos y guión
+        let rutFormateado = '';
+        
+        // Agregar puntos de miles
+        for (let i = rutCuerpo.length; i > 0; i -= 3) {
+            const inicio = Math.max(0, i - 3);
+            rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+        }
+        
+        // Eliminar el primer punto
+        rutFormateado = rutFormateado.substring(1);
+        
+        // Agregar guión y dígito verificador
+        return rutFormateado + '-' + dv;
+    }
+    
+    // Evento para formatear el RUT mientras se escribe
+    rutInput.addEventListener('input', function(e) {
+        // Guardar la posición del cursor
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        const valorOriginal = this.value;
+        
+        // Eliminar caracteres no numéricos excepto K/k y conservar solo dígitos y K/k
+        let valor = this.value.replace(/[^\dkK]/g, '');
+        
+        // Si hay algo que formatear
+        if (valor.length > 1) {
+            // Formatear el valor
+            this.value = formatearRut(valor);
+            
+            // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
+            const diff = this.value.length - valorOriginal.length;
+            
+            // Restaurar la posición del cursor
+            this.setSelectionRange(start + diff, end + diff);
+        }
+    });
+    
+    // Evento blur para formatear cuando el campo pierde el foco
+    rutInput.addEventListener('blur', function() {
+        if (this.value.length > 1) {
+            // Eliminar caracteres no numéricos excepto K/k
+            let valor = this.value.replace(/[^\dkK]/g, '');
+            this.value = formatearRut(valor);
+        }
+    });
+    
+    // Función para validar formato de RUT chileno
+    function validarFormatoRut(rut) {
+        // Expresión regular para validar formato XX.XXX.XXX-X
+        const rutRegex = /^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$/;
+        return rutRegex.test(rut);
+    }
+    
+    // Evento para el botón de búsqueda
+    document.getElementById('btnBuscarCodigo').addEventListener('click', function() {
+        const rut = rutInput.value.trim();
+        
+        if (!validarFormatoRut(rut)) {
+            // Mostrar alerta personalizada con SweetAlert2
+            Swal.fire({
+                title: 'Formato de RUT incorrecto',
+                text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+            
+            // Enfocar el campo RUT para facilitar la corrección
+            rutInput.focus();
+            return;
+        }
+        
+        // Si el formato es correcto, realizar la búsqueda
+        buscarCodigo();
+    });
+    
+    // Evento para capturar la tecla Enter en el campo RUT
+    rutInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevenir el envío del formulario
+            
+            const rut = this.value.trim();
+            if (!validarFormatoRut(rut)) {
+                // Mostrar alerta personalizada con SweetAlert2
+                Swal.fire({
+                    title: 'Formato de RUT incorrecto',
+                    text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+            
+            buscarCodigo(); // Llamar a la función de búsqueda
+        }
+    });
+});
+</script>
+{% endblock %}

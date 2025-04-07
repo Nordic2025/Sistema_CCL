@@ -1,0 +1,23 @@
+# Entorno virtual
+venv/
+.env
+*.pyc
+_pycache_/
+
+# Archivos de configuración temporales
+*.log
+*.sqlite3
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Node (por si acaso)
+node_modules/
+
+# Archivos grandes
+*.zip
+*.tar.gz

@@ -1,0 +1,241 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Administradores{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Administrador</h1>  
+    <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAdministradorModal">
+      Registrar nuevo administrador
+    </button>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th>RUT</th>
+                <th>Nombre</th>
+                <th>Área</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for administrador in administradores %}
+              <tr>
+                <td>{{ administrador.rut }}</td>
+                <td>{{ administrador.nombre }}</td>
+                <td>{{ administrador.area }}</td>
+                <td>
+                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editarAdministradorModal{{ administrador.id }}">
+                    Editar
+                  </button>
+                  <button type="button" class="btn btn_eliminar btn-outline-danger" 
+                          onclick="confirmarEliminacion('{{ administrador.id }}', '{{ administrador.nombre }}')">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Modal para Editar Administrador -->
+              <div class="modal fade" id="editarAdministradorModal{{ administrador.id }}" tabindex="-1" aria-labelledby="editarAdministradorModalLabel{{ administrador.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editarAdministradorModalLabel{{ administrador.id }}">Editar Administrador</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:editar_administrador' administrador.id %}" class="adminForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                          <label for="rut{{ administrador.id }}" class="form-label">RUT</label>
+                          <input type="text" class="form-control rut-input" id="rut{{ administrador.id }}" name="rut" value="{{ administrador.rut }}" maxlength="12" required>
+                          <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+                        </div>
+                        <div class="mb-3">
+                          <label for="nombre{{ administrador.id }}" class="form-label">Nombre</label>
+                          <input type="text" class="form-control" id="nombre{{ administrador.id }}" name="nombre" value="{{ administrador.nombre }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="area{{ administrador.id }}" class="form-label">Área</label>
+                          <input type="text" class="form-control" id="area{{ administrador.id }}" name="area" value="{{ administrador.area }}">
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <tr>
+                <td colspan="4">No hay administradores registrados.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal para Agregar Administrador -->
+  <div class="modal fade" id="agregarAdministradorModal" tabindex="-1" aria-labelledby="agregarAdministradorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="agregarAdministradorModalLabel">Registrar nuevo Administrador</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" action="{% url 'Modulo_admin:registrar_administrador' %}" class="adminForm">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="rut" class="form-label">RUT</label>
+              <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" maxlength="12" required>
+              <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+            </div>
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre completo" required>
+            </div>
+            <div class="mb-3">
+              <label for="area" class="form-label">Área</label>
+              <input type="text" class="form-control" id="area" name="area" placeholder="Área de trabajo" required>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Administrador</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Script para SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    // Función para confirmar eliminación 
+    function confirmarEliminacion(id, nombre) {
+      Swal.fire({
+        title: '¿Está seguro?',
+        text: `¿Desea eliminar al administrador ${nombre}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirigir a la URL de eliminación con el ID correcto
+          window.location.href = "{% url 'Modulo_admin:eliminar_administrador' 0 %}".replace('/0/', '/' + id + '/');
+        }
+      });
+    }
+    
+    // Formateo y validación de RUT
+    document.addEventListener('DOMContentLoaded', function () {
+        // Aplicar a todos los campos de RUT
+        const rutInputs = document.querySelectorAll('.rut-input');
+        
+        rutInputs.forEach(function(rutInput) {
+            // Formateo automático del RUT mientras se escribe
+            rutInput.addEventListener('input', function () {
+                // Eliminar todos los caracteres no numéricos y 'k'/'K'
+                let valor = this.value.replace(/[^0-9kK]/g, '');
+                
+                // Convertir 'k' a mayúscula
+                valor = valor.toUpperCase();
+                
+                // Aplicar formato XX.XXX.XXX-X
+                let formateado = '';
+                
+                if (valor.length > 1) {
+                    // Separar cuerpo y dígito verificador
+                    let cuerpo = valor.slice(0, -1);
+                    let dv = valor.slice(-1);
+                    
+                    // Formatear el cuerpo con puntos
+                    while (cuerpo.length > 3) {
+                        formateado = '.' + cuerpo.slice(-3) + formateado;
+                        cuerpo = cuerpo.slice(0, -3);
+                    }
+                    
+                    // Agregar el resto del cuerpo y el dígito verificador
+                    formateado = cuerpo + formateado + '-' + dv;
+                    this.value = formateado;
+                } else {
+                    this.value = valor;
+                }
+            });
+        });
+        
+        // Validación al enviar los formularios
+        const adminForms = document.querySelectorAll('.adminForm');
+        
+        adminForms.forEach(function(form) {
+            form.addEventListener('submit', function (e) {
+                const rutInput = this.querySelector('.rut-input');
+                const rutValue = rutInput.value;
+                
+                if (!validarRut(rutValue)) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: '¡RUT inválido!',
+                        text: 'El RUT ingresado no es válido. Debe tener formato XX.XXX.XXX-X y un dígito verificador correcto.',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            });
+        });
+    });
+    
+    // Función para validar RUT chileno
+    function validarRut(rut) {
+        // Verificar formato básico
+        if (!/^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]{1}$/.test(rut)) {
+            return false;
+        }
+        
+        // Eliminar puntos y guión para cálculos
+        const rutLimpio = rut.replace(/\./g, '').replace('-', '');
+        const cuerpo = rutLimpio.slice(0, -1);
+        const dv = rutLimpio.slice(-1).toUpperCase();
+        
+        // Calcular dígito verificador
+        let suma = 0;
+        let multiplicador = 2;
+        
+        for (let i = cuerpo.length - 1; i >= 0; i--) {
+            suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+            multiplicador = multiplicador < 7 ? multiplicador + 1 : 2;
+        }
+        
+        const dvEsperado = 11 - (suma % 11);
+        const dvCalculado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
+        
+        return dv === dvCalculado;
+    }
+  </script>
+    
+  {% if messages %}
+      {% for message in messages %}
+    <script>
+      mensaje('{{ message.tags }}', '{{ message }}');
+    </script>
+      {% endfor %}
+  {% endif %}
+
+{% endblock %}

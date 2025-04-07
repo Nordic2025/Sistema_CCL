@@ -1,0 +1,151 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Áreas{% endblock %}
+
+{% block content %}
+  <div class="container main-content">
+    <h1 style="margin-top: 30px;  font-size: 2rem;">Panel de Administrador | Áreas</h1>  
+    <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAreaModal">
+      Registrar nueva área
+    </button>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th>Nombre del Área</th>
+                <th>Encargado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for area in areas %}
+              <tr>
+                <td>{{ area.nombre }}</td>
+                <td>{{ area.encargado }}</td>
+                <td>
+                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editarAreaModal{{ area.id }}">
+                    Editar
+                  </button>
+                  <button type="button" class="btn btn_eliminar btn-outline-danger" 
+                          onclick="confirmarEliminacion('{{ area.id }}', '{{ area.nombre }}')">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Modal para Editar Area -->
+              <div class="modal fade" id="editarAreaModal{{ area.id }}" tabindex="-1" aria-labelledby="editarAreaModalLabel{{ area.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editarAreaModalLabel{{ area.id }}">Editar Área</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:editar_area' area.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                          <label for="nombre{{ area.id }}" class="form-label">Nombre del Área</label>
+                          <input type="text" class="form-control" id="nombre{{ area.id }}" name="nombre" value="{{ area.nombre }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="encargado{{ area.id }}" class="form-label">Encargado de Área</label>
+                          <input type="text" class="form-control" id="area{{ area.id }}" name="encargado" value="{{ area.encargado }}">
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <tr>
+                <td colspan="4">No hay áreas registrados.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal para Agregar Área -->
+  <div class="modal fade" id="agregarAreaModal" tabindex="-1" aria-labelledby="agregarAreaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="agregarAreaModalLabel">Registrar nueva Área</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" action="{% url 'Modulo_admin:agregar_area' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre del Área</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del área" required>
+            </div>
+            <div class="mb-3">
+              <label for="encargado" class="form-label">Encargado del Área</label>
+              <input type="text" class="form-control" id="encargado" name="encargado" placeholder="Área de trabajo" required>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Área</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script para SweetAlert -->
+  <script>
+    // Función para confirmar eliminación 
+    function confirmarEliminacion(id, nombre) {
+      Swal.fire({
+        title: '¿Está seguro?',
+        text: `¿Desea eliminar esta área ${nombre}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirigir a la URL de eliminación con el ID correcto
+          window.location.href = "{% url 'Modulo_admin:eliminar_area' 0 %}".replace('/0/', '/' + id + '/');
+        }
+      });
+    }
+  </script>
+    
+
+    {% if messages %}
+        {% for message in messages %}
+      <script>
+        mensaje('{{ message.tags }}', '{{ message }}');
+      </script>
+        {% endfor %}
+      </script>
+    {% endif %}
+
+{% endblock %}
+
+
+
+
+
+

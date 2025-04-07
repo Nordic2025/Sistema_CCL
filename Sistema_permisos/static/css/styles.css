@@ -1,0 +1,892 @@
+html {
+    min-height: 100%;
+    position: relative;
+    scroll-behavior: smooth;
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+
+
+
+/* Estilos para el encabezado */
+.encabezado_principal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 25px;
+    background-color: #6f82be; 
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-bottom: 3px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 10;
+}
+
+#principal {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.contenido {
+    flex: 1 0 auto; /* This will make the content take up available space */
+    width: 100%;
+}
+
+/* Logo */
+.logoCCL {
+    max-height: 70px; 
+    max-width: 150px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: filter 0.3s ease;
+}
+
+.logoCCL:hover {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+/* Icono de usuario */
+.user_icon {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.user_icon:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.h1_global {
+    margin: 0;
+    font-size: 28px;
+    flex-grow: 1; 
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Botón de iniciar sesión */
+.btn_login a {
+    font-size: 18px;
+    padding: 10px 20px;
+    background: transparent;
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn_login a:hover {
+    background-color: #2b1572;
+    box-shadow: 0 4px 10px rgba(43, 21, 114, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn_login a:active {
+    transform: translateY(0);
+}
+
+/* Estilos para la sección de botones */
+.btn_principal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    gap: 50px;
+    flex-wrap: wrap;
+    padding: 30px 20px;
+}
+
+/* Contenedor para cada botón */
+.btn_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 150px;
+    transition: all 0.3s ease;
+}
+
+.btn_container:hover {
+    transform: translateY(-5px);
+}
+
+/* Estilos comunes para los botones */
+.btn_principal a.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 400px;
+    height: 100px;
+    font-size: 22px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn_principal a.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.6s ease;
+}
+
+.btn_principal a.btn:hover::before {
+    left: 100%;
+}
+
+/* Botón de Funcionarios */
+.btn_funcionarios {
+    background: linear-gradient(135deg, #2b1572, #3b2a8c);
+}
+
+.btn_funcionarios:hover {
+    background: linear-gradient(135deg, #2a0897, #3b2a8c);
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(43, 21, 114, 0.3);
+}
+
+/* Botón de Apoderados (Deshabilitado) */
+.btn_apoderados {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none; 
+    position: relative;
+}
+
+.btn_apoderados::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.05) 10px,
+      rgba(255, 255, 255, 0.05) 20px
+    );
+}
+
+/* Estilos para "Próximamente" */
+.a_principal {
+    text-align: center;
+    font-size: 18px;
+    color: #6c757d;
+    font-weight: bold;
+    margin-top: 12px;
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+.a_principal::after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 2px;
+    background-color: #6c757d;
+    margin: 5px auto 0;
+    transition: width 0.3s ease;
+}
+
+.btn_container:hover .a_principal::after {
+    width: 80px;
+}
+
+html {
+    min-height: 100%;
+    position: relative;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    margin-bottom: 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+
+footer {
+    background-color: #6f82be;
+    width: 100%;
+    color: white;
+    text-align: center;
+    font-size: 18px;
+    padding: 15px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    position: relative;
+    border-top: 3px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0; /* Prevents the footer from shrinking */
+}
+
+/* Para que el footer se mantenga en la parte inferior */
+#principal {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+body.menu-open footer {
+    left: 250px;
+}
+
+body.menu-open .container {
+    margin-left: 250px; 
+}
+
+.btn_general {
+    background-color: transparent;
+    color: #2b1572;
+    border: 2px solid #2b1572;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn_general::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: #2b1572;
+    transition: all 0.3s ease;
+    z-index: -1;
+}
+
+.btn_general:hover {
+    color: white;
+}
+
+.btn_general:hover::before {
+    left: 0;
+}
+
+/*Estilos para Login*/
+.fondo {
+    background: linear-gradient(135deg, rgba(59, 97, 209, 0.9), rgba(43, 21, 114, 0.8));
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.fondo::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, transparent 20%, rgba(255, 255, 255, 0.03) 20%, rgba(255, 255, 255, 0.03) 22%, transparent 22%);
+    background-size: 20px 20px;
+    top: -50%;
+    left: -50%;
+    animation: backgroundMove 60s linear infinite;
+}
+
+@keyframes backgroundMove {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.centrar_card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.card_login {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    padding: 40px;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.card_login:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.h1_login {
+    color: #2b1572;
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 30px;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.h1_login::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #2b1572, #6f82be);
+    border-radius: 3px;
+}
+
+.card_body_login {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.Login_input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.Login_input:focus {
+    border-color: #2b1572;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(43, 21, 114, 0.1);
+    background-color: white;
+}
+
+.login_btn {
+    background: linear-gradient(135deg, #2b1572, #3b61d1);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(43, 21, 114, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.login_btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.6s ease;
+}
+
+.login_btn:hover {
+    background: linear-gradient(135deg, #2d4ba3, #3b61d1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(43, 21, 114, 0.4);
+}
+
+.login_btn:hover::before {
+    left: 100%;
+}
+
+.login_btn:active {
+    transform: translateY(0);
+}
+
+.usuario, .contraseña {
+    color: #333;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/*Menu lateral*/
+.menuLateral {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #6f82be, #5a6ba0);
+    overflow-x: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-top: 15px;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+}
+
+/* Estilo para el botón de cerrar menú */
+.menuLateral .cerrarMenubtn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+/* Estilo para el icono dentro del botón de cerrar */
+.menuLateral .cerrarMenubtn img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+    filter: brightness(0) invert(1); /* Makes the icon white */
+    display: block; /* Ensures proper centering */
+    margin: 0; /* Reset any margins */
+}
+
+
+/* Hover para el botón de cerrar */
+.menuLateral .cerrarMenubtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.menuLateral .cerrarMenubtn:hover img {
+    transform: rotate(90deg);
+}
+
+.menuLateral a {
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    margin: 10px 15px;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menuLateral a img {
+    width: 24px;        
+    height: 24px;       
+    margin-right: 15px; 
+    vertical-align: middle; 
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    transition: all 0.3s ease;
+}
+
+.menu_icono {
+    width: 24px;
+    height: 24px;
+    margin-right: 15px;
+    vertical-align: middle;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.menuLateral a:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    background: #2b1572;
+    z-index: 1;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.menuLateral a:hover {
+    color: #ffffff;
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.menuLateral a:hover:before {
+    transform: scaleY(1);
+}
+
+.menuLateral a:hover img, 
+.menuLateral a:hover .menu_icono {
+    transform: scale(1.1);
+}
+
+.abrirMenubtn {
+      font-size: 30px; 
+      background: none; 
+      border: none; 
+      color: #2b1572; 
+      cursor: pointer; 
+      padding: 10px; 
+      margin-right: 20px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.abrirMenubtn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      background: rgba(43, 21, 114, 0.05);
+}
+
+.menuLateral a.active {
+    color: white;
+    background: rgba(43, 21, 114, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.menuLateral a.active:before {
+    transform: scaleY(1);
+}
+
+.menuLateral a i {
+    margin-right: 15px;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+/*Logo menu lateral*/
+.menuLateral .logoCCL {
+      display: block;
+      margin: 20px auto;
+      text-align: center;
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      background: transparent;
+}
+
+/* Clase para el contenido principal */
+.main-content {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+/* Ajuste cuando el menú está abierto */
+body.menu-open .main-content {
+    margin-left: 250px;
+    border-radius: 20px 0 0 20px;
+    box-shadow: -10px 0 20px rgba(0, 0, 0, 0.05);
+}
+
+/*Estilos para tablas*/
+.container {
+    transition: margin-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 25px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+}
+
+.h1_tabla {
+    transition: margin-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #2b1572;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.h1_tabla::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #2b1572, #6f82be);
+    border-radius: 3px;
+}
+
+.thead_custom {
+    background: linear-gradient(135deg, #3b61d1, #2b1572) !important;
+    color: white;
+    font-weight: bold;
+    padding: 15px;
+    border-radius: 10px 10px 0 0;
+}
+
+.thead_custom th {
+    padding: 18px 15px;
+    text-align: center;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    border: none;
+    position: relative;
+}
+
+.thead_custom th:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.tbody_custom {
+    margin-left: 1%;
+}
+
+.tabla_global {
+    margin-top: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.tabla_global table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.tbody_custom td {
+    padding: 18px 15px;
+    vertical-align: middle;
+    color: #555;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.tbody_custom tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.tbody_custom tr:hover {
+    background-color: rgba(111, 130, 190, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.tbody_custom tr:last-child {
+    border-bottom: none;
+}
+
+.tabla_ancha {
+    width: 100%; 
+    table-layout: auto;
+}
+
+.tabla_ancha th, .tabla_ancha td {
+    padding: 18px 15px; 
+    text-align: start;
+}
+
+/* Media Queries para móviles */
+@media (max-width: 768px) {
+    .encabezado_principal {
+        font-size: 20px;
+        padding: 15px;
+    }
+
+    .h1_global {
+        font-size: 22px;
+    }
+
+    .user_icon {
+        width: 35px;
+        height: 35px;
+    }
+
+    /* Ajustes para centrar los botones en móviles */
+    .btn_principal {
+        flex-direction: column;
+        height: auto;
+        margin-top: 20px;
+        gap: 30px;
+        padding: 20px 15px;
+    }
+
+    .btn_principal a.btn {
+        width: 90%;
+        max-width: 300px;
+        height: 80px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    /* Estilos para "Próximamente" en móviles */
+    .a_principal {
+        font-size: 16px;
+        margin-top: 8px;
+    }
+  
+    /*Card login*/
+    .centrar_card {
+        width: 90%;
+        max-width: 320px;
+        margin: 0 auto;
+        padding: 15px;
+    }
+
+    .card_login {
+        padding: 25px 20px;
+    }
+
+    .h1_login {
+        font-size: 24px;
+    }
+
+    footer {
+        height: auto;
+        padding: 15px;
+        font-size: 16px;
+    }
+
+    .container {
+        padding: 15px;
+        margin-top: 15px;
+    }
+
+    .h1_tabla {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .thead_custom th {
+        padding: 15px 10px;
+        font-size: 14px;
+    }
+
+    .tbody_custom td {
+        padding: 15px 10px;
+        font-size: 14px;
+    }
+
+    body.menu-open .main-content,
+    body.menu-open .container {
+        margin-left: 0;
+    }
+
+    .menuLateral {
+        width: 100% !important;
+    }
+}
+
+/* Animaciones adicionales */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.main-content {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Estilos para mensajes de alerta */
+.alert {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.alert-success {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+    color: #2e7d32;
+}
+
+.alert-danger {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #c62828;
+}
+
+.alert-warning {
+    background-color: #fff8e1;
+    border-color: #ffc107;
+    color: #ff8f00;
+}
+
+.alert-info {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #0d47a1;
+}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Ingresos Colegio Concepcion
+{% endblock %}
+
+{% block content %}
+<div class="btn_principal">
+    <div class="btn_container">
+
+        <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn_funcionarios" style="text-decoration: none; color: white; ">
+            Funcionarios
+        </a>
+    </div>
+    <div class="btn_container">
+
+        <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn_apoderados" style="text-decoration: none; color: white; " disabled>
+            Apoderados
+        </a>
+        <span class="a_principal">Próximamente</span>
+    </div>
+</div>
+{% endblock %}
