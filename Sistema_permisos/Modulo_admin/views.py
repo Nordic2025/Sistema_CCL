@@ -5,6 +5,9 @@ from django.contrib import messages
 from .forms import AdministradorForm, AreasForm
 from .models import Administrador, Areas
 from Modulo_funcionarios.models import RegistroSalida
+from datetime import timedelta, datetime
+from django.utils import timezone
+from django.db.models import Q, F, ExpressionWrapper, DurationField
 
 # Create your views here.
 def loginadmin_view(request):
@@ -70,15 +73,112 @@ def graficoview(request):
 # Vista tabla_general
 @login_required(login_url='Modulo_admin:login_admin')
 def tabla_generalview(request):
+    # Iniciar con todos los permisos completados
     permisos = RegistroSalida.objects.filter(hora_regreso__isnull=False)
-    return render(request, "tabla_general.html", {'permisos': permisos})
-
+    
+    # Obtener parámetros de filtrado
+    busqueda = request.GET.get('busqueda', '')
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+    
+    # Aplicar búsqueda por nombre o RUT si se proporciona
+    if busqueda:
+        # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
+        busqueda_rut = busqueda.replace('.', '').replace('-', '')
+        permisos = permisos.filter(
+            Q(nombre__icontains=busqueda) | 
+            Q(rut__icontains=busqueda) |
+            Q(rut__icontains=busqueda_rut)
+        )
+    
+    # Aplicar filtro de rango de fechas personalizado
+    if fecha_inicio:
+        try:
+            fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            permisos = permisos.filter(hora_salida__date__gte=fecha_inicio_obj)
+        except ValueError:
+            pass
+            
+    if fecha_fin:
+        try:
+            fecha_fin_obj = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            # Ajustar fecha_fin para incluir todo el día
+            fecha_fin_obj = datetime.combine(fecha_fin_obj, datetime.max.time())
+            permisos = permisos.filter(hora_salida__date__lte=fecha_fin_obj)
+        except ValueError:
+            pass
+    
+    # Ordenar por fecha de salida (más reciente primero)
+    permisos = permisos.order_by('-hora_salida')
+    
+    # Pasar todos los parámetros al contexto
+    context = {
+        'permisos': permisos,
+        'busqueda': busqueda,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'total_registros': permisos.count()
+    }
+    
+    return render(request, "tabla_general.html", context)
 
 # Vista tabla_salidas
 @login_required(login_url='Modulo_admin:login_admin')
 def tabla_salidasview(request):
+    # Obtener todas las salidas activas (sin hora de regreso)
     salidas = RegistroSalida.objects.filter(hora_regreso__isnull=True)
-    return render(request, "tabla_salidas.html", {'salidas': salidas})
+    
+    # Obtener parámetros de filtrado
+    busqueda = request.GET.get('busqueda', '')
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+    
+    # Aplicar búsqueda por nombre o RUT si se proporciona
+    if busqueda:
+        # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
+        busqueda_rut = busqueda.replace('.', '').replace('-', '')
+        salidas = salidas.filter(
+            Q(nombre__icontains=busqueda) | 
+            Q(rut__icontains=busqueda) |
+            Q(rut__icontains=busqueda_rut)
+        )
+    
+    # Aplicar filtro de rango de fechas personalizado
+    if fecha_inicio:
+        try:
+            fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            salidas = salidas.filter(hora_salida__date__gte=fecha_inicio_obj)
+        except ValueError:
+            pass
+            
+    if fecha_fin:
+        try:
+            fecha_fin_obj = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            # Ajustar fecha_fin para incluir todo el día
+            fecha_fin_obj = datetime.combine(fecha_fin_obj, datetime.max.time())
+            salidas = salidas.filter(hora_salida__date__lte=fecha_fin_obj)
+        except ValueError:
+            pass
+    
+    # Calcular el tiempo transcurrido para cada salida
+    ahora = timezone.now()
+    for salida in salidas:
+        salida.tiempo_transcurrido = ahora - salida.hora_salida
+    
+    # Ordenar por hora de salida (más reciente primero)
+    salidas = sorted(salidas, key=lambda x: x.hora_salida, reverse=True)
+    
+    # Pasar todos los parámetros al contexto
+    context = {
+        'salidas': salidas,
+        'busqueda': busqueda,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'total_registros': len(salidas)
+    }
+    
+    return render(request, "tabla_salidas.html", context)
+
 
 
 # Vista tabla_administradores
