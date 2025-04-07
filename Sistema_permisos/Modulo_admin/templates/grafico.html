@@ -7,6 +7,7 @@
 {% block content %}
 <div class="container main-content" style="margin-bottom: 30px;">
     <h1 style="margin-top: 30px; margin-left: 10px; font-size: 2rem;">Panel de Administrador | Permisos</h1>  
+    <button id="generar-reporte" class="btn btn-success mt-3" style="margin-top: 30px; margin-bottom: 30px; margin-left: 10px;" >Generar Reporte</button>
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
@@ -24,9 +25,13 @@
 </div>
 
 
+
+{% comment %}
+    Script para generar grafico
+{% endcomment %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Verificar si las variables existen
+        // Verificacion si exiten los datos
         console.log("Datos de áreas:", {{ nombre_areas|default:"[]"|safe }});
         console.log("Datos de permisos:", {{ cantidad_permisos|default:"[]"|safe }});
         
@@ -73,8 +78,77 @@
                 name: 'Permisos',
                 data: {{ cantidad_permisos|default:"[]"|safe }},
                 colorByPoint: true
-            }]
+            }],
+
+            exporting: {
+                enabled: false
+            }
         });
     });
 </script>
+
+
+
+{% comment %} 
+    Script para generar Reporte
+{% endcomment %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('generar-reporte').addEventListener('click', function() {
+            const graficoContainer = document.getElementById('grafico');
+
+            html2canvas(graficoContainer).then(function(canvas) {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
+
+                // Cargar imagen del logo
+                const logo = new Image();
+                logo.src = "{% static 'images/logo_ccl.png' %}";
+
+                logo.onload = function() {
+                    //Encabezado
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+
+                    // Logo
+                    pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
+
+                    // Título principal
+                    pdf.setFontSize(16);
+                    pdf.setTextColor(40, 40, 40);
+                    pdf.text('Colegio Concepcion Linares', 35, 15);
+
+                    // Subtítulo
+                    pdf.setFontSize(12);
+                    pdf.text('Reporte de Permisos por Área', 35, 22);
+
+                    // Fecha (alineada a la derecha)
+                    const fecha = new Date().toLocaleDateString();
+                    pdf.setFontSize(10);
+                    pdf.text(`Fecha: ${fecha}`, pageWidth - 40, 15);
+
+                    // Imagen del gráfico 
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const pdfWidth = pageWidth - 20;
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                    // Insertar imagen más abajo para no tapar el encabezado
+                    pdf.addImage(imgData, 'PNG', 10, 50, pdfWidth, pdfHeight);
+
+                    // === Pie de página ===
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    pdf.setFontSize(10);
+                    pdf.setTextColor(100);
+                    pdf.text("Sistema de Permisos - Colegio Concepcion Linares", 10, pageHeight - 10);
+                    pdf.text("Contacto: contacto@colegioconcepcionlinares.cl", pageWidth - 60, pageHeight - 10);
+
+                    // Guardar
+                    pdf.save('reporte_grafico.pdf');
+                };
+            });
+        });
+    });
+</script>
+
 {% endblock %}
