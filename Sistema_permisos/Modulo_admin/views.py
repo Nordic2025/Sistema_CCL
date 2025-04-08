@@ -8,8 +8,8 @@ from Modulo_funcionarios.models import RegistroSalida
 from datetime import timedelta, datetime
 from django.utils import timezone
 from django.db.models import Q
-from django.template.loader import render_to_string
 from django.http import HttpResponse
+
 
 
 # Create your views here.
@@ -279,68 +279,12 @@ def tabla_areasview(request):
 
 def exportar_permisos_pdf(request):
     """Exporta la tabla de permisos como HTML con descarga automática"""
-    try:
-        # Obtener los permisos completados (con hora de regreso)
-        permisos = RegistroSalida.objects.filter(hora_regreso__isnull=False)
-        
-        # Preparar contexto para la plantilla
-        context = {
-            'permisos': permisos,
-            'fecha_generacion': timezone.now(),
-            'titulo': 'Registro de Permisos Completados',
-            'total_registros': permisos.count(),
-            'auto_print': True  # Indica a la plantilla que debe imprimir automáticamente
-        }
-        
-        # Renderizar la plantilla a una cadena HTML
-        html_string = render_to_string('reportes_permisos_completados.html', context, request=request)
-        
-        # Crear respuesta HTTP con el HTML
-        response = HttpResponse(html_string, content_type='text/html')
-        
-        # Configurar encabezados para forzar descarga
-        filename = f"permisos_{timezone.now().strftime('%Y%m%d_%H%M%S')}.html"
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        return response
-        
-    except Exception as e:
-        import traceback
-        print(f"Error al generar reporte de permisos: {str(e)}")
-        print(traceback.format_exc())
-        messages.error(request, f"Error al generar el reporte: {str(e)}")
-        return redirect('Modulo_admin:historial_permisos')
+    return redirect('Modulo_admin:historial_permisos')
+
+
+
+
 
 def exportar_salidas_pdf(request):
     """Exporta la tabla de salidas activas como HTML con descarga automática"""
-    try:
-        # Obtener las salidas activas (sin hora de regreso)
-        salidas = RegistroSalida.objects.filter(hora_regreso__isnull=True)
-        
-        # Preparar contexto para la plantilla
-        context = {
-            'salidas': salidas,
-            'fecha_generacion': timezone.now(),
-            'titulo': 'Registro de Salidas Activas',
-            'total_registros': salidas.count(),
-            'auto_print': True  # Indica a la plantilla que debe imprimir automáticamente
-        }
-        
-        # Renderizar la plantilla a una cadena HTML
-        html_string = render_to_string('reportes_salidas.html', context, request=request)
-        
-        # Crear respuesta HTTP con el HTML
-        response = HttpResponse(html_string, content_type='text/html')
-        
-        # Configurar encabezados para forzar descarga
-        filename = f"salidas_{timezone.now().strftime('%Y%m%d_%H%M%S')}.html"
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        return response
-        
-    except Exception as e:
-        import traceback
-        print(f"Error al generar reporte de salidas: {str(e)}")
-        print(traceback.format_exc())
-        messages.error(request, f"Error al generar el reporte: {str(e)}")
-        return redirect('Modulo_admin:historial_salidas')
+    return redirect('Modulo_admin:historial_salidas')

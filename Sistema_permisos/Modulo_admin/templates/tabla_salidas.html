@@ -46,9 +46,9 @@
                 {% endif %}
 
                 <div class="d-flex justify-content-end mb-3">
-                  <a href="{% url 'Modulo_admin:exportar_salidas_pdf' %}" class="btn btn-danger">
+                  <button type="button" id="exportarPDF" class="btn btn-danger">
                     <i class="fas fa-file-pdf"></i> Exportar a PDF
-                  </a>
+                  </button>
                 </div>
                 </a>
               </div>
@@ -85,43 +85,45 @@
   <!-- Tabla de resultados -->
   <div class="row">
     <div class="col-md-12">
-      <div class="tabla_global">
-        <table class="tabla_ancha">
-          <thead class="thead_custom">
-            <tr>
-              <th class="text-center">Código de registro</th>
-              <th class="text-center">RUT</th>
-              <th class="text-center">Nombre</th>
-              <th class="text-center">Autorizado por</th>
-              <th class="text-center">Motivo</th>
-              <th class="text-center">Fecha y hora de salida</th>
-              <th class="text-center">Área perteneciente</th>
-              <th class="text-center">Tiempo transcurrido</th>
-            </tr>
-          </thead>
-          <tbody class="tbody_custom">
-            {% for salida in salidas %}
-            <tr>
-              <td class="text-center">{{salida.codigo_registro}}</td>
-              <td class="text-center">{{salida.rut}}</td>
-              <td class="text-center">{{salida.nombre}}</td>
-              <td class="text-center">{{salida.autorizado_por}}</td>
-              <td class="text-center">{{salida.motivo_salida}}</td>
-              <td class="text-center">{{salida.hora_salida|date:"d/m/Y H:i:s"}}</td>
-              <td class="text-center">{{salida.area_perteneciente}}</td>
-              <td class="text-center">{{salida.tiempo_transcurrido|duration_seconds}}</td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="8" class="text-center py-3">
-                <div class="alert alert-info mb-0">
-                  No hay salidas activas para los criterios seleccionados.
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div id="contenido-pdf">
+        <div class="tabla_global">
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th class="text-center">Código de registro</th>
+                <th class="text-center">RUT</th>
+                <th class="text-center">Nombre</th>
+                <th class="text-center">Autorizado por</th>
+                <th class="text-center">Motivo</th>
+                <th class="text-center">Fecha y hora de salida</th>
+                <th class="text-center">Área perteneciente</th>
+                <th class="text-center">Tiempo transcurrido</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for salida in salidas %}
+              <tr>
+                <td class="text-center">{{salida.codigo_registro}}</td>
+                <td class="text-center">{{salida.rut}}</td>
+                <td class="text-center">{{salida.nombre}}</td>
+                <td class="text-center">{{salida.autorizado_por}}</td>
+                <td class="text-center">{{salida.motivo_salida}}</td>
+                <td class="text-center">{{salida.hora_salida|date:"d/m/Y H:i:s"}}</td>
+                <td class="text-center">{{salida.area_perteneciente}}</td>
+                <td class="text-center">{{salida.tiempo_transcurrido|duration_seconds}}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8" class="text-center py-3">
+                  <div class="alert alert-info mb-0">
+                    No hay salidas activas para los criterios seleccionados.
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -135,6 +137,12 @@
     </div>
   </div>
 </div>
+
+
+<!-- Incluir las bibliotecas html2canvas y jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 <!-- Script para formateo de RUT -->
 <script>
@@ -194,6 +202,171 @@
           this.setSelectionRange(start + diff, end + diff);
         }
       }
+    });
+  });
+</script>
+
+<!-- Script para generar PDF -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Botón para exportar a PDF
+    document.getElementById('exportarPDF').addEventListener('click', function() {
+      // Mostrar mensaje de carga
+      const loadingMessage = document.createElement('div');
+      loadingMessage.style.position = 'fixed';
+      loadingMessage.style.top = '0';
+      loadingMessage.style.left = '0';
+      loadingMessage.style.width = '100%';
+      loadingMessage.style.height = '100%';
+      loadingMessage.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      loadingMessage.style.display = 'flex';
+      loadingMessage.style.justifyContent = 'center';
+      loadingMessage.style.alignItems = 'center';
+      loadingMessage.style.zIndex = '9999';
+      loadingMessage.innerHTML = '<div style="background-color: white; padding: 20px; border-radius: 5px;"><h3>Generando PDF, por favor espere...</h3></div>';
+      document.body.appendChild(loadingMessage);
+
+      // Obtener el contenido a convertir
+      const content = document.getElementById('contenido-pdf');
+      
+      // Configurar opciones para html2canvas
+      const options = {
+        scale: 2, // Mayor escala para mejor calidad
+        useCORS: true, // Permitir imágenes de otros dominios
+        logging: false, // Desactivar logs
+        letterRendering: true, // Mejor renderizado de texto
+        allowTaint: true, // Permitir elementos tainted
+      };
+
+      // Convertir el contenido a imagen
+      html2canvas(content, options).then(canvas => {
+        // Crear PDF con jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal para más espacio
+        
+        // Calcular dimensiones para ajustar al PDF
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        // Usar todo el ancho de la página menos márgenes
+        const imgWidth = pageWidth - 20; // 10mm de margen a cada lado
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        // Convertir canvas a imagen
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Cargar imagen del logo
+        const logo = new Image();
+        logo.src = "{% static 'images/logo_ccl.png' %}";
+        logo.onload = function() {
+          // Función para añadir encabezado y pie de página a cada página
+          const addHeaderFooter = function(pageNumber) {
+            // === Encabezado ===
+            // Logo (a la izquierda)
+            pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
+
+            // Título y subtítulo (al lado del logo)
+            pdf.setFontSize(16);
+            pdf.setTextColor(40, 40, 40);
+            pdf.text('Colegio Concepción Linares', 35, 15);
+
+            pdf.setFontSize(12);
+            pdf.text('Reporte de Salidas Activas', 35, 22);
+
+            // Fecha y hora (alineada a la derecha, al mismo nivel que el logo y título)
+            const now = new Date();
+            const fecha = now.toLocaleDateString();
+            const hora = now.toLocaleTimeString();
+            pdf.setFontSize(10);
+            pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });
+            pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
+
+            
+            // === Pie de página ===
+            pdf.setFontSize(10);
+            pdf.setTextColor(100);
+            pdf.text("Sistema de Control de Permisos - Colegio Concepción Linares", 10, pageHeight - 10);
+            pdf.text(`Página ${pageNumber}`, pageWidth - 25, pageHeight - 10);
+          };
+          
+          // Calcular cuántas páginas necesitaremos
+          const totalPages = Math.ceil(imgHeight / (pageHeight - 55)); // 55mm para encabezado y pie de página
+          
+          // Para cada página
+          for (let i = 0; i < totalPages; i++) {
+            // Si no es la primera página, añadir una nueva
+            if (i > 0) {
+              pdf.addPage();
+            }
+            
+            // Añadir encabezado y pie de página
+            addHeaderFooter(i + 1);
+            
+            // Calcular qué parte de la imagen mostrar en esta página
+            const srcY = i * (pageHeight - 55) * canvas.height / imgHeight;
+            const srcHeight = Math.min(canvas.height - srcY, (pageHeight - 55) * canvas.height / imgHeight);
+            
+            // Añadir la parte correspondiente de la imagen (ahora con más espacio para el encabezado)
+            pdf.addImage(
+              imgData, 
+              'PNG', 
+              10, // x
+              45, // y (aumentado para dejar más espacio al encabezado)
+              imgWidth, // ancho (ahora usa todo el ancho disponible)
+              srcHeight * imgWidth / canvas.width, // alto proporcional
+              '', // alias
+              'FAST', // compresión
+              0, // rotación
+              srcY, // srcY - desde dónde empezar a recortar verticalmente
+              canvas.width, // srcWidth - ancho completo
+              srcHeight // srcHeight - altura a recortar
+            );
+          }
+          
+          // Generar nombre de archivo con fecha y hora
+          const timestamp  = new Date();
+          const filename = `salidas_activas_${timestamp.getFullYear()}${String(timestamp.getMonth() + 1).padStart(2, '0')}${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}${String(timestamp.getMinutes()).padStart(2, '0')}${String(timestamp.getSeconds()).padStart(2, '0')}.pdf`;
+          
+          // Descargar el PDF
+          pdf.save(filename);
+          
+          // Quitar mensaje de carga
+          document.body.removeChild(loadingMessage);
+        };
+        
+        // Si hay error al cargar el logo
+        logo.onerror = function() {
+          console.error('Error al cargar el logo');
+          
+          // Título y subtítulo (a la izquierda sin logo)
+          pdf.setFontSize(16);
+          pdf.text('Colegio Concepción Linares', 10, 15);
+          pdf.setFontSize(12);
+          pdf.text('Reporte de Salidas Activas', 10, 22);
+          
+          // Fecha y hora actual (a la derecha)
+          const now = new Date();
+          const fecha = now.toLocaleDateString();
+          const hora = now.toLocaleTimeString();
+          pdf.setFontSize(10);
+          pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });
+          pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
+          
+          
+          // Añadir la imagen del contenido (con espacio para el encabezado)
+          pdf.addImage(imgData, 'PNG', 10, 45, imgWidth, imgHeight);
+          
+          // Generar nombre de archivo con fecha y hora
+          const timestamp  = new Date();
+          const filename = `salidas_activas_${timestamp.getFullYear()}${String(timestamp.getMonth() + 1).padStart(2, '0')}${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}${String(timestamp.getMinutes()).padStart(2, '0')}${String(timestamp.getSeconds()).padStart(2, '0')}.pdf`;
+          
+          // Descargar el PDF
+          pdf.save(filename);
+          
+          // Quitar mensaje de carga
+          document.body.removeChild(loadingMessage);
+        };
+      });
     });
   });
 </script>
