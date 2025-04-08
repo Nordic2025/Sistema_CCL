@@ -5,6 +5,10 @@ from django.contrib import messages
 from .forms import AdministradorForm, AreasForm
 from .models import Administrador, Areas
 from Modulo_funcionarios.models import RegistroSalida
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+from datetime import date
+import calendar
 
 # Create your views here.
 def loginadmin_view(request):
@@ -39,7 +43,7 @@ def logout_admin(request):
     
 
 
-# Vista grafico - Versión corregida
+# Vista grafico 
 @login_required(login_url='Modulo_admin:login_admin')
 def graficoview(request):
     # Obtener las áreas desde la base de datos
@@ -47,21 +51,45 @@ def graficoview(request):
     
     nombre_areas = []
     cantidad_permisos = []
+    meses = ["Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+    meses_num = {
+        "Marzo": 3, "Abril": 4, "Mayo": 5, "Junio": 6, "Julio": 7, 
+        "Agosto": 8, "Septiembre": 9, "Octubre": 10, "Noviembre": 11, "Diciembre": 12
+    }
+
+    # Inicializar los datos por mes para cada área
+    datos_por_mes={}
+
+
     
+
+    # Llenar los datos por mes con la cantidad de permisos
     for area in areas:
-        # Contar permisos por área usando el campo area_perteneciente
-        count = RegistroSalida.objects.filter(area_perteneciente=area.nombre).count()
         nombre_areas.append(area.nombre)
+
+        count = RegistroSalida.objects.filter(area_perteneciente = area.nombre).count()
         cantidad_permisos.append(count)
-    
+
+        datos_por_mes[area.nombre]= {}
+
+        #Llenar los datos por mes
+        for mes_nombre in meses:
+            mes_num = meses_num[mes_nombre]
+            cantidad = RegistroSalida.objects.filter(area_perteneciente = area.nombre, hora_salida__month=mes_num).count()
+            datos_por_mes[area.nombre][mes_nombre] = cantidad
     # Convertir a JSON
     import json
     nombre_areas_json = json.dumps(nombre_areas)
     cantidad_permisos_json = json.dumps(cantidad_permisos)
-    
+    datos_por_mes_json = json.dumps(datos_por_mes)
+    meses_json = json.dumps(meses)
+
+
     context = {
         'nombre_areas': nombre_areas_json,
-        'cantidad_permisos': cantidad_permisos_json
+        'cantidad_permisos': cantidad_permisos_json,
+        'datos_por_mes': datos_por_mes_json,
+        'meses': meses_json
     }
     
     return render(request, "grafico.html", context)
