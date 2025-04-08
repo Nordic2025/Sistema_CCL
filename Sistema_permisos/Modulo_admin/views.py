@@ -7,11 +7,15 @@ from .models import Administrador, Areas
 from Modulo_funcionarios.models import RegistroSalida
 from datetime import timedelta, datetime
 from django.utils import timezone
+<<<<<<< HEAD
 from django.db.models import Q, F, ExpressionWrapper, DurationField
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from datetime import date
 import calendar
+from django.db.models import Q
+from django.http import HttpResponse
+
 
 # Create your views here.
 def loginadmin_view(request):
@@ -301,3 +305,15 @@ def eliminar_areas_view(request, id):
 @login_required(login_url='Modulo_admin:login_admin')
 def tabla_areasview(request):
     return render(request, "areas.html")
+
+def exportar_permisos_pdf(request):
+    """Exporta la tabla de permisos como HTML con descarga automática"""
+    return redirect('Modulo_admin:historial_permisos')
+
+
+
+
+
+def exportar_salidas_pdf(request):
+    """Exporta la tabla de salidas activas como HTML con descarga automática"""
+    return redirect('Modulo_admin:historial_salidas')

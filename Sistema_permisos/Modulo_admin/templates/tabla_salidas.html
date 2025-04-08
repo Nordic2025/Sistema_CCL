@@ -7,79 +7,85 @@
 
 {% block content %}
 <div class="container main-content">
-    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Salidas Activas</h1>  
-    
-    <!-- Filtros combinados (buscador y rango de fechas) -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Filtros</h5>
-                </div>
-                <div class="card-body">
-                    <form id="filtroForm" method="get" action="{% url 'Modulo_admin:historial_salidas' %}" class="row g-3">
-                        <!-- Buscador -->
-                        <div class="col-md-3">
-                            <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
-                            <input type="text" id="busqueda" name="busqueda" class="form-control" 
-                                   placeholder="Nombre o RUT" value="{{ busqueda }}" autocomplete="off">
-                        </div>
-                        
-                        <!-- Rango de fechas -->
-                        <div class="col-md-3">
-                            <label for="fecha_inicio" class="form-label">Fecha inicio:</label>
-                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
-                                   value="{{ fecha_inicio }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="fecha_fin" class="form-label">Fecha fin:</label>
-                            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
-                                   value="{{ fecha_fin }}">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <div class="d-grid gap-2 w-100">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Buscar
-                                </button>
-                                {% if busqueda or fecha_inicio or fecha_fin %}
-                                <a href="{% url 'Modulo_admin:historial_salidas' %}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> Limpiar filtros
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Salidas Activas</h1>
+
+  <!-- Filtros combinados (buscador y rango de fechas) -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Filtros</h5>
         </div>
-    </div>
-    
-    <!-- Indicadores de filtros activos -->
-    {% if busqueda or fecha_inicio or fecha_fin %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="alert alert-info">
-                <h5 class="alert-heading">Filtros activos:</h5>
-                <ul class="mb-0">
-                    {% if busqueda %}
-                        <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
-                    {% endif %}
-                    {% if fecha_inicio and fecha_fin %}
-                        <li>Rango de fechas: <strong>{{ fecha_inicio }}</strong> hasta <strong>{{ fecha_fin }}</strong></li>
-                    {% elif fecha_inicio %}
-                        <li>Desde: <strong>{{ fecha_inicio }}</strong></li>
-                    {% elif fecha_fin %}
-                        <li>Hasta: <strong>{{ fecha_fin }}</strong></li>
-                    {% endif %}
-                </ul>
+        <div class="card-body">
+          <form id="filtroForm" method="get" action="{% url 'Modulo_admin:historial_salidas' %}" class="row g-3">
+            <!-- Buscador -->
+            <div class="col-md-3">
+              <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
+              <input type="text" id="busqueda" name="busqueda" class="form-control" placeholder="Nombre o RUT"
+                value="{{ busqueda }}" autocomplete="off">
             </div>
+
+            <!-- Rango de fechas -->
+            <div class="col-md-3">
+              <label for="fecha_inicio" class="form-label">Fecha inicio:</label>
+              <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-3">
+              <label for="fecha_fin" class="form-label">Fecha fin:</label>
+              <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="d-grid gap-2 w-100">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-search"></i> Buscar
+                </button>
+                {% if busqueda or fecha_inicio or fecha_fin %}
+                <a href="{% url 'Modulo_admin:historial_salidas' %}" class="btn btn-outline-secondary">
+                  <i class="fas fa-times"></i> Limpiar filtros
+                </a>
+                {% endif %}
+
+                <div class="d-flex justify-content-end mb-3">
+                  <button type="button" id="exportarPDF" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Exportar a PDF
+                  </button>
+                </div>
+                </a>
+              </div>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
-    {% endif %}
-    
-    <!-- Tabla de resultados -->
-    <div class="row">
-      <div class="col-md-12">
+  </div>
+
+  <!-- Indicadores de filtros activos -->
+  {% if busqueda or fecha_inicio or fecha_fin %}
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="alert alert-info">
+        <h5 class="alert-heading">Filtros activos:</h5>
+        <ul class="mb-0">
+          {% if busqueda %}
+          <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
+          {% endif %}
+          {% if fecha_inicio and fecha_fin %}
+          <li>Rango de fechas: <strong>{{ fecha_inicio }}</strong> hasta <strong>{{ fecha_fin }}</strong></li>
+          {% elif fecha_inicio %}
+          <li>Desde: <strong>{{ fecha_inicio }}</strong></li>
+          {% elif fecha_fin %}
+          <li>Hasta: <strong>{{ fecha_fin }}</strong></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Tabla de resultados -->
+  <div class="row">
+    <div class="col-md-12">
+      <div id="contenido-pdf">
         <div class="tabla_global">
           <table class="tabla_ancha">
             <thead class="thead_custom">
@@ -120,82 +126,255 @@
         </div>
       </div>
     </div>
-    
-    <!-- Contador de resultados -->
-    <div class="row mt-3">
-      <div class="col-md-12">
-        <div class="alert alert-secondary">
-          <strong>Total de salidas activas:</strong> <span id="totalRegistros">{{ total_registros }}</span>
-        </div>
+  </div>
+
+  <!-- Contador de resultados -->
+  <div class="row mt-3">
+    <div class="col-md-12">
+      <div class="alert alert-secondary">
+        <strong>Total de salidas activas:</strong> <span id="totalRegistros">{{ total_registros }}</span>
       </div>
     </div>
   </div>
+</div>
+
+
+<!-- Incluir las bibliotecas html2canvas y jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 
 <!-- Script para formateo de RUT -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const busquedaInput = document.getElementById('busqueda');
-    
+
     // Función para formatear RUT (igual que en formulario_permisos.html)
     function formatearRut(rut) {
-        // Eliminar puntos y guiones
-        let valor = rut.replace(/\./g, '').replace(/-/g, '');
-        
-        // Obtener dígito verificador
-        let dv = valor.slice(-1);
-        
-        // Obtener cuerpo del RUT
-        let rutCuerpo = valor.slice(0, -1);
-        
-        // Formatear RUT con puntos y guión
-        let rutFormateado = '';
-        
-        // Agregar puntos de miles
-        for (let i = rutCuerpo.length; i > 0; i -= 3) {
-            const inicio = Math.max(0, i - 3);
-            rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
-        }
-        
-        // Eliminar el primer punto
-        rutFormateado = rutFormateado.substring(1);
-        
-        // Agregar guión y dígito verificador
-        return rutFormateado + '-' + dv;
+      // Eliminar puntos y guiones
+      let valor = rut.replace(/\./g, '').replace(/-/g, '');
+
+      // Obtener dígito verificador
+      let dv = valor.slice(-1);
+
+      // Obtener cuerpo del RUT
+      let rutCuerpo = valor.slice(0, -1);
+
+      // Formatear RUT con puntos y guión
+      let rutFormateado = '';
+
+      // Agregar puntos de miles
+      for (let i = rutCuerpo.length; i > 0; i -= 3) {
+        const inicio = Math.max(0, i - 3);
+        rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+      }
+
+      // Eliminar el primer punto
+      rutFormateado = rutFormateado.substring(1);
+
+      // Agregar guión y dígito verificador
+      return rutFormateado + '-' + dv;
     }
-    
+
     // Evento para formatear el RUT mientras se escribe
-    busquedaInput.addEventListener('input', function(e) {
-        const valor = this.value.trim();
-        
-        // Si parece ser un RUT (contiene números y posiblemente K/k)
-        if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
-            // Guardar la posición del cursor
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            const valorOriginal = this.value;
-            
-            // Eliminar caracteres no numéricos excepto K/k
-            let valorLimpio = this.value.replace(/[^\dkK]/g, '');
-            
-            // Si hay suficientes caracteres para formatear como RUT
-            if (valorLimpio.length > 1) {
-                // Formatear el valor
-                this.value = formatearRut(valorLimpio);
-                
-                // Calcular nueva posición del cursor
-                const diff = this.value.length - valorOriginal.length;
-                
-                // Restaurar la posición del cursor
-                this.setSelectionRange(start + diff, end + diff);
-            }
+    busquedaInput.addEventListener('input', function (e) {
+      const valor = this.value.trim();
+
+      // Si parece ser un RUT (contiene números y posiblemente K/k)
+      if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
+        // Guardar la posición del cursor
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        const valorOriginal = this.value;
+
+        // Eliminar caracteres no numéricos excepto K/k
+        let valorLimpio = this.value.replace(/[^\dkK]/g, '');
+
+        // Si hay suficientes caracteres para formatear como RUT
+        if (valorLimpio.length > 1) {
+          // Formatear el valor
+          this.value = formatearRut(valorLimpio);
+
+          // Calcular nueva posición del cursor
+          const diff = this.value.length - valorOriginal.length;
+
+          // Restaurar la posición del cursor
+          this.setSelectionRange(start + diff, end + diff);
         }
+      }
     });
-});
+  });
+</script>
+
+<!-- Script para generar PDF -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Botón para exportar a PDF
+    document.getElementById('exportarPDF').addEventListener('click', function() {
+      // Mostrar mensaje de carga
+      const loadingMessage = document.createElement('div');
+      loadingMessage.style.position = 'fixed';
+      loadingMessage.style.top = '0';
+      loadingMessage.style.left = '0';
+      loadingMessage.style.width = '100%';
+      loadingMessage.style.height = '100%';
+      loadingMessage.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      loadingMessage.style.display = 'flex';
+      loadingMessage.style.justifyContent = 'center';
+      loadingMessage.style.alignItems = 'center';
+      loadingMessage.style.zIndex = '9999';
+      loadingMessage.innerHTML = '<div style="background-color: white; padding: 20px; border-radius: 5px;"><h3>Generando PDF, por favor espere...</h3></div>';
+      document.body.appendChild(loadingMessage);
+
+      // Obtener el contenido a convertir
+      const content = document.getElementById('contenido-pdf');
+      
+      // Configurar opciones para html2canvas
+      const options = {
+        scale: 2, // Mayor escala para mejor calidad
+        useCORS: true, // Permitir imágenes de otros dominios
+        logging: false, // Desactivar logs
+        letterRendering: true, // Mejor renderizado de texto
+        allowTaint: true, // Permitir elementos tainted
+      };
+
+      // Convertir el contenido a imagen
+      html2canvas(content, options).then(canvas => {
+        // Crear PDF con jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal para más espacio
+        
+        // Calcular dimensiones para ajustar al PDF
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        // Usar todo el ancho de la página menos márgenes
+        const imgWidth = pageWidth - 20; // 10mm de margen a cada lado
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        // Convertir canvas a imagen
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Cargar imagen del logo
+        const logo = new Image();
+        logo.src = "{% static 'images/logo_ccl.png' %}";
+        logo.onload = function() {
+          // Función para añadir encabezado y pie de página a cada página
+          const addHeaderFooter = function(pageNumber) {
+            // === Encabezado ===
+            // Logo (a la izquierda)
+            pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
+
+            // Título y subtítulo (al lado del logo)
+            pdf.setFontSize(16);
+            pdf.setTextColor(40, 40, 40);
+            pdf.text('Colegio Concepción Linares', 35, 15);
+
+            pdf.setFontSize(12);
+            pdf.text('Reporte de Salidas Activas', 35, 22);
+
+            // Fecha y hora (alineada a la derecha, al mismo nivel que el logo y título)
+            const now = new Date();
+            const fecha = now.toLocaleDateString();
+            const hora = now.toLocaleTimeString();
+            pdf.setFontSize(10);
+            pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });
+            pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
+
+            
+            // === Pie de página ===
+            pdf.setFontSize(10);
+            pdf.setTextColor(100);
+            pdf.text("Sistema de Control de Permisos - Colegio Concepción Linares", 10, pageHeight - 10);
+            pdf.text(`Página ${pageNumber}`, pageWidth - 25, pageHeight - 10);
+          };
+          
+          // Calcular cuántas páginas necesitaremos
+          const totalPages = Math.ceil(imgHeight / (pageHeight - 55)); // 55mm para encabezado y pie de página
+          
+          // Para cada página
+          for (let i = 0; i < totalPages; i++) {
+            // Si no es la primera página, añadir una nueva
+            if (i > 0) {
+              pdf.addPage();
+            }
+            
+            // Añadir encabezado y pie de página
+            addHeaderFooter(i + 1);
+            
+            // Calcular qué parte de la imagen mostrar en esta página
+            const srcY = i * (pageHeight - 55) * canvas.height / imgHeight;
+            const srcHeight = Math.min(canvas.height - srcY, (pageHeight - 55) * canvas.height / imgHeight);
+            
+            // Añadir la parte correspondiente de la imagen (ahora con más espacio para el encabezado)
+            pdf.addImage(
+              imgData, 
+              'PNG', 
+              10, // x
+              45, // y (aumentado para dejar más espacio al encabezado)
+              imgWidth, // ancho (ahora usa todo el ancho disponible)
+              srcHeight * imgWidth / canvas.width, // alto proporcional
+              '', // alias
+              'FAST', // compresión
+              0, // rotación
+              srcY, // srcY - desde dónde empezar a recortar verticalmente
+              canvas.width, // srcWidth - ancho completo
+              srcHeight // srcHeight - altura a recortar
+            );
+          }
+          
+          // Generar nombre de archivo con fecha y hora
+          const timestamp  = new Date();
+          const filename = `salidas_activas_${timestamp.getFullYear()}${String(timestamp.getMonth() + 1).padStart(2, '0')}${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}${String(timestamp.getMinutes()).padStart(2, '0')}${String(timestamp.getSeconds()).padStart(2, '0')}.pdf`;
+          
+          // Descargar el PDF
+          pdf.save(filename);
+          
+          // Quitar mensaje de carga
+          document.body.removeChild(loadingMessage);
+        };
+        
+        // Si hay error al cargar el logo
+        logo.onerror = function() {
+          console.error('Error al cargar el logo');
+          
+          // Título y subtítulo (a la izquierda sin logo)
+          pdf.setFontSize(16);
+          pdf.text('Colegio Concepción Linares', 10, 15);
+          pdf.setFontSize(12);
+          pdf.text('Reporte de Salidas Activas', 10, 22);
+          
+          // Fecha y hora actual (a la derecha)
+          const now = new Date();
+          const fecha = now.toLocaleDateString();
+          const hora = now.toLocaleTimeString();
+          pdf.setFontSize(10);
+          pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });
+          pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
+          
+          
+          // Añadir la imagen del contenido (con espacio para el encabezado)
+          pdf.addImage(imgData, 'PNG', 10, 45, imgWidth, imgHeight);
+          
+          // Generar nombre de archivo con fecha y hora
+          const timestamp  = new Date();
+          const filename = `salidas_activas_${timestamp.getFullYear()}${String(timestamp.getMonth() + 1).padStart(2, '0')}${String(timestamp.getDate()).padStart(2, '0')}_${String(timestamp.getHours()).padStart(2, '0')}${String(timestamp.getMinutes()).padStart(2, '0')}${String(timestamp.getSeconds()).padStart(2, '0')}.pdf`;
+          
+          // Descargar el PDF
+          pdf.save(filename);
+          
+          // Quitar mensaje de carga
+          document.body.removeChild(loadingMessage);
+        };
+      });
+    });
+  });
 </script>
 
 <!-- Estilos adicionales para centrar el contenido de la tabla -->
 <style>
-  .tabla_ancha td, .tabla_ancha th {
+  .tabla_ancha td,
+  .tabla_ancha th {
     text-align: center;
     vertical-align: middle;
   }

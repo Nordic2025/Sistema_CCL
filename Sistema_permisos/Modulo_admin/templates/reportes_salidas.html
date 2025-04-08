@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin-bottom: 5px;
+        }
+        .info {
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ titulo }}</h1>
+        <p>Colegio Concepción Linares</p>
+    </div>
+
+    <div class="info">
+        <p><strong>Fecha de generación:</strong> {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+        <p><strong>Total de registros:</strong> {{ total_registros }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>RUT</th>
+                <th>Nombre</th>
+                <th>Autorizado por</th>
+                <th>Motivo</th>
+                <th>Salida</th>
+                <th>Área</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for salida in salidas %}
+            <tr>
+                <td>{{ salida.codigo_registro }}</td>
+                <td>{{ salida.rut }}</td>
+                <td>{{ salida.nombre }}</td>
+                <td>{{ salida.autorizado_por }}</td>
+                <td>{{ salida.motivo_salida }}</td>
+                <td>{{ salida.hora_salida|date:"d/m/Y H:i" }}</td>
+                <td>{{ salida.area_perteneciente }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No hay salidas activas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Sistema de Control de Permisos - Colegio Concepción Linares</p>
+        <p>Documento generado el {{ fecha_generacion|date:"d/m/Y" }} a las {{ fecha_generacion|time:"H:i" }}</p>
+    </div>
+
+    {% if auto_print %}
+    <script>
+        // Esperar a que la página se cargue completamente
+        window.onload = function() {
+            // Esperar un momento para asegurar que todos los recursos se carguen
+            setTimeout(function() {
+                // Abrir el diálogo de impresión
+                window.print();
+            }, 1000);
+        };
+    </script>
+    {% endif %}
+</body>
+</html>

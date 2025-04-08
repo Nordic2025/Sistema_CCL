@@ -10,6 +10,13 @@ urlpatterns = [
     path('grafico/', views.graficoview, name='grafico'),
     path('historial_permisos/', views.tabla_generalview, name='historial_permisos'),
     path('hsitorial_salidas/', views.tabla_salidasview, name='historial_salidas'),
+   
+    path('exportar_permisos_pdf/', views.exportar_permisos_pdf, name='exportar_permisos_pdf'),
+    path('exportar_salidas_pdf/', views.exportar_salidas_pdf, name='exportar_salidas_pdf'),
+
+    path('exportar-permisos-pdf/', views.exportar_permisos_pdf, name='exportar_permisos_pdf'),
+    path('exportar-salidas-pdf/', views.exportar_salidas_pdf, name='exportar_salidas_pdf'),
+
     path('administrador/', views.administradores_view, name='administradores'),
     path('registrar_administrador/', views.registrar_administrador_view, name='registrar_administrador'),
     path('editar_administrador/<int:id>/', views.editar_administrador_view, name='editar_administrador'),
