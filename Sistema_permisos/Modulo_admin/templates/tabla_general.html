@@ -7,202 +7,206 @@
 
 {% block content %}
 <div class="container main-content">
-    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Permisos completados</h1>  
-    
-    <!-- Filtros combinados (buscador y rango de fechas) -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Filtros</h5>
-                </div>
-                <div class="card-body">
-                    <form id="filtroForm" method="get" action="{% url 'Modulo_admin:historial_permisos' %}" class="row g-3">
-                        <!-- Buscador -->
-                        <div class="col-md-3">
-                            <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
-                            <input type="text" id="busqueda" name="busqueda" class="form-control" 
-                                   placeholder="Nombre o RUT" value="{{ busqueda }}" autocomplete="off">
-                        </div>
-                        
-                        <!-- Rango de fechas -->
-                        <div class="col-md-3">
-                            <label for="fecha_inicio" class="form-label">Fecha inicio:</label>
-                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
-                                   value="{{ fecha_inicio }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="fecha_fin" class="form-label">Fecha fin:</label>
-                            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin"
-                                   value="{{ fecha_fin }}">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <div class="d-grid gap-2 w-100">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search"></i> Buscar
-                                </button>
-                                {% if busqueda or fecha_inicio or fecha_fin %}
-                                <a href="{% url 'Modulo_admin:historial_permisos' %}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> Limpiar filtros
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Permisos completados</h1>
+
+  <!-- Filtros combinados (buscador y rango de fechas) -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Filtros</h5>
         </div>
-    </div>
-    
-    <!-- Indicadores de filtros activos -->
-    {% if busqueda or fecha_inicio or fecha_fin %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="alert alert-info">
-                <h5 class="alert-heading">Filtros activos:</h5>
-                <ul class="mb-0">
-                    {% if busqueda %}
-                        <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
-                    {% endif %}
-                    {% if fecha_inicio and fecha_fin %}
-                        <li>Rango de fechas: <strong>{{ fecha_inicio }}</strong> hasta <strong>{{ fecha_fin }}</strong></li>
-                    {% elif fecha_inicio %}
-                        <li>Desde: <strong>{{ fecha_inicio }}</strong></li>
-                    {% elif fecha_fin %}
-                        <li>Hasta: <strong>{{ fecha_fin }}</strong></li>
-                    {% endif %}
-                </ul>
+        <div class="card-body">
+          <form id="filtroForm" method="get" action="{% url 'Modulo_admin:historial_permisos' %}" class="row g-3">
+            <!-- Buscador -->
+            <div class="col-md-3">
+              <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
+              <input type="text" id="busqueda" name="busqueda" class="form-control" placeholder="Nombre o RUT"
+                value="{{ busqueda }}" autocomplete="off">
             </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Tabla de resultados -->
-    <div class="row">
-      <div class="col-md-12">
-        <div class="tabla_global">
-          <table class="tabla_ancha">
-            <thead class="thead_custom">
-              <tr>
-                <th class="text-center">Código de registro</th>
-                <th class="text-center">RUT</th>
-                <th class="text-center">Nombre</th>
-                <th class="text-center">Autorizado por</th>
-                <th class="text-center">Motivo</th>
-                <th class="text-center">Fecha y hora de salida</th>
-                <th class="text-center">Fecha y hora de regreso</th>
-                <th class="text-center">Área perteneciente</th>
-                <th class="text-center">Duración</th>
-              </tr>
-            </thead>
-            <tbody class="tbody_custom" id="resultadosTabla">
-              {% for permiso in permisos %}
-              <tr>
-                <td class="text-center">{{permiso.codigo_registro}}</td>
-                <td class="text-center">{{permiso.rut}}</td>
-                <td class="text-center">{{permiso.nombre}}</td>
-                <td class="text-center">{{permiso.autorizado_por}}</td>
-                <td class="text-center">{{permiso.motivo_salida}}</td>
-                <td class="text-center">{{permiso.hora_salida|date:"d/m/Y H:i:s"}}</td>
-                <td class="text-center">{{permiso.hora_regreso|date:"d/m/Y H:i:s"}}</td>
-                <td class="text-center">{{permiso.area_perteneciente}}</td>
-                <td class="text-center">{{permiso.duracion|duration_seconds}}</td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="9" class="text-center py-3">
-                  <div class="alert alert-info mb-0">
-                    No hay permisos registrados para los criterios seleccionados.
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+
+            <!-- Rango de fechas -->
+            <div class="col-md-3">
+              <label for="fecha_inicio" class="form-label">Fecha inicio:</label>
+              <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}">
+            </div>
+            <div class="col-md-3">
+              <label for="fecha_fin" class="form-label">Fecha fin:</label>
+              <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="d-grid gap-2 w-100">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-search"></i> Buscar
+                </button>
+                {% if busqueda or fecha_inicio or fecha_fin %}
+                <a href="{% url 'Modulo_admin:historial_permisos' %}" class="btn btn-outline-secondary">
+                  <i class="fas fa-times"></i> Limpiar filtros
+                </a>
+                {% endif %}
+                <!-- EXPORTAR A PDF -->
+                <div class="d-flex justify-content-end mb-3">
+                  <a href="{% url 'Modulo_admin:exportar_permisos_pdf' %}" class="btn btn-danger">
+                    <i class="fas fa-file-pdf"></i> Exportar a PDF
+                  </a>
+                </div>
+              </div>
+          </form>
         </div>
       </div>
     </div>
-    
-    <!-- Contador de resultados -->
-    <div class="row mt-3">
-      <div class="col-md-12">
-        <div class="alert alert-secondary">
-          <strong>Total de registros:</strong> <span id="totalRegistros">{{ total_registros }}</span>
-        </div>
+  </div>
+
+  <!-- Indicadores de filtros activos -->
+  {% if busqueda or fecha_inicio or fecha_fin %}
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="alert alert-info">
+        <h5 class="alert-heading">Filtros activos:</h5>
+        <ul class="mb-0">
+          {% if busqueda %}
+          <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
+          {% endif %}
+          {% if fecha_inicio and fecha_fin %}
+          <li>Rango de fechas: <strong>{{ fecha_inicio }}</strong> hasta <strong>{{ fecha_fin }}</strong></li>
+          {% elif fecha_inicio %}
+          <li>Desde: <strong>{{ fecha_inicio }}</strong></li>
+          {% elif fecha_fin %}
+          <li>Hasta: <strong>{{ fecha_fin }}</strong></li>
+          {% endif %}
+        </ul>
       </div>
     </div>
-    
-<!-- Script para formateo de RUT -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const busquedaInput = document.getElementById('busqueda');
-    const fechaInicioInput = document.getElementById('fecha_inicio');
-    const fechaFinInput = document.getElementById('fecha_fin');
-    
-    // Función para formatear RUT (igual que en formulario_permisos.html)
-    function formatearRut(rut) {
+  </div>
+  {% endif %}
+
+  <!-- Tabla de resultados -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="tabla_global">
+        <table class="tabla_ancha">
+          <thead class="thead_custom">
+            <tr>
+              <th class="text-center">Código de registro</th>
+              <th class="text-center">RUT</th>
+              <th class="text-center">Nombre</th>
+              <th class="text-center">Autorizado por</th>
+              <th class="text-center">Motivo</th>
+              <th class="text-center">Fecha y hora de salida</th>
+              <th class="text-center">Fecha y hora de regreso</th>
+              <th class="text-center">Área perteneciente</th>
+              <th class="text-center">Duración</th>
+            </tr>
+          </thead>
+          <tbody class="tbody_custom" id="resultadosTabla">
+            {% for permiso in permisos %}
+            <tr>
+              <td class="text-center">{{permiso.codigo_registro}}</td>
+              <td class="text-center">{{permiso.rut}}</td>
+              <td class="text-center">{{permiso.nombre}}</td>
+              <td class="text-center">{{permiso.autorizado_por}}</td>
+              <td class="text-center">{{permiso.motivo_salida}}</td>
+              <td class="text-center">{{permiso.hora_salida|date:"d/m/Y H:i:s"}}</td>
+              <td class="text-center">{{permiso.hora_regreso|date:"d/m/Y H:i:s"}}</td>
+              <td class="text-center">{{permiso.area_perteneciente}}</td>
+              <td class="text-center">{{permiso.duracion|duration_seconds}}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" class="text-center py-3">
+                <div class="alert alert-info mb-0">
+                  No hay permisos registrados para los criterios seleccionados.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contador de resultados -->
+  <div class="row mt-3">
+    <div class="col-md-12">
+      <div class="alert alert-secondary">
+        <strong>Total de registros:</strong> <span id="totalRegistros">{{ total_registros }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script para formateo de RUT -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const busquedaInput = document.getElementById('busqueda');
+      const fechaInicioInput = document.getElementById('fecha_inicio');
+      const fechaFinInput = document.getElementById('fecha_fin');
+
+      // Función para formatear RUT (igual que en formulario_permisos.html)
+      function formatearRut(rut) {
         // Eliminar puntos y guiones
         let valor = rut.replace(/\./g, '').replace(/-/g, '');
-        
+
         // Obtener dígito verificador
         let dv = valor.slice(-1);
-        
+
         // Obtener cuerpo del RUT
         let rutCuerpo = valor.slice(0, -1);
-        
+
         // Formatear RUT con puntos y guión
         let rutFormateado = '';
-        
+
         // Agregar puntos de miles
         for (let i = rutCuerpo.length; i > 0; i -= 3) {
-            const inicio = Math.max(0, i - 3);
-            rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+          const inicio = Math.max(0, i - 3);
+          rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
         }
-        
+
         // Eliminar el primer punto
         rutFormateado = rutFormateado.substring(1);
-        
+
         // Agregar guión y dígito verificador
         return rutFormateado + '-' + dv;
-    }
-    
-    // Evento para formatear el RUT mientras se escribe
-    busquedaInput.addEventListener('input', function(e) {
+      }
+
+      // Evento para formatear el RUT mientras se escribe
+      busquedaInput.addEventListener('input', function (e) {
         const valor = this.value.trim();
-        
+
         // Si parece ser un RUT (contiene números y posiblemente K/k)
         if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
-            // Guardar la posición del cursor
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            const valorOriginal = this.value;
-            
-            // Eliminar caracteres no numéricos excepto K/k
-            let valorLimpio = this.value.replace(/[^\dkK]/g, '');
-            
-            // Si hay suficientes caracteres para formatear como RUT
-            if (valorLimpio.length > 1) {
-                // Formatear el valor
-                this.value = formatearRut(valorLimpio);
-                
-                // Calcular nueva posición del cursor
-                const diff = this.value.length - valorOriginal.length;
-                
-                // Restaurar la posición del cursor
-                this.setSelectionRange(start + diff, end + diff);
-            }
-        }
-    });
-    
-    // Ya no aplicamos búsqueda automática - ahora se usa el botón de buscar
-});
-</script>
+          // Guardar la posición del cursor
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          const valorOriginal = this.value;
 
-<!-- Estilos adicionales para centrar el contenido de la tabla -->
-<style>
-  .tabla_ancha td, .tabla_ancha th {
-    text-align: center;
-    vertical-align: middle;
-  }
-</style>
-{% endblock %}
+          // Eliminar caracteres no numéricos excepto K/k
+          let valorLimpio = this.value.replace(/[^\dkK]/g, '');
+
+          // Si hay suficientes caracteres para formatear como RUT
+          if (valorLimpio.length > 1) {
+            // Formatear el valor
+            this.value = formatearRut(valorLimpio);
+
+            // Calcular nueva posición del cursor
+            const diff = this.value.length - valorOriginal.length;
+
+            // Restaurar la posición del cursor
+            this.setSelectionRange(start + diff, end + diff);
+          }
+        }
+      });
+
+      // Ya no aplicamos búsqueda automática - ahora se usa el botón de buscar
+    });
+  </script>
+
+  <!-- Estilos adicionales para centrar el contenido de la tabla -->
+  <style>
+    .tabla_ancha td,
+    .tabla_ancha th {
+      text-align: center;
+      vertical-align: middle;
+    }
+  </style>
+  {% endblock %}
