@@ -1,20 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import AdministradorForm, AreasForm
 from .models import Administrador, Areas
 from Modulo_funcionarios.models import RegistroSalida
-from datetime import timedelta, datetime
+from datetime import datetime
 from django.utils import timezone
-<<<<<<< HEAD
-from django.db.models import Q, F, ExpressionWrapper, DurationField
-from django.db.models import Count
-from django.db.models.functions import TruncMonth
-from datetime import date
-import calendar
 from django.db.models import Q
-from django.http import HttpResponse
+
+
 
 
 # Create your views here.

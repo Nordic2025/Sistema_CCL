@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-wmgg429$yb_e4tl@1-d&c+!w8%^o4%r^3q#3uqz!-0vjtz7_g=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.10.11.47','192.168.112.67', '192.168.25.233', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['10.10.10.37','10.10.11.47','192.168.124.233', '192.168.25.233', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Sistema_permisos.bloquear_ip.BloquearIPMiddleware',
 ]
 
 LOGIN_REDIRECT_URL = 'grafico'

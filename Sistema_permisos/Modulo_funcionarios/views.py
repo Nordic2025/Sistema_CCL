@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect
 from .models import RegistroSalida
 from .forms import Modulo_funcionariosForm  
-from django.utils.timezone import now
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from django.http import HttpResponse
 from Modulo_admin.models import Areas
 
 

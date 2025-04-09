@@ -6,19 +6,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="btn_principal">
-    <div class="btn_container">
+<div class= "{{clase_ip}}">
 
-        <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn_funcionarios" style="text-decoration: none; color: white; ">
-            Funcionarios
-        </a>
-    </div>
-    <div class="btn_container">
-
-        <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn_apoderados" style="text-decoration: none; color: white; " disabled>
-            Apoderados
-        </a>
-        <span class="a_principal">Próximamente</span>
-    </div>
+    <div class="btn_grid">
+        <!-- BOTÓN FUNCIONARIOS -->
+        <div class="btn_container">
+          <div class="btn_principal">
+            <a href="{% url 'Modulo_funcionarios:ingreso_salida' %}" class="btn btn_funcionarios" style="text-decoration: none; color: white; width: 400px; ">
+                Funcionarios
+            </a>
+          </div>
+          <div class="a_principal_placeholder"></div> <!-- espacio vacío para que coincida con el de Apoderados -->
+        </div>
+      
+        <!-- BOTÓN APODERADOS -->
+        <div class="btn_container">
+          <div class="btn_principal">
+            <a class="btn btn_apoderados " style="width: 400px; ">Apoderados</a>
+          </div>
+          <a class="a_principal">Próximamente</a>
+        </div>
+      </div>
+      
 </div>
+
 {% endblock %}

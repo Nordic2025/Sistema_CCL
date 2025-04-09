@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 {% load static%}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,11 +22,13 @@
     <header class="encabezado_principal">
         <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
         <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
+        {% if ip_cliente != '10.10.10.67'%}
         <div class="btn_login">
             <a href="{% url 'Modulo_admin:admin' %}" >
                 <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
-            </a>
+            </a>    
         </div>
+        {% endif %}
     </header>
     
     <main class="contenido">
@@ -44,6 +48,7 @@
         {% endfor %}
 
     {% endif %}
+
 
 </body>
 </html>
