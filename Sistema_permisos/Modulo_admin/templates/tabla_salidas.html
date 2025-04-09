@@ -110,7 +110,13 @@
                 <td class="text-center">{{salida.motivo_salida}}</td>
                 <td class="text-center">{{salida.hora_salida|date:"d/m/Y H:i:s"}}</td>
                 <td class="text-center">{{salida.area_perteneciente}}</td>
-                <td class="text-center">{{salida.tiempo_transcurrido|duration_seconds}}</td>
+                <td class="text-center">
+                  {% if salida.tiempo_transcurrido == "Regreso no registrado" %}
+                    <span class="badge bg-danger">Regreso no registrado</span>
+                  {% else %}
+                    {{salida.tiempo_transcurrido|duration_seconds}}
+                  {% endif %}
+                </td>
               </tr>
               {% empty %}
               <tr>

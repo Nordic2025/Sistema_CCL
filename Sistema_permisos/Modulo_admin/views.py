@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import AdministradorForm, AreasForm
 from .models import Administrador, Areas
 from Modulo_funcionarios.models import RegistroSalida
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 
@@ -189,8 +189,16 @@ def tabla_salidasview(request):
     
     # Calcular el tiempo transcurrido para cada salida
     ahora = timezone.now()
+    limite_24_horas = timedelta(hours=24)
+    
     for salida in salidas:
-        salida.tiempo_transcurrido = ahora - salida.hora_salida
+        tiempo_transcurrido = ahora - salida.hora_salida
+        
+        # Si han pasado más de 24 horas, mostrar "Regreso no registrado"
+        if tiempo_transcurrido > limite_24_horas:
+            salida.tiempo_transcurrido = "Regreso no registrado"
+        else:
+            salida.tiempo_transcurrido = tiempo_transcurrido
     
     # Ordenar por hora de salida (más reciente primero)
     salidas = sorted(salidas, key=lambda x: x.hora_salida, reverse=True)

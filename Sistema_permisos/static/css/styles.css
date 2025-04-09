@@ -1,3 +1,18 @@
+/*Fonts*/
+* {
+    font-family: Arial !important;
+}
+
+/* O alternativamente, modificar la regla body existente */
+body {
+    margin: 0;
+    margin-bottom: 40px;
+    font-family: Arial;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+
 html {
     min-height: 100%;
     position: relative;
