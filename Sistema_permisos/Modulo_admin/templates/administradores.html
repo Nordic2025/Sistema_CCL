@@ -9,10 +9,11 @@
     <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Administrador</h1>  
     
     {% if user.is_staff %}
-    <!-- Solo mostrar el botón de agregar si el usuario es staff -->
     <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAdministradorModal">
       Registrar nuevo administrador
     </button>
+    {% else %}
+    <small class="form-text text-muted">Si olvido su contraseña, dirijase a Área de Informatica.</small>
     {% endif %}
     
     <div class="row">
@@ -44,9 +45,11 @@
                     Editar
                   </button>
                   {% if administrador.user %}
-                    <a href="{% url 'Modulo_admin:cambiar_contraseña' administrador.id %}" class="btn btn-outline-primary">
-                      Cambiar Contraseña
-                    </a>
+                  <button type="button" class="btn btn_primary btn-outline-primary" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#cambiarContraseñaModal{{ administrador.id }}">
+                    Cambiar Contraseña
+                  </button>
                   {% endif %}
                   <button type="button" class="btn btn_eliminar btn-outline-danger" 
                           onclick="confirmarEliminacion('{{ administrador.id }}', '{{ administrador.nombre }}')">
@@ -92,7 +95,59 @@
                 </div>
               </div>
               {% endif %}
-              
+
+              <!-- Modal para Cambiar Contraseña - solo visible para staff -->
+              {% if user.is_staff %}
+              <div class="modal fade" id="cambiarContraseñaModal{{ administrador.id }}" tabindex="-1" aria-labelledby="cambiarContraseñaModal{{ administrador.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="cambiarContraseñaModalLabel{{ administrador.id }}">Cambiar Contraseña | {{ administrador.nombre }} </h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="card-body">
+                        <form method="POST" action="{% url 'Modulo_admin:cambiar_contraseña' administrador.id %}" class="adminForm">
+                          {% csrf_token %}
+                          
+                          <div class="mb-3">
+                            <label for="password1_{{ administrador.id }}" class="form-label">Nueva contraseña</label>
+                            <input type="password" class="form-control" id="password1_{{ administrador.id }}" name="password1" required>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                              <div class="text-danger">
+                                {% for error in form.password1.errors %}
+                                  {{ error }}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                          
+                          <div class="mb-3">
+                            <label for="password2_{{ administrador.id }}" class="form-label">Confirmar nueva contraseña</label>
+                            <input type="password" class="form-control" id="password2_{{ administrador.id }}" name="password2" required>
+                            {{ form.password1 }}
+                            {% if form.password2.errors %}
+                              <div class="text-danger">
+                                {% for error in form.password2.errors %}
+                                  {{ error }}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                          
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar Contraseña</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif%}
+
               {% empty %}
               <tr>
                 <td colspan="{% if user.is_staff %}4{% else %}3{% endif %}">No hay administradores registrados.</td>
@@ -104,6 +159,11 @@
       </div>
     </div>
   </div>
+
+
+
+
+ 
   
   {% if user.is_staff %}
   <!-- Modal para Agregar Administrador - solo visible para staff -->
@@ -154,6 +214,8 @@
     </div>
   </div>
   {% endif %}
+
+
   
   <!-- Script para SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -198,6 +260,25 @@
             }
         });
     });
+
+    // Validación de formularios de cambio de contraseña
+    const passwordForms = document.querySelectorAll('.passwordForm');
+      passwordForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const password1 = form.querySelector('input[name="password1"]');
+            const password2 = form.querySelector('input[name="password2"]');
+                
+            if (password1.value !== password2.value) {
+              e.preventDefault();
+                Swal.fire({
+                  title: 'Error',
+                  text: 'Las contraseñas no coinciden',
+                  icon: 'error',
+                  confirmButtonText: 'Entendido'
+                });
+            }
+          });
+      });
   </script>
 
   <script>

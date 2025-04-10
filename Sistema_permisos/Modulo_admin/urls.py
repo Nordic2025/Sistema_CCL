@@ -28,7 +28,7 @@ urlpatterns = [
     path('historial_salidas/', views.tabla_salidasview, name='historial_salidas'),
 
 
-    path('cambiar-contraseña/<int:id>/', views.cambiar_password_view, name='cambiar_contraseña'),
+    path('cambiar_contraseña/<int:id>/', views.cambiar_password_view, name='cambiar_contraseña'),
 
 ]
 

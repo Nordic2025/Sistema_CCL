@@ -320,6 +320,7 @@ def editar_administrador_view(request, id):
     
     return render(request, 'administrador.html', {'form': form, 'is_edit': True})
 
+
 @login_required(login_url='Modulo_admin:login_admin')
 @staff_required
 def cambiar_password_view(request, id):
@@ -340,7 +341,7 @@ def cambiar_password_view(request, id):
     else:
         form = CambiarPasswordForm()
     
-    return render(request, 'cambiar_contraseña.html', {'form': form, 'administrador': administrador})
+    return render(request, 'administrador.html ', {'form': form, 'administrador': administrador})
 
 
 

@@ -75,7 +75,7 @@ body {
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
 }
 
-/* Icono de usuario */
+/* Icono de usuario y Nombre */
 .user_icon {
     width: 40px;
     height: 40px;
@@ -85,10 +85,18 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.user_icon:hover {
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.user-display {
+    font-weight: 600;
+    margin-right: 10px;
+    color: #333;
+    transition: all 0.3s ease;
 }
+
+.nav-link:hover .user-display {
+    color: white;
+}
+
+
 
 .h1_global {
     margin: 0;
@@ -425,7 +433,7 @@ body.menu-open .container {
 .card_body_login {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 10px;
 }
 
 .Login_input {

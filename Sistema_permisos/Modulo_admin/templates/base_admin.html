@@ -34,6 +34,7 @@
         <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
         <li class="nav-item dropdown no">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="user-display">{{ user.first_name }} {{ user.last_name }}</span>
                 <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
             </a>
             <ul class="dropdown-menu">
@@ -42,12 +43,8 @@
                         {% csrf_token %}
                         <button class="dropdown-item text-danger" type="submit">Cerrar sesión</button>
                     </form>
-                    
                 </li>
             </ul>
-            <form id="logout-form" action="#" method="post" style="display: none;">
-                <input type="hidden" name="csrfmiddlewaretoken" value="Yr4L9QJLDYn0EBe7X4uxOaiAgtQXorQXtUzBJQSJrmQLVgFVsnJ0PSSDHddzEizn">
-            </form>
         </li>
     </header>
 
