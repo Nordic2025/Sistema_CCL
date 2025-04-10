@@ -7,9 +7,14 @@
 {% block content %}
 <div class="container main-content">
     <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Administrador</h1>  
+    
+    {% if user.is_staff %}
+    <!-- Solo mostrar el botón de agregar si el usuario es staff -->
     <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAdministradorModal">
       Registrar nuevo administrador
     </button>
+    {% endif %}
+    
     <div class="row">
       <div class="col-md-12">
         <div class="tabla_global">
@@ -20,7 +25,9 @@
                 <th>RUT</th>
                 <th>Nombre</th>
                 <th>Área</th>
+                {% if user.is_staff %}
                 <th>Acciones</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody class="tbody_custom">
@@ -29,6 +36,7 @@
                 <td>{{ administrador.rut }}</td>
                 <td>{{ administrador.nombre }}</td>
                 <td>{{ administrador.area }}</td>
+                {% if user.is_staff %}
                 <td>
                   <button type="button" class="btn btn_editar btn-outline-warning" 
                           data-bs-toggle="modal" 
@@ -45,9 +53,11 @@
                     Eliminar
                   </button>
                 </td>
+                {% endif %}
               </tr>
               
-              <!-- Modal para Editar Administrador -->
+              {% if user.is_staff %}
+              <!-- Modal para Editar Administrador - solo visible para staff -->
               <div class="modal fade" id="editarAdministradorModal{{ administrador.id }}" tabindex="-1" aria-labelledby="editarAdministradorModalLabel{{ administrador.id }}" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
@@ -81,9 +91,11 @@
                   </div>
                 </div>
               </div>
+              {% endif %}
+              
               {% empty %}
               <tr>
-                <td colspan="4">No hay administradores registrados.</td>
+                <td colspan="{% if user.is_staff %}4{% else %}3{% endif %}">No hay administradores registrados.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -93,7 +105,8 @@
     </div>
   </div>
   
-  <!-- Modal para Agregar Administrador -->
+  {% if user.is_staff %}
+  <!-- Modal para Agregar Administrador - solo visible para staff -->
   <div class="modal fade" id="agregarAdministradorModal" tabindex="-1" aria-labelledby="agregarAdministradorModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -140,6 +153,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
   
   <!-- Script para SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -164,12 +178,12 @@
       });
     }
     
-        
-      // Validación al enviar los formularios
-      const adminForms = document.querySelectorAll('.adminForm');
-        adminForms.forEach(function(form) {
-            form.addEventListener('submit', function (e) {
-                const rutInput = this.querySelector('.rut-input');
+    // Validación al enviar los formularios
+    const adminForms = document.querySelectorAll('.adminForm');
+    adminForms.forEach(function(form) {
+        form.addEventListener('submit', function (e) {
+            const rutInput = this.querySelector('.rut-input');
+            if (rutInput) {
                 const rutValue = rutInput.value;
                 
                 if (!validarRut(rutValue)) {
@@ -181,8 +195,9 @@
                         confirmButtonText: 'Entendido'
                     });
                 }
-            });
+            }
         });
+    });
   </script>
 
   <script>

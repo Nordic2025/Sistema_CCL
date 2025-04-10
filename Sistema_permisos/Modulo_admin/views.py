@@ -9,9 +9,18 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User
+from functools import wraps
 
 
-
+# Decorador para verificar si el usuario es staff
+def staff_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, 'No tienes permisos para realizar esta acción')
+            return redirect('Modulo_admin:administradores')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 # Create your views here.
 def loginadmin_view(request):
@@ -238,6 +247,7 @@ def administradores_view(request):
 
 #Agregar administrador
 @login_required(login_url='Modulo_admin:login_admin')
+@staff_required
 def registrar_administrador_view(request):
     if request.method == 'POST':
         form = AdministradorForm(request.POST)
@@ -278,8 +288,8 @@ def registrar_administrador_view(request):
     
     return render(request, 'administrador.html', {'form': form})
 
-
 @login_required(login_url='Modulo_admin:login_admin')
+@staff_required
 def editar_administrador_view(request, id):
     administrador = get_object_or_404(Administrador, id=id)
     
@@ -310,8 +320,8 @@ def editar_administrador_view(request, id):
     
     return render(request, 'administrador.html', {'form': form, 'is_edit': True})
 
-
 @login_required(login_url='Modulo_admin:login_admin')
+@staff_required
 def cambiar_password_view(request, id):
     administrador = get_object_or_404(Administrador, id=id)
     
@@ -337,6 +347,7 @@ def cambiar_password_view(request, id):
 
 #Eliminar administrador
 @login_required(login_url='Modulo_admin:login_admin')
+@staff_required
 def eliminar_administrador_view(request, id):
     administrador = get_object_or_404(Administrador, id=id)
     
