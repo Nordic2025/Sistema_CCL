@@ -37,7 +37,7 @@
                 <span class="user-display">{{ user.first_name }} {{ user.last_name }}</span>
                 <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
             </a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu" style="width:100%; text-align: center; font-size: 18px;">
                 <li>
                     <form method="POST" action="{% url 'Modulo_admin:logout_admin' %}">
                         {% csrf_token %}

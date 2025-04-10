@@ -8,7 +8,7 @@
 <div class="container main-content">
     <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Administrador</h1>  
     
-    {% if user.is_staff %}
+    {% if user.is_superuser %}
     <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAdministradorModal">
       Registrar nuevo administrador
     </button>
@@ -26,7 +26,7 @@
                 <th>RUT</th>
                 <th>Nombre</th>
                 <th>Área</th>
-                {% if user.is_staff %}
+                {% if user.is_superuser %}
                 <th>Acciones</th>
                 {% endif %}
               </tr>
@@ -37,7 +37,7 @@
                 <td>{{ administrador.rut }}</td>
                 <td>{{ administrador.nombre }}</td>
                 <td>{{ administrador.area }}</td>
-                {% if user.is_staff %}
+                {% if user.is_superuser %}
                 <td>
                   <button type="button" class="btn btn_editar btn-outline-warning" 
                           data-bs-toggle="modal" 
@@ -59,7 +59,7 @@
                 {% endif %}
               </tr>
               
-              {% if user.is_staff %}
+              {% if user.is_superuser %}
               <!-- Modal para Editar Administrador - solo visible para staff -->
               <div class="modal fade" id="editarAdministradorModal{{ administrador.id }}" tabindex="-1" aria-labelledby="editarAdministradorModalLabel{{ administrador.id }}" aria-hidden="true">
                 <div class="modal-dialog">
@@ -73,7 +73,7 @@
                         {% csrf_token %}
                         <div class="mb-3">
                           <label for="rut{{ administrador.id }}" class="form-label">RUT</label>
-                          <input type="text" class="form-control" id="rut{{ administrador.id }}" name="rut" value="{{ administrador.rut }}" readonly>
+                          <input type="text" class="form-control rut-input" id="rut{{ administrador.id }}" name="rut" value="{{ administrador.rut }}" readonly>
                           <small class="form-text text-muted">El RUT no se puede modificar ya que se usa para iniciar sesión.</small>
                         </div>
                         <div class="mb-3">
@@ -84,6 +84,15 @@
                           <label for="area{{ administrador.id }}" class="form-label">Área</label>
                           <input type="text" class="form-control" id="area{{ administrador.id }}" name="area" value="{{ administrador.area }}">
                         </div>
+                        
+                        <!-- Checkbox para superusuario -->
+                        {% if administrador.user %}
+                        <div class="mb-3 form-check">
+                          <input type="checkbox" class="form-check-input" id="is_superuser{{ administrador.id }}" name="is_superuser" {% if administrador.user.is_superuser %}checked{% endif %}>
+                          <label class="form-check-label" for="is_superuser{{ administrador.id }}">Es superusuario</label>
+                          <small class="form-text text-muted d-block">Los superusuarios tienen acceso completo al sistema y al panel de administración.</small>
+                        </div>
+                        {% endif %}
                         
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -165,7 +174,7 @@
 
  
   
-  {% if user.is_staff %}
+  {% if user.is_superuser %}
   <!-- Modal para Agregar Administrador - solo visible para staff -->
   <div class="modal fade" id="agregarAdministradorModal" tabindex="-1" aria-labelledby="agregarAdministradorModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -202,6 +211,13 @@
             <div class="mb-3">
               <label for="password2" class="form-label">Confirmar contraseña</label>
               <input type="password" class="form-control" id="password2" name="password2" required>
+            </div>
+            
+            <!-- Checkbox para superusuario -->
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="is_superuser" name="is_superuser">
+              <label class="form-check-label" for="is_superuser">Es superusuario</label>
+              <small class="form-text text-muted d-block">Los superusuarios tienen acceso completo al sistema y al panel de administración.</small>
             </div>
             
             <div class="modal-footer">

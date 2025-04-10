@@ -10,13 +10,14 @@ from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User
 from functools import wraps
+from django.db import transaction
 
 
 # Decorador para verificar si el usuario es staff
 def staff_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
-        if not request.user.is_staff:
+        if not request.user.is_superuser:
             messages.error(request, 'No tienes permisos para realizar esta acción')
             return redirect('Modulo_admin:administradores')
         return view_func(request, *args, **kwargs)
@@ -257,6 +258,7 @@ def registrar_administrador_view(request):
             nombre = form.cleaned_data['nombre']
             area = form.cleaned_data['area']
             password = form.cleaned_data['password1']
+            is_superuser = request.POST.get('is_superuser') == 'on'
             
             # Crear el usuario de Django
             try:
@@ -265,6 +267,11 @@ def registrar_administrador_view(request):
                     password=password,
                     first_name=nombre
                 )
+                
+                # Establecer permisos de superusuario si se marcó el checkbox
+                user.is_staff = True  # Todos los administradores son staff
+                user.is_superuser = is_superuser
+                user.save()
                 
                 # Guardar el administrador sin commit para asignar el usuario
                 administrador = form.save(commit=False)
@@ -288,6 +295,7 @@ def registrar_administrador_view(request):
     
     return render(request, 'administrador.html', {'form': form})
 
+
 @login_required(login_url='Modulo_admin:login_admin')
 @staff_required
 def editar_administrador_view(request, id):
@@ -298,10 +306,14 @@ def editar_administrador_view(request, id):
         if form.is_valid():
             # Actualizar el administrador
             admin = form.save(commit=False)
+            
+            # Verificar si se marcó el checkbox de superusuario
+            is_superuser = request.POST.get('is_superuser') == 'on'
         
             if admin.user:
                 # Actualizar usuario existente
                 admin.user.first_name = form.cleaned_data['nombre']
+                admin.user.is_superuser = is_superuser
                 admin.user.save()
             else:
                 # Crear nuevo usuario con contraseña temporal
@@ -310,6 +322,9 @@ def editar_administrador_view(request, id):
                     password='temporal123',  # Contraseña temporal
                     first_name=form.cleaned_data['nombre']
                 )
+                user.is_staff = True
+                user.is_superuser = is_superuser
+                user.save()
                 admin.user = user
             
             admin.save()
