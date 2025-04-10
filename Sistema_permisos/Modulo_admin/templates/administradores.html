@@ -35,6 +35,11 @@
                           data-bs-target="#editarAdministradorModal{{ administrador.id }}">
                     Editar
                   </button>
+                  {% if administrador.user %}
+                    <a href="{% url 'Modulo_admin:cambiar_contraseña' administrador.id %}" class="btn btn-outline-primary">
+                      Cambiar Contraseña
+                    </a>
+                  {% endif %}
                   <button type="button" class="btn btn_eliminar btn-outline-danger" 
                           onclick="confirmarEliminacion('{{ administrador.id }}', '{{ administrador.nombre }}')">
                     Eliminar
@@ -55,17 +60,18 @@
                         {% csrf_token %}
                         <div class="mb-3">
                           <label for="rut{{ administrador.id }}" class="form-label">RUT</label>
-                          <input type="text" class="form-control rut-input" id="rut{{ administrador.id }}" name="rut" value="{{ administrador.rut }}" maxlength="12" required>
-                          <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+                          <input type="text" class="form-control" id="rut{{ administrador.id }}" name="rut" value="{{ administrador.rut }}" readonly>
+                          <small class="form-text text-muted">El RUT no se puede modificar ya que se usa para iniciar sesión.</small>
                         </div>
                         <div class="mb-3">
-                          <label for="nombre{{ administrador.id }}" class="form-label">Nombre</label>
+                          <label for="nombre{{ administrador.id }}" class="form-label">Nombre Completo</label>
                           <input type="text" class="form-control" id="nombre{{ administrador.id }}" name="nombre" value="{{ administrador.nombre }}">
                         </div>
                         <div class="mb-3">
                           <label for="area{{ administrador.id }}" class="form-label">Área</label>
                           <input type="text" class="form-control" id="area{{ administrador.id }}" name="area" value="{{ administrador.area }}">
                         </div>
+                        
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                           <button type="submit" class="btn btn-primary">Guardar Cambios</button>
@@ -100,17 +106,31 @@
             {% csrf_token %}
             <div class="mb-3">
               <label for="rut" class="form-label">RUT</label>
-              <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" maxlength="12" required>
-              <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+              <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required>
+              <small class="form-text text-muted">Este RUT será utilizado para iniciar sesión en el sistema.</small>
             </div>
             <div class="mb-3">
-              <label for="nombre" class="form-label">Nombre</label>
+              <label for="nombre" class="form-label">Nombre Completo</label>
               <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre completo" required>
             </div>
             <div class="mb-3">
               <label for="area" class="form-label">Área</label>
               <input type="text" class="form-control" id="area" name="area" placeholder="Área de trabajo" required>
             </div>
+            
+            <!-- Campos para contraseña -->
+            <hr>
+            <h5>Datos de acceso al sistema</h5>
+            
+            <div class="mb-3">
+              <label for="password1" class="form-label">Contraseña</label>
+              <input type="password" class="form-control" id="password1" name="password1" required>
+            </div>
+            <div class="mb-3">
+              <label for="password2" class="form-label">Confirmar contraseña</label>
+              <input type="password" class="form-control" id="password2" name="password2" required>
+            </div>
+            
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
               <button type="submit" class="btn btn-primary">Guardar Administrador</button>
@@ -144,46 +164,9 @@
       });
     }
     
-    // Formateo y validación de RUT
-    document.addEventListener('DOMContentLoaded', function () {
-        // Aplicar a todos los campos de RUT
-        const rutInputs = document.querySelectorAll('.rut-input');
         
-        rutInputs.forEach(function(rutInput) {
-            // Formateo automático del RUT mientras se escribe
-            rutInput.addEventListener('input', function () {
-                // Eliminar todos los caracteres no numéricos y 'k'/'K'
-                let valor = this.value.replace(/[^0-9kK]/g, '');
-                
-                // Convertir 'k' a mayúscula
-                valor = valor.toUpperCase();
-                
-                // Aplicar formato XX.XXX.XXX-X
-                let formateado = '';
-                
-                if (valor.length > 1) {
-                    // Separar cuerpo y dígito verificador
-                    let cuerpo = valor.slice(0, -1);
-                    let dv = valor.slice(-1);
-                    
-                    // Formatear el cuerpo con puntos
-                    while (cuerpo.length > 3) {
-                        formateado = '.' + cuerpo.slice(-3) + formateado;
-                        cuerpo = cuerpo.slice(0, -3);
-                    }
-                    
-                    // Agregar el resto del cuerpo y el dígito verificador
-                    formateado = cuerpo + formateado + '-' + dv;
-                    this.value = formateado;
-                } else {
-                    this.value = valor;
-                }
-            });
-        });
-        
-        // Validación al enviar los formularios
-        const adminForms = document.querySelectorAll('.adminForm');
-        
+      // Validación al enviar los formularios
+      const adminForms = document.querySelectorAll('.adminForm');
         adminForms.forEach(function(form) {
             form.addEventListener('submit', function (e) {
                 const rutInput = this.querySelector('.rut-input');
@@ -200,34 +183,53 @@
                 }
             });
         });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Formateo de RUT
+      const rutInputs = document.querySelectorAll('.rut-input');
+      rutInputs.forEach(function(input) {
+        input.addEventListener('input', function() {
+          let valor = this.value.replace(/\./g, '').replace(/-/g, '');
+          if (valor.length > 1) {
+            // Obtener dígito verificador
+            let dv = valor.slice(-1);
+            // Obtener cuerpo del RUT
+            let rutCuerpo = valor.slice(0, -1);
+            // Formatear RUT
+            let rutFormateado = '';
+            for (let i = rutCuerpo.length; i > 0; i -= 3) {
+              const inicio = Math.max(0, i - 3);
+              rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+            }
+            rutFormateado = rutFormateado.substring(1) + '-' + dv;
+            this.value = rutFormateado;
+          }
+        });
+      });
+      
+      // Validación de contraseñas
+      const adminForms = document.querySelectorAll('.adminForm');
+      adminForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+          const password1 = form.querySelector('input[name="password1"]');
+          const password2 = form.querySelector('input[name="password2"]');
+          
+          if (password1 && password2) {
+            if (password1.value !== password2.value) {
+              e.preventDefault();
+              Swal.fire({
+                title: 'Error',
+                text: 'Las contraseñas no coinciden',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+              });
+            }
+          }
+        });
+      });
     });
-    
-    // Función para validar RUT chileno
-    function validarRut(rut) {
-        // Verificar formato básico
-        if (!/^[0-9]{1,2}\.[0-9]{3}\.[0-9]{3}-[0-9kK]{1}$/.test(rut)) {
-            return false;
-        }
-        
-        // Eliminar puntos y guión para cálculos
-        const rutLimpio = rut.replace(/\./g, '').replace('-', '');
-        const cuerpo = rutLimpio.slice(0, -1);
-        const dv = rutLimpio.slice(-1).toUpperCase();
-        
-        // Calcular dígito verificador
-        let suma = 0;
-        let multiplicador = 2;
-        
-        for (let i = cuerpo.length - 1; i >= 0; i--) {
-            suma += parseInt(cuerpo.charAt(i)) * multiplicador;
-            multiplicador = multiplicador < 7 ? multiplicador + 1 : 2;
-        }
-        
-        const dvEsperado = 11 - (suma % 11);
-        const dvCalculado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
-        
-        return dv === dvCalculado;
-    }
   </script>
     
   {% if messages %}

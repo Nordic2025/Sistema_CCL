@@ -26,5 +26,9 @@ urlpatterns = [
     path('editar_areas/<int:id>/', views.editar_areas_view, name='editar_area'),
     path('eliminar_areas/<int:id>/', views.eliminar_areas_view, name='eliminar_area'),
     path('historial_salidas/', views.tabla_salidasview, name='historial_salidas'),
+
+
+    path('cambiar-contraseña/<int:id>/', views.cambiar_password_view, name='cambiar_contraseña'),
+
 ]
 

@@ -29,18 +29,14 @@
       <div class="card card_login">
         <h1 class="h1_login">Iniciar Sesión</h1>
         <form method="POST" action="{% url 'Modulo_admin:login_admin' %}" class="card_body_login">
-              {% csrf_token %}
-              {% if request.GET.next %}
-                <input type="hidden" name="next" value="{{ request.GET.next }}">
-              {% endif %}
-              <label class="usuario">RUT</label>
-              <input type="text" class="Login_input" name="username" id="username" placeholder="Ingrese su usuario" required />
-              <label class="contraseña">Contraseña:</label>
-              <input type="password" class="Login_input" name="password" id="password" placeholder="Ingrese su contraseña" required />
-              <button type="submit" class="btn login_btn btn-primary">Iniciar Sesión</button>
-              <a href="{% url 'principal' %}" class="btn btn-warning login_btn" style="color:white;">Volver</a>
-              
-          </form>
+          {% csrf_token %}
+            <label for="rut" class="usuario">RUT:</label>
+            <input type="text" id="rut" name="rut" class="Login_input" placeholder="Ej: 12.345.678-9" required>
+            <label for="password" class="contraseña">Contraseña:</label>
+            <input type="password" id="password" name="password" class="Login_input" required>
+            <button type="submit" class="login_btn btn" style="color:white;">Iniciar Sesión</button>
+            <a href="{% url 'principal' %}" class="btn login_btn" style="color:white;">Volver</a>
+        </form>
       </div>
   </div>
 
@@ -48,7 +44,51 @@
       Copyright © Colegio Concepcion - Linares 2025
   </footer> 
 
-  <script src="{% static 'js/script.js' %}"></script>
+
+
+<!--script para formatear RUT -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const rutInput = document.getElementById('rut');
+    
+    // Función para formatear RUT
+    function formatearRut(rut) {
+      // Eliminar puntos y guiones
+      let valor = rut.replace(/\./g, '').replace(/-/g, '');
+      
+      // Obtener dígito verificador
+      let dv = valor.slice(-1);
+      
+      // Obtener cuerpo del RUT
+      let rutCuerpo = valor.slice(0, -1);
+      
+      // Formatear RUT con puntos y guión
+      let rutFormateado = '';
+      
+      // Agregar puntos de miles
+      for (let i = rutCuerpo.length; i > 0; i -= 3) {
+        const inicio = Math.max(0, i - 3);
+        rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+      }
+      
+      // Eliminar el primer punto
+      rutFormateado = rutFormateado.substring(1);
+      
+      // Agregar guión y dígito verificador
+      return rutFormateado + '-' + dv;
+    }
+    
+    // Evento para formatear el RUT mientras se escribe
+    rutInput.addEventListener('input', function() {
+      let valor = this.value.replace(/[^\dkK]/g, '');
+      if (valor.length > 1) {
+        this.value = formatearRut(valor);
+      }
+    });
+  });
+</script>
+
+
 
   {% if messages %}
     {% for message in messages %}

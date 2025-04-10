@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import AdministradorForm, AreasForm
+from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm
 from .models import Administrador, Areas
 from Modulo_funcionarios.models import RegistroSalida
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
+from django.contrib.auth.models import User
 
 
 
@@ -19,17 +20,23 @@ def loginadmin_view(request):
 
 def login_admin(request):
     if request.method == 'POST':
-        username = request.POST.get('username', '')
+        rut = request.POST.get('rut', '')
         password = request.POST.get('password', '')
 
-        user = authenticate(request, username=username, password=password)
+        # Autenticar usando el RUT como nombre de usuario
+        user = authenticate(request, username=rut, password=password)
 
         if user is not None:
-            login(request, user)
-            messages.success(request, f'Bienvenido, {user.username}')
-            return redirect('Modulo_admin:grafico')
+            # Verificar si el usuario está asociado a un administrador
+            try:
+                administrador = Administrador.objects.get(user=user)
+                login(request, user)
+                messages.success(request, f'Bienvenido, {administrador.nombre}')
+                return redirect('Modulo_admin:grafico')
+            except Administrador.DoesNotExist:
+                messages.error(request, 'Este usuario no tiene permisos de administrador')
         else:
-            messages.error(request, 'Usuario o contraseña incorrectos')
+            messages.error(request, 'RUT o contraseña incorrectos')
     return render(request, 'login.html')
 
 
@@ -149,6 +156,9 @@ def tabla_generalview(request):
     
     return render(request, "tabla_general.html", context)
 
+
+
+
 # Vista tabla_salidas
 @login_required(login_url='Modulo_admin:login_admin')
 def tabla_salidasview(request):
@@ -216,6 +226,9 @@ def tabla_salidasview(request):
 
 
 
+
+
+
 # Vista tabla_administradores
 @login_required(login_url='Modulo_admin:login_admin')
 def administradores_view(request):
@@ -229,32 +242,108 @@ def registrar_administrador_view(request):
     if request.method == 'POST':
         form = AdministradorForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Administrador registrado correctamente')
-            return redirect('Modulo_admin:administradores')
+            # Obtener datos del formulario
+            rut = form.cleaned_data['rut']
+            nombre = form.cleaned_data['nombre']
+            area = form.cleaned_data['area']
+            password = form.cleaned_data['password1']
+            
+            # Crear el usuario de Django
+            try:
+                user = User.objects.create_user(
+                    username=rut,  # Se usa el RUT como nombre de usuario
+                    password=password,
+                    first_name=nombre
+                )
+                
+                # Guardar el administrador sin commit para asignar el usuario
+                administrador = form.save(commit=False)
+                administrador.user = user
+                administrador.save()
+                
+                messages.success(request, 'Administrador registrado correctamente')
+                return redirect('Modulo_admin:administradores')
+            except Exception as e:
+                # Si hay un error, eliminamos el usuario si se creó
+                if 'user' in locals():
+                    user.delete()
+                messages.error(request, f'Error al registrar administrador: {str(e)}')
+        else:
+            # Si el formulario no es válido, mostrar errores
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
     else:
         form = AdministradorForm()
-    return render(request, 'administrador.html', {'form': form})            
+    
+    return render(request, 'administrador.html', {'form': form})
 
 
 @login_required(login_url='Modulo_admin:login_admin')
 def editar_administrador_view(request, id):
     administrador = get_object_or_404(Administrador, id=id)
+    
     if request.method == 'POST':
-        form = AdministradorForm(request.POST, instance=administrador)
+        form = AdministradorEditForm(request.POST, instance=administrador)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Administrador editado')
+            # Actualizar el administrador
+            admin = form.save(commit=False)
+        
+            if admin.user:
+                # Actualizar usuario existente
+                admin.user.first_name = form.cleaned_data['nombre']
+                admin.user.save()
+            else:
+                # Crear nuevo usuario con contraseña temporal
+                user = User.objects.create_user(
+                    username=admin.rut,
+                    password='temporal123',  # Contraseña temporal
+                    first_name=form.cleaned_data['nombre']
+                )
+                admin.user = user
+            
+            admin.save()
+            messages.success(request, 'Administrador editado correctamente')
             return redirect('Modulo_admin:administradores')
     else:
-        form = AdministradorForm(instance=administrador)
-    return render(request, 'administrador.html', {'form': form})
+        form = AdministradorEditForm(instance=administrador)
+    
+    return render(request, 'administrador.html', {'form': form, 'is_edit': True})
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def cambiar_password_view(request, id):
+    administrador = get_object_or_404(Administrador, id=id)
+    
+    if not administrador.user:
+        messages.error(request, 'Este administrador no tiene un usuario asociado')
+        return redirect('Modulo_admin:administradores')
+    
+    if request.method == 'POST':
+        form = CambiarPasswordForm(request.POST)
+        if form.is_valid():
+            # Cambiar la contraseña
+            administrador.user.set_password(form.cleaned_data['password1'])
+            administrador.user.save()
+            messages.success(request, 'Contraseña actualizada correctamente')
+            return redirect('Modulo_admin:administradores')
+    else:
+        form = CambiarPasswordForm()
+    
+    return render(request, 'cambiar_contraseña.html', {'form': form, 'administrador': administrador})
+
+
 
 
 #Eliminar administrador
 @login_required(login_url='Modulo_admin:login_admin')
 def eliminar_administrador_view(request, id):
     administrador = get_object_or_404(Administrador, id=id)
+    
+    # Si tiene un usuario asociado, eliminarlo también
+    if administrador.user:
+        administrador.user.delete()
+    
     administrador.delete()
     messages.success(request, 'Administrador eliminado correctamente')
     return redirect('Modulo_admin:administradores')
@@ -263,6 +352,7 @@ def eliminar_administrador_view(request, id):
 #Vista tabla_areas
 @login_required(login_url='Modulo_admin:login_admin')
 def areas_view(request):
+    # objects ya filtra las áreas eliminadas gracias al manager personalizado
     areas = Areas.objects.all()
     return render(request, 'areas.html', {'areas': areas})
 
@@ -298,11 +388,16 @@ def editar_areas_view(request, id):
 #Eliminar areas
 @login_required(login_url='Modulo_admin:login_admin')
 def eliminar_areas_view(request, id):
-    area = get_object_or_404(Areas, id=id)
-    area.delete()
-    messages.success(request, 'Área eliminado correctamente')
+   # Usar all_objects para encontrar incluso áreas eliminadas
+    area = get_object_or_404(Areas.all_objects, id=id)
+    
+    # Marcar como eliminada en lugar de eliminar físicamente
+    area.is_deleted = True
+    area.deleted_at = timezone.now()
+    area.save()
+    
+    messages.success(request, 'Área eliminada correctamente')
     return redirect('Modulo_admin:area')
-
 
 #Vista tabla_areas
 @login_required(login_url='Modulo_admin:login_admin')

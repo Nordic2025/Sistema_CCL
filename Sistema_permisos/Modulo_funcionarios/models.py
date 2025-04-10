@@ -27,7 +27,7 @@ class RegistroSalida(models.Model):
         verbose_name='RUT'
     )  # Rut del funcionario
     nombre = models.CharField(max_length=255)  # Nombre del funcionario
-    autorizado_por = models.ForeignKey(Areas, on_delete=models.CASCADE, related_name='autorizaciones')
+    autorizado_por = models.ForeignKey(Areas, on_delete=models.DO_NOTHING, related_name='autorizaciones')
     area_perteneciente = models.CharField(max_length=100)  # Este campo se llenará automáticamente
     motivo_salida = models.CharField(max_length=20, choices=MOTIVO_CHOICES)  # Motivo de la salida como lista desplegable
     hora_salida = models.DateTimeField(default=now)  # Hora de salida
