@@ -19,7 +19,7 @@ class RegistroSalida(models.Model):
         message='Ingrese un RUT válido en formato XX.XXX.XXX-X'
     )
 
-    codigo_registro = models.CharField(max_length=4, unique=True, editable=False)  # Código único
+    codigo_registro = models.CharField(max_length=5, unique=True, editable=False)  # Código único
     # Eliminamos cualquier restricción de unicidad en el campo RUT
     rut = models.CharField(
         max_length=12, 
@@ -37,7 +37,7 @@ class RegistroSalida(models.Model):
     def save(self, *args, **kwargs):
         # Generar el código único de 4 dígitos si no se ha asignado
         if not self.codigo_registro:
-            self.codigo_registro = str(uuid.uuid4().int)[:4]  # Genera un código aleatorio único de 4 dígitos
+            self.codigo_registro = str(uuid.uuid4().int)[:5]  # Genera un código aleatorio único de 4 dígitos
         
         # Calcular la duración si hay hora de regreso
         if self.hora_regreso and self.hora_salida:
