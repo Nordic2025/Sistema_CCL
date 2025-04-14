@@ -78,5 +78,25 @@
 
     {% endif %}
 
+     <!-- Agregar este script para cerrar el menú al hacer clic fuera de él -->
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Función para cerrar el menú cuando se hace clic fuera de él
+            document.addEventListener('click', function(event) {
+                var menuLateral = document.getElementById('menuLateral');
+                var abrirMenuBtn = document.querySelector('.abrirMenubtn');
+                
+                // Verificar si el menú está abierto
+                if (menuLateral.style.width && menuLateral.style.width !== '0px') {
+                    // Verificar si el clic fue fuera del menú y no en el botón de abrir
+                    if (!menuLateral.contains(event.target) && event.target !== abrirMenuBtn) {
+                        cerrarMenu();
+                    }
+                }
+            });
+        });
+    </script>
+
+
 </body>
 </html> 
