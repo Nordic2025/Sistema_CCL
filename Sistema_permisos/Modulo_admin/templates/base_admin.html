@@ -30,7 +30,9 @@
 <body>
     <header class="encabezado_principal">
         <button class="abrirMenubtn" onclick="abrirMenu()">☰</button>
-        <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
+        <a href="{% url 'Modulo_admin:grafico' %}">
+            <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
+        </a>
         <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
         <li class="nav-item dropdown no">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

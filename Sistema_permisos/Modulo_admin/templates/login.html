@@ -16,7 +16,9 @@
 
 <body>
   <header class="encabezado_principal">
-    <img src="{% static 'images/logo_ccl.png' %}" alt="Logo Colegio Concepcion" class="logoCCL">
+    <a href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
+  </a>
     <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
     <div class="btn_login">
         <a href="{% url 'Modulo_admin:admin' %}">
