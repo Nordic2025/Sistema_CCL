@@ -1,6 +1,6 @@
 from django.http import HttpResponseForbidden
 
-BLOQUEAR_IPS = ['10.10.10.67']  # IPs a bloquear
+BLOQUEAR_IPS = ['10.10.10.241']  # IPs a bloquear
 MODULOS_BLOQUEADOS = ['/Modulo_admin/']  # Rutas a proteger
 
 class BloquearIPMiddleware:

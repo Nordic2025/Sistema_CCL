@@ -12,7 +12,7 @@ def get_client_ip(request):
 
 def principal_view(request):
     ip_cliente = get_client_ip(request)
-    clase_ip = 'ip_grande' if ip_cliente == '10.10.10.67' else ''
+    clase_ip = 'ip_grande' if ip_cliente == '10.10.10.241' else ''
     print(f"IP detectada: {ip_cliente}") 
     return render(request, 'principal.html', {
         'ip_cliente': ip_cliente,
