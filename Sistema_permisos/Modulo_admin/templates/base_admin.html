@@ -21,11 +21,73 @@
     <title>{% block title %} {% endblock %}</title>
 </head>
 
+
 <style>
     .no {
         display: block
-      }
+    }
+    
+    .menu-section {
+        margin-top: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+    }
+    
+    .section-title {
+        color: #f8f9fa;
+        font-weight: bold;
+        padding: 10px 15px;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .section-items {
+        padding-left: 15px;
+    }
+    
+    .section-items a {
+        padding: 8px 15px 8px 30px;
+    }
+    
+    .menu-section-toggle {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .menu-section-toggle::after {
+        content: '▼';
+        font-size: 12px;
+        transition: transform 0.3s;
+    }
+    
+    .menu-section-toggle.collapsed::after {
+        transform: rotate(-90deg);
+    }
+    
+    .menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        width: 100%;
+        position: relative;
+    }
+    
+    .menu-header .logoCCL {
+        margin: 0 auto;
+        display: block;
+        max-width: 70%;
+    }
+    
+    .menu-header .cerrarMenubtn {
+        position: absolute;
+        right: 15px;
+    }
 </style>
+
 
 <body>
     <header class="encabezado_principal">
@@ -52,15 +114,42 @@
 
     <div id="menuLateral" class="menuLateral">
         
-        <a href="javascript:void(0)" class="cerrarMenubtn" onclick="cerrarMenu()"><img src="{% static "icon/x.svg" %}" alt="Cerrar menú" class="menu_icono"></a>
+        <div class="menu-header">
+            <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
+            <a href="javascript:void(0)" class="cerrarMenubtn" onclick="cerrarMenu()"><img src="{% static "icon/x.svg" %}" alt="Cerrar menú" class="menu_icono"></a>
+        </div>
         
-        <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
         
-        <a href="{% url 'Modulo_admin:grafico' %}" style="margin-top: 60px;"><img src="{% static "icon/hogar.svg" %}" alt="Logo de Inicio" class="menu_icono" >Inicio</a>
-        <a href="{% url 'Modulo_admin:historial_permisos' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono"> Permisos Completados</a>
-        <a href="{% url 'Modulo_admin:historial_salidas' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono">Salidas Activas</a>
-        <a href="{% url 'Modulo_admin:administradores' %}"><img src="{% static "icon/usuarios.svg" %}" alt="Logo de Administrador" class="menu_icono">Administradores</a>
-        <a href="{% url 'Modulo_admin:area' %}"><img src="{% static "icon/area.svg" %}" alt="Logo de Área" class="menu_icono">Área</a>
+        <a href="{% url 'Modulo_admin:grafico' %}" style="margin-top: 40px;"><img src="{% static "icon/hogar.svg" %}" alt="Logo de Inicio" class="menu_icono" >Inicio</a>
+        
+        <!-- Sección de Funcionarios -->
+        <div class="menu-section">
+            <div class="section-title menu-section-toggle" data-bs-toggle="collapse" data-bs-target="#funcionariosSection" aria-expanded="true">
+                Funcionarios
+            </div>
+            <div id="funcionariosSection" class="collapse show section-items">
+                <a href="{% url 'Modulo_admin:historial_permisos' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono"> Permisos Completados</a>
+                <a href="{% url 'Modulo_admin:historial_salidas' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono">Salidas Activas</a>
+                <a href="{% url 'Modulo_admin:administradores' %}"><img src="{% static "icon/usuarios.svg" %}" alt="Logo de Administrador" class="menu_icono">Administradores</a>
+                <a href="{% url 'Modulo_admin:area' %}"><img src="{% static "icon/area.svg" %}" alt="Logo de Área" class="menu_icono">Área</a>
+            </div>
+        </div>
+
+        <!-- Sección de Alumnos -->
+        <div class="menu-section">
+            <div class="section-title menu-section-toggle" data-bs-toggle="collapse" data-bs-target="#alumnosSection" aria-expanded="true">
+                Alumnos
+            </div>
+            <div id="alumnosSection" class="collapse show section-items">
+                <a href="#"><img src="{% static "icon/grafico.svg" %}" alt="Logo de Tabla" class="menu_icono">Graficos</a>
+                <a href="#"><img src="{% static "icon/retiros.svg" %}" alt="Logo de Tabla" class="menu_icono">Retiros</a>
+                <a href="#"><img src="{% static "icon/justificativo.svg" %}" alt="Logo de Tabla" class="menu_icono">Justificativos</a>
+                <a href="#"><img src="{% static "icon/alumnos.svg" %}" alt="Logo de Tabla" class="menu_icono">Alumnos</a>
+                <a href="#"><img src="{% static "icon/alumno_egresado.svg" %}" alt="Logo de Tabla" class="menu_icono">Egresados</a>
+                <a href="#"><img src="{% static "icon/cursos.svg" %}" alt="Logo de Tabla" class="menu_icono">Cursos</a>
+                <a href="#"><img src="{% static "icon/inspector.svg" %}" alt="Logo de Tabla" class="menu_icono">Inspectores</a>
+            </div>
+        </div>
     </div>
     
     <main class="contenido">
@@ -97,6 +186,8 @@
                 }
             });
         });
+
+        
     </script>
 
 

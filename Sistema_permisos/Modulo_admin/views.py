@@ -111,7 +111,7 @@ def graficoview(request):
         'meses': meses_json
     }
     
-    return render(request, "grafico.html", context)
+    return render(request, "funcionarios_folder/grafico_folder/grafico.html", context)
 
 
 # Vista tabla_general
@@ -164,7 +164,7 @@ def tabla_generalview(request):
         'total_registros': permisos.count()
     }
     
-    return render(request, "tabla_general.html", context)
+    return render(request, "funcionarios_folder/tablas_folder/tabla_general.html", context)
 
 
 
@@ -232,7 +232,7 @@ def tabla_salidasview(request):
         'total_registros': len(salidas)
     }
     
-    return render(request, "tabla_salidas.html", context)
+    return render(request, "funcionarios_folder/tablas_folder/tabla_salidas.html", context)
 
 
 
@@ -243,7 +243,7 @@ def tabla_salidasview(request):
 @login_required(login_url='Modulo_admin:login_admin')
 def administradores_view(request):
     administradores = Administrador.objects.all()
-    return render(request, 'administradores.html', {'administradores': administradores})
+    return render(request, 'funcionarios_folder/administradores_folder/administradores.html', {'administradores': administradores})
 
 
 #Agregar administrador
@@ -293,7 +293,7 @@ def registrar_administrador_view(request):
     else:
         form = AdministradorForm()
     
-    return render(request, 'administrador.html', {'form': form})
+    return render(request, 'funcionarios_folder/administradores_folder/administrador.html', {'form': form})
 
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -333,7 +333,7 @@ def editar_administrador_view(request, id):
     else:
         form = AdministradorEditForm(instance=administrador)
     
-    return render(request, 'administrador.html', {'form': form, 'is_edit': True})
+    return render(request, 'funcionarios_folder/administradores_folder/administrador.html', {'form': form, 'is_edit': True})
 
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -356,7 +356,7 @@ def cambiar_password_view(request, id):
     else:
         form = CambiarPasswordForm()
     
-    return render(request, 'administrador.html ', {'form': form, 'administrador': administrador})
+    return render(request, 'funcionarios_folder/administradores_folder/administrador.html', {'form': form, 'administrador': administrador})
 
 
 
@@ -381,7 +381,7 @@ def eliminar_administrador_view(request, id):
 def areas_view(request):
     # objects ya filtra las áreas eliminadas gracias al manager personalizado
     areas = Areas.objects.all()
-    return render(request, 'areas.html', {'areas': areas})
+    return render(request, 'funcionarios_folder/areas_folder/areas.html', {'areas': areas})
 
 #Agregar areas
 @login_required(login_url='Modulo_admin:login_admin')
@@ -394,7 +394,7 @@ def registrar_areas_view(request):
             return redirect('Modulo_admin:area')
         else:
             form = AreasForm()
-    return render(request, 'areas.html', {'form': form})
+    return render(request, 'funcionarios_folder/areas_folder/areas.html', {'form': form})
 
 
 #Editar areas
@@ -409,7 +409,7 @@ def editar_areas_view(request, id):
             return redirect('Modulo_admin:area')
     else:
         form = AreasForm(instance=areas)
-    return render(request, 'editar_areas.html', {'form': form})
+    return render(request, 'funcionarios_folder/areas_folder/editar_areas.html', {'form': form})
 
 
 #Eliminar areas
@@ -429,7 +429,7 @@ def eliminar_areas_view(request, id):
 #Vista tabla_areas
 @login_required(login_url='Modulo_admin:login_admin')
 def tabla_areasview(request):
-    return render(request, "areas.html")
+    return render(request, "funcionarios_folder/areas_folder/areas.html")
 
 def exportar_permisos_pdf(request):
     """Exporta la tabla de permisos como HTML con descarga automática"""
