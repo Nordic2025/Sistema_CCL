@@ -38,6 +38,15 @@ urlpatterns = [
     path('eliminar_curso/<int:id>/', views.eliminar_curso_view, name='eliminar_curso'),  
 
     path('alumnos/', views.alumnos_view, name='alumnos'),
+    path('agregar_alumno/',views.registrar_alumno, name='agregar_alumno'),
+    path('editar_alumno/<int:id>/', views.editar_alumno, name='editar_alumno'),
+    path('eliminar_alumno/<int:id>/', views.eliminar_alumno, name='eliminar_alumno'),
+    
+    path('agregar_familiares/<int:id>/<int:familiar_num>/', views.agregar_familiar, name='agregar_familiar'),
+    
+    
+    
+    
     path('retiros/', views.retiros_view, name='retiros'),
     path('justificaciones/', views.justificativos_view, name='justificaciones'),
     path('grafico_alumnos/', views.grafico_alumnos_view, name='grafico_alumnos'),

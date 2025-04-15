@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm
-from .models import Administrador, Areas, Curso
+from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm, AlumnoForm, FamiliarForm
+from .models import Administrador, Areas, Curso, Alumno
 from Modulo_funcionarios.models import RegistroSalida
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -495,7 +495,115 @@ def eliminar_curso_view(request, id):
 #Alumnos
 @login_required(login_url='Modulo_admin:login_admin')
 def alumnos_view(request):
-    return render(request, 'alumnos_folder/estudiantes_folder/tabla_estudiantes.html')
+    alumnos = Alumno.objects.all()
+    form = AlumnoForm()  # Form for the modal
+    familiar_form = FamiliarForm()  # Form for adding family members
+    return render(request, 'alumnos_folder/estudiantes_folder/tabla_estudiantes.html', {
+        'alumnos': alumnos,
+        'form': form,
+        'familiar_form': familiar_form
+    })
+
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def registrar_alumno(request):
+    """Vista para registrar un nuevo alumno."""
+    if request.method == 'POST':
+        form = AlumnoForm(request.POST)
+        if form.is_valid():
+            # Verificar si ya existe un alumno con ese RUT
+            rut = form.cleaned_data['rut']
+            if Alumno.objects.filter(rut=rut).exists():
+                messages.error(request, f'Ya existe un alumno registrado con el RUT {rut}')
+                return redirect('Modulo_admin:alumnos')
+            
+            # Guardar el nuevo alumno
+            alumno = form.save()
+            messages.success(request, f'Alumno {alumno.nombre} registrado correctamente')
+        else:
+            # Si el formulario no es válido, mostrar errores
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en el campo {field}: {error}')
+    return redirect('Modulo_admin:alumnos')
+
+
+
+
+def editar_alumno(request, id):
+    """Vista para editar un alumno existente."""
+    alumno = get_object_or_404(Alumno, id=id)
+    
+    if request.method == 'POST':
+        form = AlumnoForm(request.POST, instance=alumno)
+        if form.is_valid():
+            # Verificar si el RUT ya existe para otro alumno
+            rut = form.cleaned_data['rut']
+            if Alumno.objects.filter(rut=rut).exclude(id=id).exists():
+                messages.error(request, f'Ya existe otro alumno registrado con el RUT {rut}')
+                return redirect('Modulo_admin:alumnos')
+            
+            # Guardar los cambios
+            alumno = form.save()
+            messages.success(request, f'Alumno {alumno.nombre} actualizado correctamente')
+        else:
+            # Si el formulario no es válido, mostrar errores
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en el campo {field}: {error}')
+    return redirect('Modulo_admin:alumnos')
+
+
+def eliminar_alumno(request, id):
+    """Vista para eliminar un alumno."""
+    alumno = get_object_or_404(Alumno, id=id)
+    nombre = alumno.nombre
+    
+    # Marcar como inactivo en lugar de eliminar físicamente
+    alumno.is_deleted = True
+    alumno.save()
+
+    
+    messages.success(request, f'Alumno {nombre} eliminado correctamente')
+    return redirect('Modulo_admin:alumnos')
+
+
+
+
+def agregar_familiar(request, id, familiar_num):
+    """Vista para agregar un familiar a un alumno."""
+    alumno = get_object_or_404(Alumno, id=id)
+    
+    if request.method == 'POST':
+        form = FamiliarForm(request.POST)
+        if form.is_valid():
+            familiar_nombre = form.cleaned_data['familiar_nombre']
+            familiar_relacion = form.cleaned_data['familiar_relacion']
+            familiar_telefono = form.cleaned_data['familiar_telefono']
+            
+            # Actualizar el familiar correspondiente
+            if familiar_num == 1:
+                alumno.familiar_1 = familiar_nombre
+                alumno.familiar_1_relacion = familiar_relacion
+                alumno.familiar_1_telefono = familiar_telefono
+                mensaje = f'Familiar 1 agregado correctamente para {alumno.nombre}'
+            elif familiar_num == 2:
+                alumno.familiar_2 = familiar_nombre
+                alumno.familiar_2_relacion = familiar_relacion
+                alumno.familiar_2_telefono = familiar_telefono
+                mensaje = f'Familiar 2 agregado correctamente para {alumno.nombre}'
+            
+            # Guardar los cambios
+            alumno.save()
+            messages.success(request, mensaje)
+        else:
+            # Si el formulario no es válido, mostrar errores
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en el campo {field}: {error}')
+    
+    return redirect('Modulo_admin:alumnos')
 
 
 

@@ -1,1 +1,471 @@
-<h1>Tabla de Estudiantes</h1>
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Alumnos{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Alumnos</h1>  
+    
+    {% if user.is_superuser %}
+    <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAlumnoModal">
+      Registrar nuevo alumno
+    </button>
+    {% endif %}
+    
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th>RUT</th>
+                <th>Nombre</th>
+                <th>Curso</th>
+                <th>Apoderado Titular</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for alumno in alumnos %}
+              <tr>
+                <td>{{ alumno.rut }}</td>
+                <td>{{ alumno.nombre }}</td>
+                <td>{{ alumno.curso }}</td>
+                <td>{{ alumno.apoderado_titular }}</td>
+                <td>
+                  {% if user.is_superuser %}
+                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editarAlumnoModal{{ alumno.id }}">
+                    Editar
+                  </button>
+                  {% endif %}
+                  <button type="button" class="btn btn_primary btn-outline-primary" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#verDetalleModal{{ alumno.id }}">
+                    Ver Detalle
+                  </button>
+                  {% if user.is_superuser %}
+                  <button type="button" class="btn btn_eliminar btn-outline-danger" 
+                          onclick="confirmarEliminacion('{{ alumno.id }}', '{{ alumno.nombre }}')">
+                    Eliminar
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              
+              {% if user.is_superuser %}
+              <!-- Modal para Editar Alumno -->
+              <div class="modal fade" id="editarAlumnoModal{{ alumno.id }}" tabindex="-1" aria-labelledby="editarAlumnoModalLabel{{ alumno.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editarAlumnoModalLabel{{ alumno.id }}">Editar Alumno</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:editar_alumno' alumno.id %}" class="alumnoForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                          <label for="rut{{ alumno.id }}" class="form-label">RUT</label>
+                          <input type="text" class="form-control rut-input" id="rut{{ alumno.id }}" name="rut" value="{{ alumno.rut }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="nombre{{ alumno.id }}" class="form-label">Nombre Completo</label>
+                          <input type="text" class="form-control" id="nombre{{ alumno.id }}" name="nombre" value="{{ alumno.nombre }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="curso{{ alumno.id }}" class="form-label">Curso</label>
+                          <input type="text" class="form-control" id="curso{{ alumno.id }}" name="curso" value="{{ alumno.curso }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="apoderado_titular{{ alumno.id }}" class="form-label">Apoderado Titular</label>
+                          <input type="text" class="form-control" id="apoderado_titular{{ alumno.id }}" name="apoderado_titular" value="{{ alumno.apoderado_titular }}">
+                        </div>
+                        <div class="mb-3">
+                          <label for="apoderado_suplente{{ alumno.id }}" class="form-label">Apoderado Suplente</label>
+                          <input type="text" class="form-control" id="apoderado_suplente{{ alumno.id }}" name="apoderado_suplente" value="{{ alumno.apoderado_suplente }}">
+                        </div>
+                        
+                        {% if alumno.familiar_1 %}
+                        <div class="mb-3">
+                          <label for="familiar_1{{ alumno.id }}" class="form-label">Familiar 1</label>
+                          <input type="text" class="form-control" id="familiar_1{{ alumno.id }}" name="familiar_1" value="{{ alumno.familiar_1 }}">
+                        </div>
+                        {% endif %}
+                        
+                        {% if alumno.familiar_2 %}
+                        <div class="mb-3">
+                          <label for="familiar_2{{ alumno.id }}" class="form-label">Familiar 2</label>
+                          <input type="text" class="form-control" id="familiar_2{{ alumno.id }}" name="familiar_2" value="{{ alumno.familiar_2 }}">
+                        </div>
+                        {% endif %}
+                        
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Modal para Ver Detalle -->
+              <div class="modal fade" id="verDetalleModal{{ alumno.id }}" tabindex="-1" aria-labelledby="verDetalleModalLabel{{ alumno.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="verDetalleModalLabel{{ alumno.id }}">Detalles del Alumno | {{ alumno.nombre }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="card">
+                        <div class="card-body">
+                          <h5 class="card-title">Información Personal</h5>
+                          <p><strong>RUT:</strong> {{ alumno.rut }}</p>
+                          <p><strong>Nombre Completo:</strong> {{ alumno.nombre }}</p>
+                          <p><strong>Curso:</strong> {{ alumno.curso }}</p>
+                          
+                          <h5 class="card-title mt-4">Apoderados</h5>
+                          <p><strong>Apoderado Titular:</strong> {{ alumno.apoderado_titular }}</p>
+                          <p><strong>Apoderado Suplente:</strong> {{ alumno.apoderado_suplente|default:"No registrado" }}</p>
+                          
+                          {% if alumno.familiar_1 %}
+                          <p><strong>Familiar 1:</strong> {{ alumno.familiar_1 }}</p>
+                          {% else %}
+                          <button type="button" class="btn btn-sm btn-success mt-2" 
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#agregarFamiliar1Modal{{ alumno.id }}">
+                            + Añadir Familiar 1
+                          </button>
+                          {% endif %}
+                          
+                          {% if alumno.familiar_2 %}
+                          <p><strong>Familiar 2:</strong> {{ alumno.familiar_2 }}</p>
+                          {% elif alumno.familiar_1 %}
+                          <button type="button" class="btn btn-sm btn-success mt-2" 
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#agregarFamiliar2Modal{{ alumno.id }}">
+                            + Añadir Familiar 2
+                          </button>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Modal para Añadir Familiar 1 -->
+              <div class="modal fade" id="agregarFamiliar1Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="agregarFamiliar1ModalLabel{{ alumno.id }}">Añadir Familiar 1 | {{ alumno.nombre }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 1 %}" class="familiarForm">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                              <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
+                              {{ familiar_form.familiar_nombre }}
+                              {% if familiar_form.familiar_nombre.errors %}
+                                <div class="text-danger">
+                                  {% for error in familiar_form.familiar_nombre.errors %}
+                                    {{ error }}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="mb-3">
+                              <label for="{{ familiar_form.familiar_relacion.id_for_label }}" class="form-label">Relación con el Alumno</label>
+                              {{ familiar_form.familiar_relacion }}
+                              {% if familiar_form.familiar_relacion.errors %}
+                                <div class="text-danger">
+                                  {% for error in familiar_form.familiar_relacion.errors %}
+                                    {{ error }}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="mb-3">
+                              <label for="{{ familiar_form.familiar_telefono.id_for_label }}" class="form-label">Teléfono de Contacto</label>
+                              {{ familiar_form.familiar_telefono }}
+                              {% if familiar_form.familiar_telefono.errors %}
+                                <div class="text-danger">
+                                  {% for error in familiar_form.familiar_telefono.errors %}
+                                    {{ error }}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <button type="submit" class="btn btn-success">Guardar Familiar</button>
+                            </div>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Modal para Añadir Familiar 2 -->
+              <div class="modal fade" id="agregarFamiliar2Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar2ModalLabel{{ alumno.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="agregarFamiliar2ModalLabel{{ alumno.id }}">Añadir Familiar 2 | {{ alumno.nombre }}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 2%}" class="familiarForm">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                              <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
+                              {{ familiar_form.familiar_nombre }}
+                              {% if familiar_form.familiar_nombre.errors %}
+                                <div class="text-danger">
+                                  {% for error in familiar_form.familiar_nombre.errors %}
+                                    {{ error }}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="mb-3">
+                              <label for="{{ familiar_form.familiar_relacion.id_for_label }}" class="form-label">Relación con el Alumno</label>
+                              {{ familiar_form.familiar_relacion }}
+                              {% if familiar_form.familiar_relacion.errors %}
+                                <div class="text-danger">
+                                  {% for error in familiar_form.familiar_relacion.errors %}
+                                    {{ error }}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="mb-3">
+                              <label for="{{ familiar_form.familiar_telefono.id_for_label }}" class="form-label">Teléfono de Contacto</label>
+                              {{ familiar_form.familiar_telefono }}
+                              {% if familiar_form.familiar_telefono.errors %}
+                                <div class="text-danger">
+                                  {% for error in familiar_form.familiar_telefono.errors %}
+                                    {{ error }}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <button type="submit" class="btn btn-success">Guardar Familiar</button>
+                            </div>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {% empty %}
+              <tr>
+                <td colspan="5">No hay alumnos registrados.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% if user.is_superuser %}
+  <!-- Modal para Agregar Alumno -->
+  <div class="modal fade" id="agregarAlumnoModal" tabindex="-1" aria-labelledby="agregarAlumnoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="agregarAlumnoModalLabel">Registrar nuevo Alumno</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'Modulo_admin:agregar_alumno' %}" class="alumnoForm">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label for="{{ form.rut.id_for_label }}" class="form-label">RUT</label>
+                  {{ form.rut }}
+                  {% if form.rut.errors %}
+                    <div class="text-danger">
+                      {% for error in form.rut.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="mb-3">
+                  <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre Completo</label>
+                  {{ form.nombre }}
+                  {% if form.nombre.errors %}
+                    <div class="text-danger">
+                      {% for error in form.nombre.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="mb-3">
+                  <label for="{{ form.curso.id_for_label }}" class="form-label">Curso</label>
+                  {{ form.curso }}
+                  {% if form.curso.errors %}
+                    <div class="text-danger">
+                      {% for error in form.curso.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <hr>
+                <h5>Información de Apoderados</h5>
+                
+                <div class="mb-3">
+                  <label for="{{ form.apoderado_titular.id_for_label }}" class="form-label">Apoderado Titular</label>
+                  {{ form.apoderado_titular }}
+                  {% if form.apoderado_titular.errors %}
+                    <div class="text-danger">
+                      {% for error in form.apoderado_titular.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="mb-3">
+                  <label for="{{ form.apoderado_suplente.id_for_label }}" class="form-label">Apoderado Suplente</label>
+                  {{ form.apoderado_suplente }}
+                  <small class="form-text text-muted">Opcional</small>
+                  {% if form.apoderado_suplente.errors %}
+                    <div class="text-danger">
+                      {% for error in form.apoderado_suplente.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" class="btn btn-primary">Guardar Alumno</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    
+      <!-- Script para SweetAlert -->
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      
+      <script>
+        // Función para confirmar eliminación 
+        function confirmarEliminacion(id, nombre) {
+          Swal.fire({
+            title: '¿Está seguro?',
+            text: `¿Desea eliminar al alumno ${nombre}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Redirigir a la URL de eliminación con el ID correcto
+              window.location.href = "{% url 'Modulo_admin:eliminar_alumno' 0 %}".replace('/0/', '/' + id + '/');
+            }
+          });
+        }
+        
+        // Validación al enviar los formularios
+        const alumnoForms = document.querySelectorAll('.alumnoForm');
+        alumnoForms.forEach(function(form) {
+            form.addEventListener('submit', function (e) {
+                const rutInput = this.querySelector('.rut-input');
+                if (rutInput) {
+                    const rutValue = rutInput.value;
+                    
+                    if (!validarRut(rutValue)) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: '¡RUT inválido!',
+                            text: 'El RUT ingresado no es válido. Debe tener formato XX.XXX.XXX-X y un dígito verificador correcto.',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                }
+            });
+        });
+      </script>
+    
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Formateo de RUT
+          const rutInputs = document.querySelectorAll('.rut-input');
+          rutInputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+              let valor = this.value.replace(/\./g, '').replace(/-/g, '');
+              if (valor.length > 1) {
+                // Obtener dígito verificador
+                let dv = valor.slice(-1);
+                // Obtener cuerpo del RUT
+                let rutCuerpo = valor.slice(0, -1);
+                // Formatear RUT
+                let rutFormateado = '';
+                for (let i = rutCuerpo.length; i > 0; i -= 3) {
+                  const inicio = Math.max(0, i - 3);
+                  rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+                }
+                rutFormateado = rutFormateado.substring(1) + '-' + dv;
+                this.value = rutFormateado;
+              }
+            });
+          });
+          
+          // Manejo de modales anidados
+          const detalleModals = document.querySelectorAll('[id^="verDetalleModal"]');
+          detalleModals.forEach(function(modal) {
+            modal.addEventListener('show.bs.modal', function() {
+              // Cuando se muestra el modal de detalles, configuramos los botones para abrir modales anidados
+              const addFamiliarBtns = this.querySelectorAll('button[data-bs-target^="#agregarFamiliar"]');
+              addFamiliarBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  const targetModalId = this.getAttribute('data-bs-target');
+                  const currentModal = bootstrap.Modal.getInstance(modal);
+                  currentModal.hide();
+                  setTimeout(function() {
+                    const targetModal = new bootstrap.Modal(document.querySelector(targetModalId));
+                    targetModal.show();
+                  }, 500);
+                });
+              });
+            });
+          });
+        });
+      </script>
+        
+      {% if messages %}
+          {% for message in messages %}
+        <script>
+          mensaje('{{ message.tags }}', '{{ message }}');
+        </script>
+          {% endfor %}
+      {% endif %}
+    
+{% endblock %}
