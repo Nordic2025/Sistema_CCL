@@ -141,10 +141,10 @@
                 Alumnos
             </div>
             <div id="alumnosSection" class="collapse show section-items">
-                <a href="#"><img src="{% static "icon/grafico.svg" %}" alt="Logo de Tabla" class="menu_icono">Graficos</a>
-                <a href="#"><img src="{% static "icon/retiros.svg" %}" alt="Logo de Tabla" class="menu_icono">Retiros</a>
-                <a href="#"><img src="{% static "icon/justificativo.svg" %}" alt="Logo de Tabla" class="menu_icono">Justificativos</a>
-                <a href="#"><img src="{% static "icon/alumnos.svg" %}" alt="Logo de Tabla" class="menu_icono">Alumnos</a>
+                <a href="{% url 'Modulo_admin:grafico_alumnos' %}"><img src="{% static "icon/grafico.svg" %}" alt="Logo de Tabla" class="menu_icono">Graficos</a>
+                <a href="{% url 'Modulo_admin:retiros' %}"><img src="{% static "icon/retiros.svg" %}" alt="Logo de Tabla" class="menu_icono">Retiros</a>
+                <a href="{% url 'Modulo_admin:justificaciones' %}"><img src="{% static "icon/justificativo.svg" %}" alt="Logo de Tabla" class="menu_icono">Justificativos</a>
+                <a href="{% url 'Modulo_admin:alumnos' %}"><img src="{% static "icon/alumnos.svg" %}" alt="Logo de Tabla" class="menu_icono">Alumnos</a>
                 <a href="#"><img src="{% static "icon/alumno_egresado.svg" %}" alt="Logo de Tabla" class="menu_icono">Egresados</a>
                 <a href="#"><img src="{% static "icon/cursos.svg" %}" alt="Logo de Tabla" class="menu_icono">Cursos</a>
                 <a href="#"><img src="{% static "icon/inspector.svg" %}" alt="Logo de Tabla" class="menu_icono">Inspectores</a>
