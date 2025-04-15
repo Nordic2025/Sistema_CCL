@@ -1,0 +1,132 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Cursos{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Cursos</h1>  
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+          <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarCursoModal">
+            Registrar nuevo curso
+          </button>
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th>Nombre del Curso</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for curso in cursos %}
+              <tr>
+                <td>{{ curso.nombre }}</td>
+                <td>
+                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editarCursoModal{{ curso.id }}">
+                    Editar
+                  </button>
+                  <button type="button" class="btn btn_eliminar btn-outline-danger" 
+                          onclick="confirmarEliminacion('{{ curso.id }}', '{{ curso.nombre }}')">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Modal para Editar Curso -->
+              <div class="modal fade" id="editarCursoModal{{ curso.id }}" tabindex="-1" aria-labelledby="editarCursoModalLabel{{ curso.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editarCursoModalLabel{{ curso.id }}">Editar Curso</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:editar_curso' curso.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                          <label for="nombre{{ curso.id }}" class="form-label">Nombre del Curso</label>
+                          <input type="text" class="form-control" id="nombre{{ curso.id }}" name="nombre" value="{{ curso.nombre }}">
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <tr>
+                <td colspan="2">No hay cursos registrados.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal para Agregar Curso -->
+  <div class="modal fade" id="agregarCursoModal" tabindex="-1" aria-labelledby="agregarCursoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="agregarCursoModalLabel">Registrar nuevo Curso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" action="{% url 'Modulo_admin:agregar_curso' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre del Curso</label>
+              <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: 1° Básico A" required>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Curso</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script para SweetAlert -->
+  <script>
+    // Función para confirmar eliminación 
+    function confirmarEliminacion(id, nombre) {
+      Swal.fire({
+        title: '¿Está seguro?',
+        text: `¿Desea eliminar el curso ${nombre}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirigir a la URL de eliminación con el ID correcto
+          window.location.href = "{% url 'Modulo_admin:eliminar_curso' 0 %}".replace('/0/', '/' + id + '/');
+        }
+      });
+    }
+  </script>
+    
+  {% if messages %}
+      {% for message in messages %}
+    <script>
+      mensaje('{{ message.tags }}', '{{ message }}');
+    </script>
+      {% endfor %}
+  {% endif %}
+
+{% endblock %}

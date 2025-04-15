@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm
-from .models import Administrador, Areas
+from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm
+from .models import Administrador, Areas, Curso
 from Modulo_funcionarios.models import RegistroSalida
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -437,8 +437,55 @@ def exportar_permisos_pdf(request):
 
 
 
-
-
 def exportar_salidas_pdf(request):
     """Exporta la tabla de salidas activas como HTML con descarga automática"""
     return redirect('Modulo_admin:historial_salidas')
+
+#MODULO ALUMNO / CURSOS
+
+@login_required(login_url='Modulo_admin:login_admin')
+def cursos_view(request):
+    # objects ya filtra los cursos eliminados gracias al manager personalizado
+    cursos = Curso.objects.all()
+    return render(request, 'alumnos_folder/cursos_folder/cursos.html', {'cursos': cursos})
+
+@login_required(login_url='Modulo_admin:login_admin')
+def registrar_curso_view(request):
+    if request.method == 'POST':
+        form = CursoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Curso registrado correctamente')
+            return redirect('Modulo_admin:cursos')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    return redirect('Modulo_admin:cursos')
+
+@login_required(login_url='Modulo_admin:login_admin')
+def editar_curso_view(request, id):
+    curso = get_object_or_404(Curso, id=id)
+    if request.method == 'POST':
+        form = CursoForm(request.POST, instance=curso)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Curso editado correctamente')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    return redirect('Modulo_admin:cursos')
+
+@login_required(login_url='Modulo_admin:login_admin')
+def eliminar_curso_view(request, id):
+    # Usar all_objects para encontrar incluso cursos eliminados
+    curso = get_object_or_404(Curso.all_objects, id=id)
+    
+    # Marcar como eliminado en lugar de eliminar físicamente
+    curso.is_deleted = True
+    curso.deleted_at = timezone.now()
+    curso.save()
+    
+    messages.success(request, 'Curso eliminado correctamente')
+    return redirect('Modulo_admin:cursos')

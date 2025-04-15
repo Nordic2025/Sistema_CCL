@@ -1,5 +1,5 @@
 from django import forms
-from .models import Administrador, Areas
+from .models import Administrador, Areas, Curso 
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -86,4 +86,14 @@ class AreasForm(forms.ModelForm):
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'encargado': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+# Agregar al final del archivo
+
+class CursoForm(forms.ModelForm):
+    class Meta:
+        model = Curso
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
         }

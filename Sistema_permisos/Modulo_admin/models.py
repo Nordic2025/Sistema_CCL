@@ -53,5 +53,31 @@ class Areas(models.Model):
 
     def __str__(self):
         return f"{self.encargado} - {self.nombre}"
+    
+    
+# Agregar al final del archivo
+
+class CursoManager(models.Manager):
+    def get_queryset(self):
+        # Excluir cursos marcados como eliminados
+        return super().get_queryset().filter(is_deleted=False)
+
+class Curso(models.Model):
+    nombre = models.CharField(max_length=50, verbose_name='Nombre del Curso')
+    is_deleted = models.BooleanField(default=False, verbose_name='Eliminado')
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de eliminación')
+    
+    # Managers
+    objects = CursoManager()  # Manager predeterminado que filtra cursos eliminados
+    all_objects = models.Manager()  # Manager para acceder a todos los cursos, incluso eliminados
+    
+    class Meta:
+        verbose_name = 'Curso'
+        verbose_name_plural = 'Cursos'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
 
 

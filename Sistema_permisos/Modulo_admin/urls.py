@@ -30,5 +30,12 @@ urlpatterns = [
 
     path('cambiar_contraseña/<int:id>/', views.cambiar_password_view, name='cambiar_contraseña'),
 
+    #MODULO ALUMNOS / CURSOS
+
+    path('cursos/', views.cursos_view, name='cursos'),
+    path('agregar_curso/', views.registrar_curso_view, name='agregar_curso'),
+    path('editar_curso/<int:id>/', views.editar_curso_view, name='editar_curso'),
+    path('eliminar_curso/<int:id>/', views.eliminar_curso_view, name='eliminar_curso')  
+
 ]
 
