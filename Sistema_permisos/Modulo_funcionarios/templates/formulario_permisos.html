@@ -72,6 +72,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const autorizadoPorSelect = document.getElementById('id_autorizado_por');
     const areaPertenecienteInput = document.getElementById('id_area_perteneciente');
     const rutInput = document.getElementById('id_rut');
+    const formulario = document.getElementById('formularioPermisos');
+    const btnRegistrarSalida = document.getElementById('btnRegistrarSalida');
+    
+    // Variable para controlar si el formulario ya fue enviado
+    let formularioEnviado = false;
     
     // Función para obtener el área del encargado seleccionado
     function getAreaEncargado(encargadoId) {
@@ -178,9 +183,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return rutRegex.test(rut);
     }
     
-    // Interceptar el envío del formulario para validar el RUT
-    const formulario = document.getElementById('formularioPermisos');
+    // Interceptar el envío del formulario para validar el RUT y prevenir múltiples envíos
     formulario.addEventListener('submit', function(event) {
+        // Si el formulario ya fue enviado, prevenir un nuevo envío
+        if (formularioEnviado) {
+            event.preventDefault();
+            return;
+        }
+        
         const rut = rutInput.value.trim();
         
         if (!validarFormatoRut(rut)) {
@@ -197,8 +207,24 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Enfocar el campo RUT para facilitar la corrección
             rutInput.focus();
+        } else {
+            // Marcar el formulario como enviado
+            formularioEnviado = true;
+            
+            // Deshabilitar el botón de envío y cambiar su texto
+            btnRegistrarSalida.disabled = true;
+            btnRegistrarSalida.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            
+            // Opcional: Mostrar un mensaje de procesamiento
+            Swal.fire({
+                title: 'Procesando',
+                text: 'Registrando su salida, por favor espere...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
         }
-        // Si el formato es correcto, el formulario se enviará normalmente
     });
 });
 </script>
