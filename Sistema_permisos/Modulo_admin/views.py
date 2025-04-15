@@ -436,11 +436,15 @@ def exportar_permisos_pdf(request):
     return redirect('Modulo_admin:historial_permisos')
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> db9e415073a3a80497995eb39e3770a1bd2448c3
 def exportar_salidas_pdf(request):
     """Exporta la tabla de salidas activas como HTML con descarga automática"""
     return redirect('Modulo_admin:historial_salidas')
 
+<<<<<<< HEAD
 #MODULO ALUMNO / CURSOS
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -489,3 +493,28 @@ def eliminar_curso_view(request, id):
     
     messages.success(request, 'Curso eliminado correctamente')
     return redirect('Modulo_admin:cursos')
+=======
+
+
+
+#Alumnos
+@login_required(login_url='Modulo_admin:login_admin')
+def alumnos_view(request):
+    return render(request, 'alumnos_folder/estudiantes_folder/tabla_estudiantes.html')
+
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def retiros_view(request):
+    return render(request, 'alumnos_folder/retiros_folder/tabla_retiros.html')
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def justificativos_view(request):
+    return render(request, 'alumnos_folder/justificativos_folder/tabla_justificativos.html')
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def grafico_alumnos_view(request):
+    return render(request, 'alumnos_folder/grafico_folder/grafico.html')
+>>>>>>> db9e415073a3a80497995eb39e3770a1bd2448c3

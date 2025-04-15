@@ -30,12 +30,32 @@ urlpatterns = [
 
     path('cambiar_contraseña/<int:id>/', views.cambiar_password_view, name='cambiar_contraseña'),
 
+<<<<<<< HEAD
     #MODULO ALUMNOS / CURSOS
 
     path('cursos/', views.cursos_view, name='cursos'),
     path('agregar_curso/', views.registrar_curso_view, name='agregar_curso'),
     path('editar_curso/<int:id>/', views.editar_curso_view, name='editar_curso'),
     path('eliminar_curso/<int:id>/', views.eliminar_curso_view, name='eliminar_curso')  
+=======
+
+    path('alumnos/', views.alumnos_view, name='alumnos'),
+    path('retiros/', views.retiros_view, name='retiros'),
+    path('justificaciones/', views.justificativos_view, name='justificaciones'),
+    path('grafico_alumnos/', views.grafico_alumnos_view, name='grafico_alumnos'),
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> db9e415073a3a80497995eb39e3770a1bd2448c3
 
 ]
 
