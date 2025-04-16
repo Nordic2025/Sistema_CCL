@@ -6,41 +6,159 @@ from .models import RegistroRetiro
 from .forms import RegistroRetiroForm
 from Modulo_admin.models import Alumno, Inspector, Curso
 
-def retiro_justificacion_view(request):
-    return render(request, 'retiro_justificacion.html')
-
 def verificar_apoderado(request):
     """Vista AJAX para verificar si un RUT corresponde a un apoderado autorizado"""
     if request.method == "GET" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         rut_apoderado = request.GET.get('rut_apoderado')
         
-        # Buscar alumnos donde este RUT sea apoderado titular o suplente
-        alumnos_apoderado = Alumno.objects.filter(
-            apoderado_titular=rut_apoderado
-        ) | Alumno.objects.filter(
-            apoderado_suplente=rut_apoderado
-        )
+        # Buscar alumnos donde este RUT sea apoderado titular, suplente o familiar autorizado
+        alumnos_apoderado = []
+        nombre_apoderado = None
         
-        if alumnos_apoderado.exists():
-            # Si es apoderado, devolver los alumnos asociados
-            alumnos_data = []
-            for alumno in alumnos_apoderado:
-                alumnos_data.append({
-                    'rut': alumno.rut,
-                    'nombre': alumno.nombre,
-                    'curso': alumno.curso
-                })
-            
+        # Intentar diferentes campos posibles para el RUT del apoderado
+        posibles_campos_apoderado = [
+            ('apoderado_titular', 'rut_apoderadoT'),
+            ('apoderado_suplente', 'rut_apoderadoS'),
+            ('familiar_1', 'rut_familiar_1'),
+            ('familiar_2', 'rut_familiar_2')
+        ]
+        
+        for nombre_campo, rut_campo in posibles_campos_apoderado:
+            try:
+                # Crear un diccionario de filtro dinámicamente
+                filtro = {rut_campo: rut_apoderado}
+                alumnos = Alumno.objects.filter(**filtro)
+                
+                for alumno in alumnos:
+                    # Determinar el tipo de persona basado en el campo
+                    tipo_persona = "Otro"
+                    if 'apoderado_titular' in nombre_campo:
+                        tipo_persona = "Apoderado"
+                        # Guardar el nombre del apoderado titular
+                        if not nombre_apoderado and hasattr(alumno, 'apoderado_titular'):
+                            nombre_apoderado = getattr(alumno, 'apoderado_titular')
+                    elif 'apoderado_suplente' in nombre_campo:
+                        tipo_persona = "Apoderado Suplente"
+                        # Guardar el nombre del apoderado suplente
+                        if not nombre_apoderado and hasattr(alumno, 'apoderado_suplente'):
+                            nombre_apoderado = getattr(alumno, 'apoderado_suplente')
+                    elif 'familiar_1' in nombre_campo:
+                        # Guardar el nombre del familiar 1
+                        if not nombre_apoderado and hasattr(alumno, 'familiar_1'):
+                            nombre_apoderado = getattr(alumno, 'familiar_1')
+                    elif 'familiar_2' in nombre_campo:
+                        # Guardar el nombre del familiar 2
+                        if not nombre_apoderado and hasattr(alumno, 'familiar_2'):
+                            nombre_apoderado = getattr(alumno, 'familiar_2')
+                    
+                    alumnos_apoderado.append({
+                        'rut': alumno.rut,
+                        'nombre': alumno.nombre,
+                        'curso': str(alumno.curso),
+                        'tipo_persona': tipo_persona
+                    })
+            except:
+                # Si el campo no existe en el modelo, simplemente continuamos
+                continue
+        
+        if alumnos_apoderado:
             return JsonResponse({
                 'valido': True,
-                'alumnos': alumnos_data,
-                'mensaje': 'Apoderado verificado correctamente'
+                'alumnos': alumnos_apoderado,
+                'nombre_apoderado': nombre_apoderado,  # Devolver el nombre del apoderado
+                'mensaje': 'Persona autorizada verificada correctamente'
             })
         else:
-            # Si no es apoderado, devolver error
             return JsonResponse({
                 'valido': False,
-                'mensaje': 'El RUT ingresado no corresponde a ningún apoderado registrado'
+                'mensaje': 'El RUT ingresado no corresponde a ninguna persona autorizada para retirar estudiantes'
+            })
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+def obtener_datos_alumno(request):
+    """Vista AJAX para obtener los datos de un alumno por su RUT"""
+    if request.method == "GET" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        rut_estudiante = request.GET.get('rut_estudiante')
+        rut_apoderado = request.GET.get('rut_apoderado')
+        
+        try:
+            # Buscar el alumno por RUT
+            alumno = Alumno.objects.get(rut=rut_estudiante)
+            
+            # Verificar si el apoderado está autorizado para este alumno
+            # Intentar diferentes campos posibles
+            autorizado = False
+            tipo_persona = None
+            
+            # Verificar apoderado titular
+            for campo in ['apoderado_titular', 'rut_apoderadoT', 'rut_apoderado_titular']:
+                try:
+                    if getattr(alumno, campo) == rut_apoderado:
+                        autorizado = True
+                        tipo_persona = "Apoderado"
+                        break
+                except:
+                    continue
+            
+            # Verificar apoderado suplente
+            if not autorizado:
+                for campo in ['apoderado_suplente', 'rut_apoderadoS', 'rut_apoderado_suplente']:
+                    try:
+                        if getattr(alumno, campo) == rut_apoderado:
+                            autorizado = True
+                            tipo_persona = "Apoderado Suplente"
+                            break
+                    except:
+                        continue
+            
+            # Verificar familiar 1
+            if not autorizado:
+                for campo in ['familiar_1', 'rut_familiar_1']:
+                    try:
+                        if getattr(alumno, campo) == rut_apoderado:
+                            autorizado = True
+                            tipo_persona = "Otro"
+                            break
+                    except:
+                        continue
+            
+            # Verificar familiar 2
+            if not autorizado:
+                for campo in ['familiar_2', 'rut_familiar_2']:
+                    try:
+                        if getattr(alumno, campo) == rut_apoderado:
+                            autorizado = True
+                            tipo_persona = "Otro"
+                            break
+                    except:
+                        continue
+            
+            # Buscar el inspector a cargo del curso
+            inspector = None
+            try:
+                inspectores = Inspector.objects.filter(cursos=alumno.curso)
+                if inspectores.exists():
+                    inspector = inspectores.first().nombre
+            except Exception:
+                inspector = "No asignado"
+            
+            # Devolver los datos del alumno
+            return JsonResponse({
+                'encontrado': True,
+                'autorizado': autorizado,
+                'tipo_persona': tipo_persona,
+                'nombre': alumno.nombre,
+                'curso': str(alumno.curso),
+                'inspector': inspector or "No asignado",
+                'mensaje': 'Datos del alumno obtenidos correctamente'
+            })
+        
+        except Alumno.DoesNotExist:
+            return JsonResponse({
+                'encontrado': False,
+                'mensaje': 'No se encontró ningún alumno con ese RUT'
             })
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -56,41 +174,38 @@ def obtener_datos_alumno(request):
             alumno = Alumno.objects.get(rut=rut_estudiante)
             
             # Verificar si el apoderado está autorizado para este alumno
-            es_apoderado = (alumno.apoderado_titular == rut_apoderado or 
-                           alumno.apoderado_suplente == rut_apoderado)
+            es_apoderado_titular = alumno.apoderado_titular == rut_apoderado
+            es_apoderado_suplente = alumno.apoderado_suplente == rut_apoderado
+            es_familiar_1 = alumno.rut_familiar_1 == rut_apoderado
+            es_familiar_2 = alumno.rut_familiar_2 == rut_apoderado
             
-            # Si es familiar registrado, también está autorizado
-            es_familiar = (alumno.familiar_1 and alumno.familiar_1_telefono and 
-                          (alumno.familiar_1 == rut_apoderado)) or \
-                         (alumno.familiar_2 and alumno.familiar_2_telefono and 
-                          (alumno.familiar_2 == rut_apoderado))
+            autorizado = es_apoderado_titular or es_apoderado_suplente or es_familiar_1 or es_familiar_2
             
             # Determinar el tipo de relación
             tipo_persona = None
-            if alumno.apoderado_titular == rut_apoderado:
-                tipo_persona = 'Apoderado'
-            elif alumno.apoderado_suplente == rut_apoderado:
-                tipo_persona = 'Apoderado Suplente'
-            elif es_familiar:
-                tipo_persona = 'Otro'
+            if es_apoderado_titular:
+                tipo_persona = "Apoderado"
+            elif es_apoderado_suplente:
+                tipo_persona = "Apoderado Suplente"
+            elif es_familiar_1 or es_familiar_2:
+                tipo_persona = "Otro"
             
             # Buscar el inspector a cargo del curso
             inspector = None
             try:
-                curso_obj = Curso.objects.get(nombre=alumno.curso)
-                inspectores = Inspector.objects.filter(cursos=curso_obj)
+                inspectores = Inspector.objects.filter(cursos=alumno.curso)
                 if inspectores.exists():
                     inspector = inspectores.first().nombre
-            except (Curso.DoesNotExist, Exception):
+            except Exception:
                 inspector = "No asignado"
             
             # Devolver los datos del alumno
             return JsonResponse({
                 'encontrado': True,
-                'autorizado': es_apoderado or es_familiar,
+                'autorizado': autorizado,
                 'tipo_persona': tipo_persona,
                 'nombre': alumno.nombre,
-                'curso': alumno.curso,
+                'curso': str(alumno.curso),
                 'inspector': inspector or "No asignado",
                 'mensaje': 'Datos del alumno obtenidos correctamente'
             })
@@ -102,6 +217,10 @@ def obtener_datos_alumno(request):
             })
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+# Las demás vistas permanecen igual
+def retiro_justificacion_view(request):
+    return render(request, 'retiro_justificacion.html')
 
 def formulario_retiro_view(request):
     if request.method == "POST":
