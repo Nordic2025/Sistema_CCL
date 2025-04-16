@@ -496,7 +496,7 @@ def eliminar_curso_view(request, id):
 @login_required(login_url='Modulo_admin:login_admin')
 def inspectores_view(request):
     # objects ya filtra los inspectores eliminados gracias al manager personalizado
-    inspectores = Inspector.objects.all()
+    inspectores = Inspector.objects.all().prefetch_related('cursos')
     cursos = Curso.objects.all()
     return render(request, 'alumnos_folder/inspectores_folder/inspectores.html', {
         'inspectores': inspectores,

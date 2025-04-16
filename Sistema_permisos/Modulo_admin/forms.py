@@ -166,9 +166,10 @@ class FamiliarForm(forms.Form):
 class CursoForm(forms.ModelForm):
     class Meta:
         model = Curso
-        fields = ['nombre']
+        fields = ['nombre', 'nivel']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'nivel': forms.Select(attrs={'class': 'form-select'}),
         }
 
 #INSPECTORES FORM
