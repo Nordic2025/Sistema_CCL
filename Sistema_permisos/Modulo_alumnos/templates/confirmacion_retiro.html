@@ -17,18 +17,16 @@
                 </div>
                 <div class="card-body p-5 text-center">
                     <div>
-                        <h2 class="mb-4 display-3" style="font-weight: bold;">¡Registro Exitoso!</h2>
+                        <h2 class="mb-4 display-4" style="font-weight: bold;">¡Retiro Exitoso!</h2>
                         <div class="alert alert-success p-3 mb-4">
                             <p class="mb-1">El retiro ha sido registrado correctamente</p>
+                            <h5 class="my-3">Estudiante: <strong>{{ registro.nombre_estudiante }}</strong></h5>
                         </div>
+                        
                         <div class="card mb-4 bg-light">
                             <div class="card-body">
                                 <h5 class="card-title">Detalles del retiro</h5>
                                 <ul class="list-group list-group-flush text-start">
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Estudiante:</span> 
-                                        <span>{{ registro.nombre_estudiante }}</span>
-                                    </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span class="fw-bold">RUT Estudiante:</span> 
                                         <span>{{ registro.rut_estudiante }}</span>
@@ -38,24 +36,24 @@
                                         <span>{{ registro.curso }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">RUT de quien retira:</span> 
-                                        <span>{{ registro.rut_persona_retira }}</span>
+                                        <span class="fw-bold">Retirado por:</span> 
+                                        <span>{{ registro.get_tipo_persona_display }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Relación:</span> 
-                                        <span>{{ registro.get_tipo_persona_display }}</span>
+                                        <span class="fw-bold">RUT de quien retira:</span> 
+                                        <span>{{ registro.rut_persona_retira }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span class="fw-bold">Motivo:</span> 
                                         <span>{{ registro.get_motivo_retiro_display }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Inspector a cargo:</span> 
-                                        <span>{{ registro.inspector_cargo }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
                                         <span class="fw-bold">Fecha y hora:</span> 
                                         <span>{{ registro.hora_retiro|date:"d/m/Y H:i" }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Inspector a cargo:</span> 
+                                        <span>{{ registro.inspector_cargo }}</span>
                                     </li>
                                 </ul>
                             </div>

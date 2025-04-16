@@ -14,64 +14,82 @@
                     <h3 class="mb-0">Registrar Retiro de Estudiante</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" class="mb-3" id="formularioRetiro">
-                        {% csrf_token %}
-                        
+                    <!-- Paso 1: Verificación de Apoderado -->
+                    <div id="paso1" class="mb-4">
+                        <h4 class="mb-3">Paso 1: Verificación de Apoderado</h4>
                         <div class="form-group mb-3">
-                            <label for="{{ form.rut_persona_retira.id_for_label }}" class="form-label">RUT de quien retira:</label>
-                            {{ form.rut_persona_retira }}
+                            <label for="rut_apoderado" class="form-label">RUT de quien retira:</label>
+                            <input type="text" class="form-control rut-input" id="rut_apoderado" placeholder="Ej: 12.345.678-9" required>
                             <small class="form-text text-muted">Ingrese el RUT con formato XX.XXX.XXX-X</small>
                         </div>
-                        
-                        <div class="form-group mb-3">
-                            <label class="form-label">Relación con el estudiante:</label>
-                            <div class="d-flex flex-wrap gap-3">
-                                {% for radio in form.tipo_persona %}
-                                <div class="form-check">
-                                    {{ radio.tag }}
-                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                        {{ radio.choice_label }}
-                                    </label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.rut_estudiante.id_for_label }}" class="form-label">RUT del estudiante:</label>
-                            {{ form.rut_estudiante }}
-                            <small class="form-text text-muted">Ingrese el RUT con formato XX.XXX.XXX-X</small>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.nombre_estudiante.id_for_label }}" class="form-label">Nombre del estudiante:</label>
-                            {{ form.nombre_estudiante }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.curso.id_for_label }}" class="form-label">Curso:</label>
-                            {{ form.curso }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.inspector_cargo.id_for_label }}" class="form-label">Inspector a cargo:</label>
-                            {{ form.inspector_cargo }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.motivo_retiro.id_for_label }}" class="form-label">Motivo del retiro:</label>
-                            {{ form.motivo_retiro }}
-                        </div>
-                        
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary" id="btnRegistrarRetiro">
-                                <i class="fas fa-save"></i> Registrar Retiro
+                            <button type="button" class="btn btn-primary" id="btnVerificarApoderado">
+                                <i class="fas fa-check-circle"></i> Verificar Apoderado
                             </button>
                         </div>
-                    </form>
+                        <div id="resultadoVerificacion" class="mt-3"></div>
+                    </div>
+                    
+                    <!-- Paso 2: Selección de Alumno y Registro de Retiro (inicialmente oculto) -->
+                    <div id="paso2" style="display: none;">
+                        <h4 class="mb-3">Paso 2: Registro de Retiro</h4>
+                        <form method="post" class="mb-3" id="formularioRetiro">
+                            {% csrf_token %}
+                            
+                            <input type="hidden" id="rut_persona_retira" name="rut_persona_retira">
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">Relación con el estudiante:</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    {% for radio in form.tipo_persona %}
+                                    <div class="form-check">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="rut_estudiante" class="form-label">RUT del estudiante:</label>
+                                <select class="form-select" id="rut_estudiante" name="rut_estudiante" required>
+                                    <option value="">Seleccione un estudiante</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="nombre_estudiante" class="form-label">Nombre del estudiante:</label>
+                                <input type="text" class="form-control" id="nombre_estudiante" name="nombre_estudiante" readonly>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="curso" class="form-label">Curso:</label>
+                                <input type="text" class="form-control" id="curso" name="curso" readonly>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="inspector_cargo" class="form-label">Inspector a cargo:</label>
+                                <input type="text" class="form-control" id="inspector_cargo" name="inspector_cargo" readonly>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="{{ form.motivo_retiro.id_for_label }}" class="form-label">Motivo del retiro:</label>
+                                {{ form.motivo_retiro }}
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="btnRegistrarRetiro">
+                                    <i class="fas fa-save"></i> Registrar Retiro
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                     
                     <div class="mt-3">
                         <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i>
                             <i class="fas fa-arrow-left"></i> Volver al inicio
                         </a>
                     </div>
@@ -83,13 +101,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const rutPersonaRetiraInput = document.getElementById('{{ form.rut_persona_retira.id_for_label }}');
-    const rutEstudianteInput = document.getElementById('{{ form.rut_estudiante.id_for_label }}');
-    const formulario = document.getElementById('formularioRetiro');
-    const btnRegistrarRetiro = document.getElementById('btnRegistrarRetiro');
-    
-    // Variable para controlar si el formulario ya fue enviado
-    let formularioEnviado = false;
+    // Referencias a elementos del DOM
+    const paso1 = document.getElementById('paso1');
+    const paso2 = document.getElementById('paso2');
+    const btnVerificarApoderado = document.getElementById('btnVerificarApoderado');
+    const rutApoderadoInput = document.getElementById('rut_apoderado');
+    const rutPersonaRetiraInput = document.getElementById('rut_persona_retira');
+    const resultadoVerificacion = document.getElementById('resultadoVerificacion');
+    const rutEstudianteSelect = document.getElementById('rut_estudiante');
+    const nombreEstudianteInput = document.getElementById('nombre_estudiante');
+    const cursoInput = document.getElementById('curso');
+    const inspectorCargoInput = document.getElementById('inspector_cargo');
+    const formularioRetiro = document.getElementById('formularioRetiro');
     
     // Función para formatear automáticamente el RUT
     function formatearRut(rut) {
@@ -153,10 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Aplicar formato a ambos campos RUT
-    aplicarFormatoRut(rutPersonaRetiraInput);
-    aplicarFormatoRut(rutEstudianteInput);
-    
     // Función para validar formato de RUT chileno
     function validarFormatoRut(rut) {
         // Expresión regular para validar formato XX.XXX.XXX-X
@@ -164,48 +183,244 @@ document.addEventListener('DOMContentLoaded', function() {
         return rutRegex.test(rut);
     }
     
-    // Interceptar el envío del formulario para validar los RUTs y prevenir múltiples envíos
-    formulario.addEventListener('submit', function(event) {
-                // Prevenir envíos múltiples
-                if (formularioEnviado) {
-            event.preventDefault();
-            return;
-        }
+    // Aplicar formato al campo RUT de apoderado
+    aplicarFormatoRut(rutApoderadoInput);
+    
+    // Función para verificar el apoderado
+    function verificarApoderado() {
+        const rutApoderado = rutApoderadoInput.value.trim();
         
-        const rutPersona = rutPersonaRetiraInput.value.trim();
-        const rutEstudiante = rutEstudianteInput.value.trim();
-        
-        // Validar formato de RUT de la persona que retira
-        if (!validarFormatoRut(rutPersona)) {
-            event.preventDefault();
+        // Validar formato del RUT
+        if (!validarFormatoRut(rutApoderado)) {
             Swal.fire({
                 title: 'Formato de RUT incorrecto',
-                text: 'Por favor ingrese el RUT de quien retira con el formato XX.XXX.XXX-X',
+                text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
                 icon: 'error',
                 confirmButtonText: 'Entendido'
             });
-            rutPersonaRetiraInput.focus();
             return;
         }
         
-        // Validar formato de RUT del estudiante
-        if (!validarFormatoRut(rutEstudiante)) {
-            event.preventDefault();
+        // Mostrar indicador de carga
+        resultadoVerificacion.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Verificando apoderado...</p>
+            </div>
+        `;
+        
+        // Realizar la petición AJAX para verificar el apoderado
+        fetch(`{% url 'Modulo_alumnos:verificar_apoderado' %}?rut_apoderado=${rutApoderado}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valido) {
+                // Si el apoderado es válido, mostrar mensaje de éxito y habilitar paso 2
+                resultadoVerificacion.innerHTML = `
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading">¡Apoderado verificado!</h5>
+                        <p>${data.mensaje}</p>
+                    </div>
+                `;
+                
+                // Guardar el RUT del apoderado en el campo oculto
+                rutPersonaRetiraInput.value = rutApoderado;
+                
+                // Llenar el select con los alumnos asociados al apoderado
+                rutEstudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
+                data.alumnos.forEach(alumno => {
+                    const option = document.createElement('option');
+                    option.value = alumno.rut;
+                    option.textContent = `${alumno.nombre} (${alumno.rut})`;
+                    option.dataset.nombre = alumno.nombre;
+                    option.dataset.curso = alumno.curso;
+                    rutEstudianteSelect.appendChild(option);
+                });
+                
+                // Mostrar el paso 2
+                paso2.style.display = 'block';
+                
+                // Desplazarse suavemente al paso 2
+                paso2.scrollIntoView({ behavior: 'smooth' });
+                
+            } else {
+                // Si el apoderado no es válido, mostrar mensaje de error
+                resultadoVerificacion.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Error de verificación</h5>
+                        <p>${data.mensaje}</p>
+                    </div>
+                `;
+                
+                // Ocultar el paso 2
+                paso2.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultadoVerificacion.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Error de conexión</h5>
+                    <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
+                </div>
+            `;
+            
+            // Ocultar el paso 2
+            paso2.style.display = 'none';
+        });
+    }
+    
+    // Evento para el botón de verificar apoderado
+    btnVerificarApoderado.addEventListener('click', verificarApoderado);
+    
+    // Evento para cuando se presiona Enter en el campo de RUT de apoderado
+    rutApoderadoInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            verificarApoderado();
+        }
+    });
+    
+    // Función para obtener los datos del alumno seleccionado
+    function obtenerDatosAlumno() {
+        const rutEstudiante = rutEstudianteSelect.value;
+        const rutApoderado = rutApoderadoInput.value.trim();
+        
+        if (!rutEstudiante) {
+            nombreEstudianteInput.value = '';
+            cursoInput.value = '';
+            inspectorCargoInput.value = '';
+            return;
+        }
+        
+        // Verificar si podemos obtener los datos directamente del select
+        const selectedOption = rutEstudianteSelect.options[rutEstudianteSelect.selectedIndex];
+        if (selectedOption.dataset.nombre && selectedOption.dataset.curso) {
+            nombreEstudianteInput.value = selectedOption.dataset.nombre;
+            cursoInput.value = selectedOption.dataset.curso;
+            
+            // Realizar la petición AJAX solo para obtener el inspector a cargo
+            fetch(`{% url 'Modulo_alumnos:obtener_datos_alumno' %}?rut_estudiante=${rutEstudiante}&rut_apoderado=${rutApoderado}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.encontrado) {
+                    inspectorCargoInput.value = data.inspector;
+                    
+                    // Seleccionar automáticamente el tipo de persona
+                    if (data.tipo_persona) {
+                        const radioButtons = document.querySelectorAll('input[name="tipo_persona"]');
+                        radioButtons.forEach(radio => {
+                            if (radio.value === data.tipo_persona) {
+                                radio.checked = true;
+                            }
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                inspectorCargoInput.value = 'No disponible';
+            });
+            
+            return;
+        }
+        
+        // Si no tenemos los datos en el select, realizar la petición AJAX completa
+        fetch(`{% url 'Modulo_alumnos:obtener_datos_alumno' %}?rut_estudiante=${rutEstudiante}&rut_apoderado=${rutApoderado}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.encontrado) {
+                nombreEstudianteInput.value = data.nombre;
+                cursoInput.value = data.curso;
+                inspectorCargoInput.value = data.inspector;
+                
+                // Seleccionar automáticamente el tipo de persona
+                if (data.tipo_persona) {
+                    const radioButtons = document.querySelectorAll('input[name="tipo_persona"]');
+                    radioButtons.forEach(radio => {
+                        if (radio.value === data.tipo_persona) {
+                            radio.checked = true;
+                        }
+                    });
+                }
+                
+                // Verificar si está autorizado
+                if (!data.autorizado) {
+                    Swal.fire({
+                        title: 'Advertencia',
+                        text: 'Esta persona no está registrada como apoderado autorizado para este estudiante.',
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            } else {
+                nombreEstudianteInput.value = '';
+                cursoInput.value = '';
+                inspectorCargoInput.value = '';
+                
+                Swal.fire({
+                    title: 'Estudiante no encontrado',
+                    text: data.mensaje,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            nombreEstudianteInput.value = '';
+            cursoInput.value = '';
+            inspectorCargoInput.value = '';
+            
             Swal.fire({
-                title: 'Formato de RUT incorrecto',
-                text: 'Por favor ingrese el RUT del estudiante con el formato XX.XXX.XXX-X',
+                title: 'Error de conexión',
+                text: 'Ocurrió un error al obtener los datos del estudiante.',
                 icon: 'error',
                 confirmButtonText: 'Entendido'
             });
-            rutEstudianteInput.focus();
-            return;
+        });
+    }
+    
+    // Evento para cuando cambia el estudiante seleccionado
+    rutEstudianteSelect.addEventListener('change', obtenerDatosAlumno);
+    
+    // Validar el formulario antes de enviar
+    formularioRetiro.addEventListener('submit', function(event) {
+        // Verificar que todos los campos estén completos
+        if (!rutPersonaRetiraInput.value || 
+            !document.querySelector('input[name="tipo_persona"]:checked') ||
+            !rutEstudianteSelect.value ||
+            !nombreEstudianteInput.value ||
+            !cursoInput.value ||
+            !document.querySelector('select[name="motivo_retiro"]').value) {
+            
+            event.preventDefault();
+            
+            Swal.fire({
+                title: 'Formulario incompleto',
+                text: 'Por favor complete todos los campos requeridos.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
         }
-        
-        // Si todo está correcto, marcar el formulario como enviado y mostrar indicador de carga
-        formularioEnviado = true;
-        btnRegistrarRetiro.disabled = true;
-        btnRegistrarRetiro.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
     });
 });
 </script>
 {% endblock %}
+

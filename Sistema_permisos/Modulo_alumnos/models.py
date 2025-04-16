@@ -39,4 +39,4 @@ class RegistroRetiro(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.nombre_estudiante} - {self.codigo_registro}"
+        return f"{self.nombre_estudiante} - {self.rut_estudiante}"
