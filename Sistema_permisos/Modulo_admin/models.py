@@ -62,7 +62,20 @@ class CursoManager(models.Manager):
         return super().get_queryset().filter(is_deleted=False)
 
 class Curso(models.Model):
+    # Opciones para el nivel educativo
+    NIVEL_CHOICES = [
+        ('Pre-basica', 'Pre-básica'),
+        ('Basica', 'Básica'),
+        ('Media', 'Media'),
+    ]
+    
     nombre = models.CharField(max_length=50, verbose_name='Nombre del Curso')
+    nivel = models.CharField(
+        max_length=20, 
+        choices=NIVEL_CHOICES, 
+        default='Basica',
+        verbose_name='Nivel Educativo'
+    )
     is_deleted = models.BooleanField(default=False, verbose_name='Eliminado')
     deleted_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de eliminación')
     
@@ -73,11 +86,10 @@ class Curso(models.Model):
     class Meta:
         verbose_name = 'Curso'
         verbose_name_plural = 'Cursos'
-        ordering = ['nombre']
+        ordering = ['nivel', 'nombre']
 
     def __str__(self):
-        return self.nombre
-
+        return f"{self.nombre} - {self.get_nivel_display()}"
 #MODELO INSPECTORES
 
 class InspectorManager(models.Manager):
@@ -125,6 +137,17 @@ class Inspector(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.rut}"
+    
+    def get_niveles_asignados(self):
+        """Retorna una cadena con los niveles educativos asignados al inspector"""
+        niveles = set()
+        for curso in self.cursos.all():
+            niveles.add(curso.get_nivel_display())
+        
+        if not niveles:
+            return "Sin niveles asignados"
+        
+        return " - ".join(sorted(niveles))
 
 
 
