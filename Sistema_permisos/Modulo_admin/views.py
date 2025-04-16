@@ -550,14 +550,52 @@ def eliminar_inspector_view(request, id):
 #Alumnos
 @login_required(login_url='Modulo_admin:login_admin')
 def alumnos_view(request):
+    # Iniciar con todos los alumnos no eliminados
     alumnos = Alumno.objects.all()
-    form = AlumnoForm()  # Form for the modal
-    familiar_form = FamiliarForm()  # Form for adding family members
-    return render(request, 'alumnos_folder/estudiantes_folder/tabla_estudiantes.html', {
+    cursos = Curso.objects.all()
+
+    # Obtener parámetros de filtrado
+    busqueda = request.GET.get('busqueda', '')
+    curso_filtro = request.GET.get('curso', '')
+    curso_nombre = ""
+    
+    # Aplicar búsqueda por nombre o RUT si se proporciona
+    if busqueda:
+        # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
+        busqueda_rut = busqueda.replace('.', '').replace('-', '')
+        alumnos = alumnos.filter(
+            Q(nombre__icontains=busqueda) | 
+            Q(rut__icontains=busqueda_rut)
+        )
+    
+    # Filtrar por curso si se proporciona
+    if curso_filtro:
+        try:
+            # Obtener el objeto curso para mostrar su nombre en los filtros activos
+            curso_obj = Curso.objects.get(id=curso_filtro)
+            curso_nombre = curso_obj.nombre
+            # Filtrar alumnos por el curso seleccionado
+            alumnos = alumnos.filter(curso__id=curso_filtro)
+        except Curso.DoesNotExist:
+            pass
+        
+    
+    form = AlumnoForm()
+    familiar_form = FamiliarForm()
+    
+    context = {
         'alumnos': alumnos,
         'form': form,
-        'familiar_form': familiar_form
-    })
+        'familiar_form': familiar_form,
+        'busqueda': busqueda,
+        'curso_filtro': curso_filtro,
+        'cursos': cursos,
+        'curso_nombre': curso_nombre,
+        'total_registros': alumnos.count()
+    }
+    
+    return render(request, 'alumnos_folder/estudiantes_folder/tabla_estudiantes.html', context)
+
 
 
 
@@ -598,9 +636,35 @@ def editar_alumno(request, id):
             if Alumno.objects.filter(rut=rut).exclude(id=id).exists():
                 messages.error(request, f'Ya existe otro alumno registrado con el RUT {rut}')
                 return redirect('Modulo_admin:alumnos')
+            alumno_actualizado = form.save(commit=False)
+
+             # Actualizar información de familiares si se proporcionó
+            # Familiar 1
+            familiar1_nombre = request.POST.get('familiar_1', '')
+            familiar1_rut = request.POST.get('rut_familiar_1', '')
+            familiar1_relacion = request.POST.get('familiar_1_relacion', '')
+            familiar1_telefono = request.POST.get('familiar_1_telefono', '')
+            
+            if familiar1_nombre:
+                alumno_actualizado.familiar_1 = familiar1_nombre
+                alumno_actualizado.rut_familiar_1 = familiar1_rut
+                alumno_actualizado.familiar_1_relacion = familiar1_relacion
+                alumno_actualizado.familiar_1_telefono = familiar1_telefono
+            
+            # Familiar 2
+            familiar2_nombre = request.POST.get('familiar_2', '')
+            familiar2_rut = request.POST.get('rut_familiar_2', '')
+            familiar2_relacion = request.POST.get('familiar_2_relacion', '')
+            familiar2_telefono = request.POST.get('familiar_2_telefono', '')
+            
+            if familiar2_nombre:
+                alumno_actualizado.familiar_2 = familiar2_nombre
+                alumno_actualizado.rut_familiar_2 = familiar2_rut
+                alumno_actualizado.familiar_2_relacion = familiar2_relacion
+                alumno_actualizado.familiar_2_telefono = familiar2_telefono
             
             # Guardar los cambios
-            alumno = form.save()
+            alumno_actualizado.save()
             messages.success(request, f'Alumno {alumno.nombre} actualizado correctamente')
         else:
             # Si el formulario no es válido, mostrar errores
@@ -624,6 +688,7 @@ def eliminar_alumno(request, id):
 
 
 
+
 @login_required(login_url='Modulo_admin:login_admin')
 def agregar_familiar(request, id, familiar_num):
     """Vista para agregar un familiar a un alumno."""
@@ -635,17 +700,20 @@ def agregar_familiar(request, id, familiar_num):
             familiar_nombre = form.cleaned_data['familiar_nombre']
             familiar_relacion = form.cleaned_data['familiar_relacion']
             familiar_telefono = form.cleaned_data['familiar_telefono']
+            familiar_rut = form.cleaned_data['familiar_rut']
             
             # Actualizar el familiar correspondiente
             if familiar_num == 1:
                 alumno.familiar_1 = familiar_nombre
                 alumno.familiar_1_relacion = familiar_relacion
                 alumno.familiar_1_telefono = familiar_telefono
+                alumno.rut_familiar_1 = familiar_rut
                 mensaje = f'Familiar 1 agregado correctamente para {alumno.nombre}'
             elif familiar_num == 2:
                 alumno.familiar_2 = familiar_nombre
                 alumno.familiar_2_relacion = familiar_relacion
                 alumno.familiar_2_telefono = familiar_telefono
+                alumno.rut_familiar_2 = familiar_rut
                 mensaje = f'Familiar 2 agregado correctamente para {alumno.nombre}'
             
             # Guardar los cambios

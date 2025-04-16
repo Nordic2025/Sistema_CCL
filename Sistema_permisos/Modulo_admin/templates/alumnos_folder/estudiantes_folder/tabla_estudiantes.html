@@ -13,11 +13,75 @@
       Registrar nuevo alumno
     </button>
     {% endif %}
+
+    <!-- Filtros combinados (buscador, curso y nivel) -->
+    <div class="row mb-4 mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filtros</h5>
+          </div>
+          <div class="card-body">
+            <form id="filtroForm" method="get" action="{% url 'Modulo_admin:alumnos' %}" class="row g-3">
+              <!-- Buscador -->
+              <div class="col-md-4">
+                <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
+                <input type="text" id="busqueda" name="busqueda" class="form-control" placeholder="Nombre o RUT"
+                  value="{{ busqueda }}" autocomplete="off">
+              </div>
+
+              <!-- Filtro por curso -->
+              <div class="col-md-3">
+                <label for="curso" class="form-label">Curso:</label>
+                <select class="form-select" id="curso" name="curso">
+                  <option value="">Todos los cursos</option>
+                  {% for curso in cursos %}
+                  <option value="{{ curso.id }}" {% if curso_filtro == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <div class="d-grid gap-2 w-100">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                  </button>
+                  {% if busqueda or curso_filtro or nivel_filtro %}
+                  <a href="{% url 'Modulo_admin:alumnos' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Limpiar filtros
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Indicadores de filtros activos -->
+    {% if busqueda or curso_filtro or nivel_filtro %}
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="alert alert-info">
+          <h5 class="alert-heading">Filtros activos:</h5>
+          <ul class="mb-0">
+            {% if busqueda %}
+            <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
+            {% endif %}
+            {% if curso_filtro %}
+            <li>Curso: <strong>{{ curso_nombre }}</strong></li>
+            {% endif %}
+            </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
     
     <div class="row">
       <div class="col-md-12">
         <div class="tabla_global">
-
           <table class="tabla_ancha">
             <thead class="thead_custom">
               <tr>
@@ -25,6 +89,7 @@
                 <th>Nombre</th>
                 <th>Curso</th>
                 <th>Apoderado Titular</th>
+                <th>Rut Apoderado Titular</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -60,7 +125,7 @@
               {% if user.is_superuser %}
               <!-- Modal para Editar Alumno -->
               <div class="modal fade" id="editarAlumnoModal{{ alumno.id }}" tabindex="-1" aria-labelledby="editarAlumnoModalLabel{{ alumno.id }}" aria-hidden="true">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg"> 
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="editarAlumnoModalLabel{{ alumno.id }}">Editar Alumno</h5>
@@ -69,40 +134,92 @@
                     <div class="modal-body">
                       <form method="POST" action="{% url 'Modulo_admin:editar_alumno' alumno.id %}" class="alumnoForm">
                         {% csrf_token %}
-                        <div class="mb-3">
-                          <label for="rut{{ alumno.id }}" class="form-label">RUT</label>
-                          <input type="text" class="form-control rut-input" id="rut{{ alumno.id }}" name="rut" value="{{ alumno.rut }}">
-                        </div>
-                        <div class="mb-3">
-                          <label for="nombre{{ alumno.id }}" class="form-label">Nombre Completo</label>
-                          <input type="text" class="form-control" id="nombre{{ alumno.id }}" name="nombre" value="{{ alumno.nombre }}">
-                        </div>
-                        <div class="mb-3">
-                          <label for="curso{{ alumno.id }}" class="form-label">Curso</label>
-                          <input type="text" class="form-control" id="curso{{ alumno.id }}" name="curso" value="{{ alumno.curso }}">
-                        </div>
-                        <div class="mb-3">
-                          <label for="apoderado_titular{{ alumno.id }}" class="form-label">Apoderado Titular</label>
-                          <input type="text" class="form-control" id="apoderado_titular{{ alumno.id }}" name="apoderado_titular" value="{{ alumno.apoderado_titular }}">
-                        </div>
-                        <div class="mb-3">
-                          <label for="apoderado_suplente{{ alumno.id }}" class="form-label">Apoderado Suplente</label>
-                          <input type="text" class="form-control" id="apoderado_suplente{{ alumno.id }}" name="apoderado_suplente" value="{{ alumno.apoderado_suplente }}">
+                        
+                        <div class="row">
+                          <div class="col-md-6">
+                            <h5 class="mb-3">Información del Alumno</h5>
+                            <div class="mb-3">
+                              <label for="rut{{ alumno.id }}" class="form-label">RUT</label>
+                              <input type="text" class="form-control rut-input" id="rut{{ alumno.id }}" name="rut" value="{{ alumno.rut }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="nombre{{ alumno.id }}" class="form-label">Nombre Completo</label>
+                              <input type="text" class="form-control" id="nombre{{ alumno.id }}" name="nombre" value="{{ alumno.nombre }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="curso{{ alumno.id }}" class="form-label">Curso</label>
+                              <select class="form-control" id="curso{{ alumno.id }}" name="curso">
+                                {% for curso in cursos %}
+                                  <option value="{{ curso.id }}" {% if alumno.curso.id == curso.id %}selected{% endif %}>{{ curso.nombre }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                          </div>
+                          
+                          <div class="col-md-6">
+                            <h5 class="mb-3">Información de Apoderados</h5>
+                            <div class="mb-3">
+                              <label for="apoderado_titular{{ alumno.id }}" class="form-label">Apoderado Titular</label>
+                              <input type="text" class="form-control" id="apoderado_titular{{ alumno.id }}" name="apoderado_titular" value="{{ alumno.apoderado_titular }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="rut_apoderadoT{{ alumno.id }}" class="form-label">RUT Apoderado Titular</label>
+                              <input type="text" class="form-control rut-input" id="rut_apoderadoT{{ alumno.id }}" name="rut_apoderadoT" value="{{ alumno.rut_apoderadoT|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="apoderado_suplente{{ alumno.id }}" class="form-label">Apoderado Suplente</label>
+                              <input type="text" class="form-control" id="apoderado_suplente{{ alumno.id }}" name="apoderado_suplente" value="{{ alumno.apoderado_suplente|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="rut_apoderadoS{{ alumno.id }}" class="form-label">RUT Apoderado Suplente</label>
+                              <input type="text" class="form-control rut-input" id="rut_apoderadoS{{ alumno.id }}" name="rut_apoderadoS" value="{{ alumno.rut_apoderadoS|default:'' }}">
+                            </div>
+                          </div>
                         </div>
                         
-                        {% if alumno.familiar_1 %}
-                        <div class="mb-3">
-                          <label for="familiar_1{{ alumno.id }}" class="form-label">Familiar 1</label>
-                          <input type="text" class="form-control" id="familiar_1{{ alumno.id }}" name="familiar_1" value="{{ alumno.familiar_1 }}">
-                        </div>
-                        {% endif %}
+                        <hr>
                         
-                        {% if alumno.familiar_2 %}
-                        <div class="mb-3">
-                          <label for="familiar_2{{ alumno.id }}" class="form-label">Familiar 2</label>
-                          <input type="text" class="form-control" id="familiar_2{{ alumno.id }}" name="familiar_2" value="{{ alumno.familiar_2 }}">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <h5 class="mb-3">Familiar 1</h5>
+                            <div class="mb-3">
+                              <label for="familiar_1{{ alumno.id }}" class="form-label">Nombre</label>
+                              <input type="text" class="form-control" id="familiar_1{{ alumno.id }}" name="familiar_1" value="{{ alumno.familiar_1|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="rut_familiar_1{{ alumno.id }}" class="form-label">RUT</label>
+                              <input type="text" class="form-control rut-input" id="rut_familiar_1{{ alumno.id }}" name="rut_familiar_1" value="{{ alumno.rut_familiar_1|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="familiar_1_relacion{{ alumno.id }}" class="form-label">Relación</label>
+                              <input type="text" class="form-control" id="familiar_1_relacion{{ alumno.id }}" name="familiar_1_relacion" value="{{ alumno.familiar_1_relacion|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="familiar_1_telefono{{ alumno.id }}" class="form-label">Teléfono</label>
+                              <input type="text" class="form-control" id="familiar_1_telefono{{ alumno.id }}" name="familiar_1_telefono" value="{{ alumno.familiar_1_telefono|default:'' }}">
+                            </div>
+                          </div>
+                          
+                          <div class="col-md-6">
+                            <h5 class="mb-3">Familiar 2</h5>
+                            <div class="mb-3">
+                              <label for="familiar_2{{ alumno.id }}" class="form-label">Nombre</label>
+                              <input type="text" class="form-control" id="familiar_2{{ alumno.id }}" name="familiar_2" value="{{ alumno.familiar_2|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="rut_familiar_2{{ alumno.id }}" class="form-label">RUT</label>
+                              <input type="text" class="form-control rut-input" id="rut_familiar_2{{ alumno.id }}" name="rut_familiar_2" value="{{ alumno.rut_familiar_2|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="familiar_2_relacion{{ alumno.id }}" class="form-label">Relación</label>
+                              <input type="text" class="form-control" id="familiar_2_relacion{{ alumno.id }}" name="familiar_2_relacion" value="{{ alumno.familiar_2_relacion|default:'' }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="familiar_2_telefono{{ alumno.id }}" class="form-label">Teléfono</label>
+                              <input type="text" class="form-control" id="familiar_2_telefono{{ alumno.id }}" name="familiar_2_telefono" value="{{ alumno.familiar_2_telefono|default:'' }}">
+                            </div>
+                          </div>
                         </div>
-                        {% endif %}
                         
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -117,42 +234,76 @@
 
               <!-- Modal para Ver Detalle -->
               <div class="modal fade" id="verDetalleModal{{ alumno.id }}" tabindex="-1" aria-labelledby="verDetalleModalLabel{{ alumno.id }}" aria-hidden="true">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="verDetalleModalLabel{{ alumno.id }}">Detalles del Alumno | {{ alumno.nombre }}</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                      <div class="card">
-                        <div class="card-body">
-                          <h5 class="card-title">Información Personal</h5>
-                          <p><strong>RUT:</strong> {{ alumno.rut }}</p>
-                          <p><strong>Nombre Completo:</strong> {{ alumno.nombre }}</p>
-                          <p><strong>Curso:</strong> {{ alumno.curso }}</p>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="card mb-3">
+                            <div class="card-body">
+                              <h5 class="card-title">Información Personal</h5>
+                              <p><strong>RUT:</strong> {{ alumno.rut }}</p>
+                              <p><strong>Nombre Completo:</strong> {{ alumno.nombre }}</p>
+                              <p><strong>Curso:</strong> {{ alumno.curso.nombre }}</p>
+                            </div>
+                          </div>
                           
-                          <h5 class="card-title mt-4">Apoderados</h5>
-                          <p><strong>Apoderado Titular:</strong> {{ alumno.apoderado_titular }}</p>
-                          <p><strong>Apoderado Suplente:</strong> {{ alumno.apoderado_suplente|default:"No registrado" }}</p>
+                          <div class="card">
+                            <div class="card-body">
+                              <h5 class="card-title">Apoderados</h5>
+                              <p><strong>Apoderado Titular:</strong> {{ alumno.apoderado_titular }}</p>
+                              <p><strong>RUT Apoderado Titular:</strong> {{ alumno.rut_apoderadoT|default:"No registrado" }}</p>
+                              <p><strong>Apoderado Suplente:</strong> {{ alumno.apoderado_suplente|default:"No registrado" }}</p>
+                              <p><strong>RUT Apoderado Suplente:</strong> {{ alumno.rut_apoderadoS|default:"No registrado" }}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                          <h5 class="card-title mb-3">Familiares Adicionales</h5>
                           
                           {% if alumno.familiar_1 %}
-                          <p><strong>Familiar 1:</strong> {{ alumno.familiar_1 }}</p>
+                          <div class="card mb-3">
+                            <div class="card-body">
+                              <h6 class="card-subtitle mb-2 text-muted">Familiar 1</h6>
+                              <p><strong>Nombre:</strong> {{ alumno.familiar_1 }}</p>
+                              <p><strong>RUT:</strong> {{ alumno.rut_familiar_1|default:"No registrado" }}</p>
+                              <p><strong>Relación:</strong> {{ alumno.familiar_1_relacion|default:"No especificada" }}</p>
+                              <p><strong>Teléfono:</strong> {{ alumno.familiar_1_telefono|default:"No registrado" }}</p>
+                            </div>
+                          </div>
                           {% else %}
-                          <button type="button" class="btn btn-sm btn-success mt-2" 
-                                  data-bs-toggle="modal" 
-                                  data-bs-target="#agregarFamiliar1Modal{{ alumno.id }}">
-                            + Añadir Familiar 1
-                          </button>
+                          <div class="mb-3">
+                            <button type="button" class="btn btn-sm btn-success" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#agregarFamiliar1Modal{{ alumno.id }}">
+                              + Añadir Familiar 1
+                            </button>
+                          </div>
                           {% endif %}
                           
                           {% if alumno.familiar_2 %}
-                          <p><strong>Familiar 2:</strong> {{ alumno.familiar_2 }}</p>
+                          <div class="card">
+                            <div class="card-body">
+                              <h6 class="card-subtitle mb-2 text-muted">Familiar 2</h6>
+                              <p><strong>Nombre:</strong> {{ alumno.familiar_2 }}</p>
+                              <p><strong>RUT:</strong> {{ alumno.rut_familiar_2|default:"No registrado" }}</p>
+                              <p><strong>Relación:</strong> {{ alumno.familiar_2_relacion|default:"No especificada" }}</p>
+                              <p><strong>Teléfono:</strong> {{ alumno.familiar_2_telefono|default:"No registrado" }}</p>
+                            </div>
+                          </div>
                           {% elif alumno.familiar_1 %}
-                          <button type="button" class="btn btn-sm btn-success mt-2" 
-                                  data-bs-toggle="modal" 
-                                  data-bs-target="#agregarFamiliar2Modal{{ alumno.id }}">
-                            + Añadir Familiar 2
-                          </button>
+                          <div>
+                            <button type="button" class="btn btn-sm btn-success" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#agregarFamiliar2Modal{{ alumno.id }}">
+                              + Añadir Familiar 2
+                            </button>
+                          </div>
                           {% endif %}
                         </div>
                       </div>
@@ -187,54 +338,11 @@
                               {% endif %}
                             </div>
                             <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_relacion.id_for_label }}" class="form-label">Relación con el Alumno</label>
-                              {{ familiar_form.familiar_relacion }}
-                              {% if familiar_form.familiar_relacion.errors %}
+                              <label for="{{ familiar_form.familiar_rut.id_for_label }}" class="form-label">RUT del Familiar</label>
+                              {{ familiar_form.familiar_rut }}
+                              {% if familiar_form.familiar_rut.errors %}
                                 <div class="text-danger">
-                                  {% for error in familiar_form.familiar_relacion.errors %}
-                                    {{ error }}
-                                  {% endfor %}
-                                </div>
-                              {% endif %}
-                            </div>
-                            <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_telefono.id_for_label }}" class="form-label">Teléfono de Contacto</label>
-                              {{ familiar_form.familiar_telefono }}
-                              {% if familiar_form.familiar_telefono.errors %}
-                                <div class="text-danger">
-                                  {% for error in familiar_form.familiar_telefono.errors %}
-                                    {{ error }}
-                                  {% endfor %}
-                                </div>
-                              {% endif %}
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                              <button type="submit" class="btn btn-success">Guardar Familiar</button>
-                            </div>
-                        </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Modal para Añadir Familiar 2 -->
-              <div class="modal fade" id="agregarFamiliar2Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar2ModalLabel{{ alumno.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="agregarFamiliar2ModalLabel{{ alumno.id }}">Añadir Familiar 2 | {{ alumno.nombre }}</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 2%}" class="familiarForm">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
-                              {{ familiar_form.familiar_nombre }}
-                              {% if familiar_form.familiar_nombre.errors %}
-                                <div class="text-danger">
-                                  {% for error in familiar_form.familiar_nombre.errors %}
+                                  {% for error in familiar_form.familiar_rut.errors %}
                                     {{ error }}
                                   {% endfor %}
                                 </div>
@@ -272,6 +380,71 @@
                 </div>
               </div>
 
+            <!-- Modal para Añadir Familiar 2 -->
+            <div class="modal fade" id="agregarFamiliar2Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="agregarFamiliar2ModalLabel{{ alumno.id }}">Añadir Familiar 2 | {{ alumno.nombre }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 2 %}" class="familiarForm">
+                          {% csrf_token %}
+                          <div class="mb-3">
+                            <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
+                            {{ familiar_form.familiar_nombre }}
+                            {% if familiar_form.familiar_nombre.errors %}
+                              <div class="text-danger">
+                                {% for error in familiar_form.familiar_nombre.errors %}
+                                  {{ error }}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                          <div class="mb-3">
+                            <label for="{{ familiar_form.familiar_rut.id_for_label }}" class="form-label">RUT del Familiar</label>
+                            {{ familiar_form.familiar_rut }}
+                            {% if familiar_form.familiar_rut.errors %}
+                              <div class="text-danger">
+                                {% for error in familiar_form.familiar_rut.errors %}
+                                  {{ error }}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                          <div class="mb-3">
+                            <label for="{{ familiar_form.familiar_relacion.id_for_label }}" class="form-label">Relación con el Alumno</label>
+                            {{ familiar_form.familiar_relacion }}
+                            {% if familiar_form.familiar_relacion.errors %}
+                              <div class="text-danger">
+                                {% for error in familiar_form.familiar_relacion.errors %}
+                                  {{ error }}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                          <div class="mb-3">
+                            <label for="{{ familiar_form.familiar_telefono.id_for_label }}" class="form-label">Teléfono de Contacto</label>
+                            {{ familiar_form.familiar_telefono }}
+                            {% if familiar_form.familiar_telefono.errors %}
+                              <div class="text-danger">
+                                {% for error in familiar_form.familiar_telefono.errors %}
+                                  {{ error }}
+                                {% endfor %}
+                              </div>
+                            {% endif %}
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">Guardar Familiar</button>
+                          </div>
+                      </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
               {% empty %}
               <tr>
                 <td colspan="5">No hay alumnos registrados.</td>
@@ -282,81 +455,120 @@
         </div>
       </div>
     </div>
-  </div>
-  
-  {% if user.is_superuser %}
-  <!-- Modal para Agregar Alumno -->
-  <div class="modal fade" id="agregarAlumnoModal" tabindex="-1" aria-labelledby="agregarAlumnoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="agregarAlumnoModalLabel">Registrar nuevo Alumno</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Contador de resultados -->
+    <div class="row mt-3 mb-3">
+      <div class="col-md-12">
+        <div class="alert alert-secondary">
+          <strong>Total de registros:</strong> <span id="totalRegistros">{{ total_registros }}</span>
         </div>
-        <div class="modal-body">
-            <form method="POST" action="{% url 'Modulo_admin:agregar_alumno' %}" class="alumnoForm">
+      </div>
+    </div>
+  </div>
+
+
+  
+      {% if user.is_superuser %}
+      <!-- Modal para Agregar Alumno -->
+      <div class="modal fade" id="agregarAlumnoModal" tabindex="-1" aria-labelledby="agregarAlumnoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="agregarAlumnoModalLabel">Registrar nuevo Alumno</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="{% url 'Modulo_admin:agregar_alumno' %}" class="alumnoForm">
                 {% csrf_token %}
-                <div class="mb-3">
-                  <label for="{{ form.rut.id_for_label }}" class="form-label">RUT</label>
-                  {{ form.rut }}
-                  {% if form.rut.errors %}
-                    <div class="text-danger">
-                      {% for error in form.rut.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                </div>
-                <div class="mb-3">
-                  <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre Completo</label>
-                  {{ form.nombre }}
-                  {% if form.nombre.errors %}
-                    <div class="text-danger">
-                      {% for error in form.nombre.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                </div>
-                <div class="mb-3">
-                  <label for="{{ form.curso.id_for_label }}" class="form-label">Curso</label>
-                  {{ form.curso }}
-                  {% if form.curso.errors %}
-                    <div class="text-danger">
-                      {% for error in form.curso.errors %}
-                        {{ error }}
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-                </div>
                 
-                <hr>
-                <h5>Información de Apoderados</h5>
-                
-                <div class="mb-3">
-                  <label for="{{ form.apoderado_titular.id_for_label }}" class="form-label">Apoderado Titular</label>
-                  {{ form.apoderado_titular }}
-                  {% if form.apoderado_titular.errors %}
-                    <div class="text-danger">
-                      {% for error in form.apoderado_titular.errors %}
-                        {{ error }}
-                      {% endfor %}
+                <div class="row">
+                  <div class="col-md-6">
+                    <h5 class="mb-3">Información del Alumno</h5>
+                    <div class="mb-3">
+                      <label for="{{ form.rut.id_for_label }}" class="form-label">RUT</label>
+                      {{ form.rut }}
+                      {% if form.rut.errors %}
+                        <div class="text-danger">
+                          {% for error in form.rut.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
                     </div>
-                  {% endif %}
-                </div>
-                <div class="mb-3">
-                  <label for="{{ form.apoderado_suplente.id_for_label }}" class="form-label">Apoderado Suplente</label>
-                  {{ form.apoderado_suplente }}
-                  <small class="form-text text-muted">Opcional</small>
-                  {% if form.apoderado_suplente.errors %}
-                    <div class="text-danger">
-                      {% for error in form.apoderado_suplente.errors %}
-                        {{ error }}
-                      {% endfor %}
+                    <div class="mb-3">
+                      <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre Completo</label>
+                      {{ form.nombre }}
+                      {% if form.nombre.errors %}
+                        <div class="text-danger">
+                          {% for error in form.nombre.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
                     </div>
-                  {% endif %}
+                    <div class="mb-3">
+                      <label for="{{ form.curso.id_for_label }}" class="form-label">Curso</label>
+                      {{ form.curso }}
+                      {% if form.curso.errors %}
+                        <div class="text-danger">
+                          {% for error in form.curso.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <h5 class="mb-3">Información de Apoderados</h5>
+                    <div class="mb-3">
+                      <label for="{{ form.apoderado_titular.id_for_label }}" class="form-label">Apoderado Titular</label>
+                      {{ form.apoderado_titular }}
+                      {% if form.apoderado_titular.errors %}
+                        <div class="text-danger">
+                          {% for error in form.apoderado_titular.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="mb-3">
+                      <label for="{{ form.rut_apoderadoT.id_for_label }}" class="form-label">RUT Apoderado Titular</label>
+                      {{ form.rut_apoderadoT }}
+                      {% if form.rut_apoderadoT.errors %}
+                        <div class="text-danger">
+                          {% for error in form.rut_apoderadoT.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="mb-3">
+                      <label for="{{ form.apoderado_suplente.id_for_label }}" class="form-label">Apoderado Suplente</label>
+                      {{ form.apoderado_suplente }}
+                      <small class="form-text text-muted">Opcional</small>
+                      {% if form.apoderado_suplente.errors %}
+                        <div class="text-danger">
+                          {% for error in form.apoderado_suplente.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="mb-3">
+                      <label for="{{ form.rut_apoderadoS.id_for_label }}" class="form-label">RUT Apoderado Suplente</label>
+                      {{ form.rut_apoderadoS }}
+                      <small class="form-text text-muted">Opcional</small>
+                      {% if form.rut_apoderadoS.errors %}
+                        <div class="text-danger">
+                          {% for error in form.rut_apoderadoS.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
                 </div>
-                
+            
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                   <button type="submit" class="btn btn-primary">Guardar Alumno</button>
@@ -372,53 +584,10 @@
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       
       <script>
-        // Función para confirmar eliminación 
-        function confirmarEliminacion(id, nombre) {
-          Swal.fire({
-            title: '¿Está seguro?',
-            text: `¿Desea eliminar al alumno ${nombre}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              // Redirigir a la URL de eliminación con el ID correcto
-              window.location.href = "{% url 'Modulo_admin:eliminar_alumno' 0 %}".replace('/0/', '/' + id + '/');
-            }
-          });
-        }
-        
-        // Validación al enviar los formularios
-        const alumnoForms = document.querySelectorAll('.alumnoForm');
-        alumnoForms.forEach(function(form) {
-            form.addEventListener('submit', function (e) {
-                const rutInput = this.querySelector('.rut-input');
-                if (rutInput) {
-                    const rutValue = rutInput.value;
-                    
-                    if (!validarRut(rutValue)) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'error',
-                            title: '¡RUT inválido!',
-                            text: 'El RUT ingresado no es válido. Debe tener formato XX.XXX.XXX-X y un dígito verificador correcto.',
-                            confirmButtonText: 'Entendido'
-                        });
-                    }
-                }
-            });
-        });
-      </script>
-    
-      <script>
         document.addEventListener('DOMContentLoaded', function() {
-          // Formateo de RUT
-          const rutInputs = document.querySelectorAll('.rut-input');
-          rutInputs.forEach(function(input) {
-            input.addEventListener('input', function() {
+          // Función para aplicar el formateo de RUT a un elemento
+          function aplicarFormateoRut(elemento) {
+            elemento.addEventListener('input', function() {
               let valor = this.value.replace(/\./g, '').replace(/-/g, '');
               if (valor.length > 1) {
                 // Obtener dígito verificador
@@ -433,6 +602,134 @@
                 }
                 rutFormateado = rutFormateado.substring(1) + '-' + dv;
                 this.value = rutFormateado;
+              }
+            });
+          }
+      
+          // Función para inicializar todos los campos de RUT
+          function inicializarCamposRut() {
+            document.querySelectorAll('.rut-input').forEach(aplicarFormateoRut);
+            console.log('Campos RUT inicializados:', document.querySelectorAll('.rut-input').length);
+          }
+      
+          // Inicializar campos existentes
+          inicializarCamposRut();
+      
+          // Reinicializar cuando se abre cualquier modal
+          document.querySelectorAll('.modal').forEach(function(modal) {
+            modal.addEventListener('shown.bs.modal', function() {
+              setTimeout(inicializarCamposRut, 100); // Pequeño retraso para asegurar que el DOM está listo
+            });
+          });
+      
+          // Observar cambios en el DOM para aplicar formateo a nuevos campos
+          const observer = new MutationObserver(function(mutations) {
+            let needsInit = false;
+            mutations.forEach(function(mutation) {
+              if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                needsInit = true;
+              }
+            });
+            if (needsInit) {
+              inicializarCamposRut();
+            }
+          });
+      
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+          
+          // Validación de RUT para todos los formularios
+          function validarRut(rut) {
+            // Eliminar puntos y guiones
+            rut = rut.replace(/\./g, '').replace(/-/g, '');
+            
+            // Verificar longitud mínima
+            if (rut.length < 2) return false;
+            
+            // Separar cuerpo y dígito verificador
+            const cuerpo = rut.slice(0, -1);
+            const dv = rut.slice(-1).toUpperCase();
+            
+            // Calcular dígito verificador
+            let suma = 0;
+            let multiplicador = 2;
+            
+            // Recorrer el cuerpo de derecha a izquierda
+            for (let i = cuerpo.length - 1; i >= 0; i--) {
+              suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+              multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+            }
+            
+            // Calcular dígito esperado
+            const resto = suma % 11;
+            const dvEsperado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+            
+            // Comparar dígito verificador
+            return dv === dvEsperado;
+          }
+          
+          // Validación al enviar los formularios
+          const alumnoForms = document.querySelectorAll('.alumnoForm');
+          alumnoForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+              const rutInputs = this.querySelectorAll('.rut-input');
+              let formValido = true;
+              
+              rutInputs.forEach(function(input) {
+                // Solo validar si el campo tiene valor (permite campos opcionales)
+                if (input.value.trim() !== '') {
+                  if (!validarRut(input.value)) {
+                    formValido = false;
+                    input.classList.add('is-invalid');
+                    
+                    // Crear mensaje de error si no existe
+                    let errorMsg = input.nextElementSibling;
+                    if (!errorMsg || !errorMsg.classList.contains('invalid-feedback')) {
+                      errorMsg = document.createElement('div');
+                      errorMsg.classList.add('invalid-feedback');
+                      input.parentNode.insertBefore(errorMsg, input.nextSibling);
+                    }
+                    errorMsg.textContent = 'RUT inválido. Verifique el formato y dígito verificador.';
+                  } else {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                    
+                    // Eliminar mensaje de error si existe
+                    const errorMsg = input.nextElementSibling;
+                    if (errorMsg && errorMsg.classList.contains('invalid-feedback')) {
+                      errorMsg.remove();
+                    }
+                  }
+                }
+              });
+              
+              if (!formValido) {
+                e.preventDefault();
+                Swal.fire({
+                  icon: 'error',
+                  title: '¡Error de validación!',
+                  text: 'Hay uno o más RUTs inválidos en el formulario. Por favor, verifique los campos marcados.',
+                  confirmButtonText: 'Entendido'
+                });
+              }
+            });
+          });
+          
+          // También validar formularios de familiares
+          const familiarForms = document.querySelectorAll('.familiarForm');
+          familiarForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+              const rutInput = this.querySelector('.rut-input');
+              if (rutInput && rutInput.value.trim() !== '' && !validarRut(rutInput.value)) {
+                e.preventDefault();
+                Swal.fire({
+                  icon: 'error',
+                  title: '¡RUT inválido!',
+                  text: 'El RUT ingresado no es válido. Debe tener formato XX.XXX.XXX-X y un dígito verificador correcto.',
+                  confirmButtonText: 'Entendido'
+                });
               }
             });
           });
@@ -459,6 +756,8 @@
           });
         });
       </script>
+      
+      
         
       {% if messages %}
           {% for message in messages %}

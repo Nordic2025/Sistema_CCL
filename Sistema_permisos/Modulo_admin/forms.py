@@ -91,15 +91,22 @@ class AreasForm(forms.ModelForm):
 
 #Formulario de alumno
 class AlumnoForm(forms.ModelForm):
+
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.all(),
+        empty_label="Seleccione un curso",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     class Meta:
         model = Alumno
-        fields = ['rut', 'nombre', 'curso', 'apoderado_titular', 'apoderado_suplente']
+        fields = ['rut', 'nombre', 'curso', 'apoderado_titular', 'rut_apoderadoT', 'apoderado_suplente', 'rut_apoderadoS']
         widgets = {
             'rut': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Ej: 12.345.678-9'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo'}),
-            'curso': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 4° Básico A'}),
             'apoderado_titular': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado titular'}),
+            'rut_apoderadoT': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rut del apoderado titular'}),
             'apoderado_suplente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado suplente'}),
+            'rut_apoderadoS': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rut del apoderado suplente'}),
         }
         
     def clean_rut(self):
@@ -138,6 +145,10 @@ class FamiliarForm(forms.Form):
     familiar_nombre = forms.CharField(
         max_length=255, 
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del familiar'})
+    )
+    familiar_rut = forms.CharField(
+        max_length=12,
+        widget=forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Rut del familiar'})
     )
     familiar_relacion = forms.CharField(
         max_length=100, 
