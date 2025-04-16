@@ -104,9 +104,9 @@ class AlumnoForm(forms.ModelForm):
             'rut': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Ej: 12.345.678-9'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo'}),
             'apoderado_titular': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado titular'}),
-            'rut_apoderadoT': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rut del apoderado titular'}),
+            'rut_apoderadoT': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Rut del apoderado titular'}),
             'apoderado_suplente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado suplente'}),
-            'rut_apoderadoS': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Rut del apoderado suplente'}),
+            'rut_apoderadoS': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Rut del apoderado suplente'}),
         }
         
     def clean_rut(self):
