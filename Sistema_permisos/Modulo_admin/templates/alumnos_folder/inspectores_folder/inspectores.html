@@ -1,0 +1,320 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Inspectores{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Inspectores</h1>  
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+          <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarInspectorModal">
+            Registrar nuevo inspector
+          </button>
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th>Nombre</th>
+                <th>RUT</th>
+                <th>Teléfono</th>
+                <th>Cursos a cargo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for inspector in inspectores %}
+              <tr>
+                <td>{{ inspector.nombre }}</td>
+                <td>{{ inspector.rut }}</td>
+                <td>{{ inspector.telefono }}</td>
+                <td>
+                  {% for curso in inspector.cursos.all %}
+                    <span class="badge bg-primary">{{ curso.nombre }}</span>
+                  {% empty %}
+                    <span class="text-muted">Sin cursos asignados</span>
+                  {% endfor %}
+                </td>
+                <td>
+                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editarInspectorModal{{ inspector.id }}">
+                    Editar
+                  </button>
+                  <button type="button" class="btn btn_eliminar btn-outline-danger" 
+                          onclick="confirmarEliminacion('{{ inspector.id }}', '{{ inspector.nombre }}')">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Modal para Editar Inspector -->
+              <div class="modal fade" id="editarInspectorModal{{ inspector.id }}" tabindex="-1" aria-labelledby="editarInspectorModalLabel{{ inspector.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editarInspectorModalLabel{{ inspector.id }}">Editar Inspector</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:editar_inspector' inspector.id %}">
+                        {% csrf_token %}
+                        <div class="row mb-3">
+                          <div class="col-md-6">
+                            <label for="nombre{{ inspector.id }}" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombre{{ inspector.id }}" name="nombre" value="{{ inspector.nombre }}" required>
+                          </div>
+                          <div class="col-md-6">
+                            <label for="rut{{ inspector.id }}" class="form-label">RUT</label>
+                            <input type="text" class="form-control rut-input" id="rut{{ inspector.id }}" name="rut" value="{{ inspector.rut }}" required>
+                            <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label for="telefono{{ inspector.id }}" class="form-label">Teléfono</label>
+                          <input type="text" class="form-control" id="telefono{{ inspector.id }}" name="telefono" value="{{ inspector.telefono }}" required>
+                          <small class="form-text text-muted">Ej: +56912345678</small>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Cursos a cargo</label>
+                          <div class="row">
+                            {% for curso in cursos %}
+                            <div class="col-md-4 mb-2">
+                              <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="cursos" value="{{ curso.id }}" id="curso{{ inspector.id }}_{{ curso.id }}"
+                                  {% if curso in inspector.cursos.all %}checked{% endif %}>
+                                <label class="form-check-label" for="curso{{ inspector.id }}_{{ curso.id }}">
+                                  {{ curso.nombre }}
+                                </label>
+                              </div>
+                            </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% empty %}
+              <tr>
+                <td colspan="5">No hay inspectores registrados.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal para Agregar Inspector -->
+  <div class="modal fade" id="agregarInspectorModal" tabindex="-1" aria-labelledby="agregarInspectorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="agregarInspectorModalLabel">Registrar nuevo Inspector</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="POST" action="{% url 'Modulo_admin:agregar_inspector' %}" id="formAgregarInspector">
+            {% csrf_token %}
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="nombre" class="form-label">Nombre Completo</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre completo" required>
+              </div>
+              <div class="col-md-6">
+                <label for="rut" class="form-label">RUT</label>
+                <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required>
+                <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="telefono" class="form-label">Teléfono</label>
+              <input type="text" class="form-control" id="telefono" name="telefono" placeholder="Ej: +56912345678" required>
+              <small class="form-text text-muted">Incluya el código de país</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Cursos a cargo</label>
+              <div class="row">
+                {% for curso in cursos %}
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="cursos" value="{{ curso.id }}" id="curso_{{ curso.id }}">
+                    <label class="form-check
+                    <label class="form-check-label" for="curso_{{ curso.id }}">
+                        {{ curso.nombre }}
+                      </label>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Inspector</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Script para SweetAlert y validación de RUT -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Función para formatear automáticamente el RUT
+        function formatearRut(rut) {
+          // Eliminar puntos y guiones
+          let valor = rut.replace(/\./g, '').replace(/-/g, '');
+          
+          // Obtener dígito verificador
+          let dv = valor.slice(-1);
+          
+          // Obtener cuerpo del RUT
+          let rutCuerpo = valor.slice(0, -1);
+          
+          // Formatear RUT con puntos y guión
+          let rutFormateado = '';
+          
+          // Agregar puntos de miles
+          for (let i = rutCuerpo.length; i > 0; i -= 3) {
+              const inicio = Math.max(0, i - 3);
+              rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+          }
+          
+          // Eliminar el primer punto
+          rutFormateado = rutFormateado.substring(1);
+          
+          // Agregar guión y dígito verificador
+          return rutFormateado + '-' + dv;
+        }
+        
+        // Función para aplicar formato a un campo RUT
+        function aplicarFormatoRut(inputElement) {
+          // Evento para formatear el RUT mientras se escribe
+          inputElement.addEventListener('input', function(e) {
+            // Guardar la posición del cursor
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const valorOriginal = this.value;
+            
+            // Eliminar caracteres no numéricos excepto K/k y conservar solo dígitos y K/k
+            let valor = this.value.replace(/[^\dkK]/g, '');
+            
+            // Si hay algo que formatear
+            if (valor.length > 1) {
+              // Formatear el valor
+              this.value = formatearRut(valor);
+              
+              // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
+              const diff = this.value.length - valorOriginal.length;
+              
+              // Restaurar la posición del cursor
+              this.setSelectionRange(start + diff, end + diff);
+            }
+          });
+          
+          // Evento blur para formatear cuando el campo pierde el foco
+          inputElement.addEventListener('blur', function() {
+            if (this.value.length > 1) {
+              // Eliminar caracteres no numéricos excepto K/k
+              let valor = this.value.replace(/[^\dkK]/g, '');
+              this.value = formatearRut(valor);
+            }
+          });
+        }
+        
+        // Función para validar formato de RUT chileno
+        function validarFormatoRut(rut) {
+          // Expresión regular para validar formato XX.XXX.XXX-X
+          const rutRegex = /^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$/;
+          return rutRegex.test(rut);
+        }
+        
+        // Aplicar formato a todos los campos RUT
+        document.querySelectorAll('.rut-input').forEach(function(input) {
+          aplicarFormatoRut(input);
+        });
+        
+        // Validar formulario de agregar inspector
+        const formAgregarInspector = document.getElementById('formAgregarInspector');
+        if (formAgregarInspector) {
+          formAgregarInspector.addEventListener('submit', function(event) {
+            const rutInput = document.getElementById('rut');
+            const rutValue = rutInput.value.trim();
+            
+            if (!validarFormatoRut(rutValue)) {
+              event.preventDefault();
+              Swal.fire({
+                title: 'Formato de RUT incorrecto',
+                text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+              });
+              rutInput.focus();
+            }
+          });
+        }
+        
+        // Validar formularios de editar inspector
+        document.querySelectorAll('[id^="editarInspectorModal"]').forEach(function(modal) {
+          const form = modal.querySelector('form');
+          const rutInput = modal.querySelector('.rut-input');
+          
+          if (form && rutInput) {
+            form.addEventListener('submit', function(event) {
+              const rutValue = rutInput.value.trim();
+              
+              if (!validarFormatoRut(rutValue)) {
+                event.preventDefault();
+                Swal.fire({
+                  title: 'Formato de RUT incorrecto',
+                  text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+                  icon: 'error',
+                  confirmButtonText: 'Entendido'
+                });
+                rutInput.focus();
+              }
+            });
+          }
+        });
+      });
+  
+      // Función para confirmar eliminación 
+      function confirmarEliminacion(id, nombre) {
+        Swal.fire({
+          title: '¿Está seguro?',
+          text: `¿Desea eliminar al inspector ${nombre}?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Redirigir a la URL de eliminación con el ID correcto
+            window.location.href = "{% url 'Modulo_admin:eliminar_inspector' 0 %}".replace('/0/', '/' + id + '/');
+          }
+        });
+      }
+    </script>
+      
+    {% if messages %}
+        {% for message in messages %}
+      <script>
+        mensaje('{{ message.tags }}', '{{ message }}');
+      </script>
+        {% endfor %}
+    {% endif %}
+  
+  {% endblock %}
+  

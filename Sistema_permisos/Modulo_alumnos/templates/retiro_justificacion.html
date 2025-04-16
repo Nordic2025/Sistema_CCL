@@ -1,1 +1,43 @@
-<h1>HOLI</h1>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Ingresos Colegio Concepcion Linares
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-lg border-0 mb-5">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="mb-0">¿Qué desea realizar?</h2>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-10">
+                            <div class="d-grid gap-5">
+                                <a href="{% url 'Modulo_alumnos:formulario_retiro' %}" class="btn btn-primary btn-lg py-4 shadow-sm">
+                                    <i class="fas fa-sign-out-alt fa-2x mb-3"></i>
+                                    <h3>Retirar estudiante</h3>
+                                    <p class="mb-0 text-white-50">Solicitar el retiro del estidiante</p>
+                                </a>
+                                
+                                <a href="{% url 'Modulo_alumnos:formulario_justificacion' %}" class="btn btn-success btn-lg py-4 shadow-sm">
+                                    <i class="fas fa-sign-in-alt fa-2x mb-3"></i>
+                                    <h3>Registrar justificativo</h3>
+                                    <p class="mb-0 text-white-50">Registrar el motivo de falta del estudiante</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="{% url 'principal' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-home me-2"></i>Volver a la página principal
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

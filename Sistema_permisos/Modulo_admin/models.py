@@ -55,8 +55,7 @@ class Areas(models.Model):
         return f"{self.encargado} - {self.nombre}"
     
     
-# Agregar al final del archivo
-
+# MODELO CURSOS
 class CursoManager(models.Manager):
     def get_queryset(self):
         # Excluir cursos marcados como eliminados
@@ -79,5 +78,51 @@ class Curso(models.Model):
     def __str__(self):
         return self.nombre
 
+#MODELO INSPECTORES
 
+class InspectorManager(models.Manager):
+    def get_queryset(self):
+        # Excluir inspectores marcados como eliminados
+        return super().get_queryset().filter(is_deleted=False)
+
+class Inspector(models.Model):
+    # Validador para RUT chileno (formato: 12.345.678-9)
+    rut_validator = RegexValidator(
+        regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$',
+        message='Ingrese un RUT válido en formato XX.XXX.XXX-X'
+    )
+    
+    # Validador para número de teléfono
+    telefono_validator = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message='Ingrese un número de teléfono válido. Debe contener entre 9 y 15 dígitos.'
+    )
+    
+    nombre = models.CharField(max_length=100, verbose_name='Nombre Completo')
+    rut = models.CharField(
+        max_length=12, 
+        validators=[rut_validator],
+        unique=True,
+        verbose_name='RUT'
+    )
+    telefono = models.CharField(
+        max_length=15,
+        validators=[telefono_validator],
+        verbose_name='Número de Teléfono'
+    )
+    cursos = models.ManyToManyField(Curso, related_name='inspectores', verbose_name='Cursos a cargo')
+    is_deleted = models.BooleanField(default=False, verbose_name='Eliminado')
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de eliminación')
+    
+    # Managers
+    objects = InspectorManager()  # Manager predeterminado que filtra inspectores eliminados
+    all_objects = models.Manager()  # Manager para acceder a todos los inspectores, incluso eliminados
+    
+    class Meta:
+        verbose_name = 'Inspector'
+        verbose_name_plural = 'Inspectores'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return f"{self.nombre} - {self.rut}"
 

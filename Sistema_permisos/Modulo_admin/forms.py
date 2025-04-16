@@ -1,5 +1,5 @@
 from django import forms
-from .models import Administrador, Areas, Curso 
+from .models import Administrador, Areas, Curso, Inspector
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 
@@ -88,7 +88,7 @@ class AreasForm(forms.ModelForm):
             'encargado': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-# Agregar al final del archivo
+#CURSOS FORM
 
 class CursoForm(forms.ModelForm):
     class Meta:
@@ -96,4 +96,17 @@ class CursoForm(forms.ModelForm):
         fields = ['nombre']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+#INSPECTORES FORM
+
+class InspectorForm(forms.ModelForm):
+    class Meta:
+        model = Inspector
+        fields = ['nombre', 'rut', 'telefono', 'cursos']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'rut': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 12.345.678-9'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: +56912345678'}),
+            'cursos': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
         }

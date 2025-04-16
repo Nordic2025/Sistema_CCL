@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Retiro Registrado - Colegio Concepcion Linares
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>Retiro Registrado
+                    </h3>
+                </div>
+                <div class="card-body p-5 text-center">
+                    <div>
+                        <h2 class="mb-4 display-3" style="font-weight: bold;">¡Registro Exitoso!</h2>
+                        <div class="alert alert-success p-3 mb-4">
+                            <p class="mb-1">El retiro ha sido registrado correctamente</p>
+                        </div>
+                        <div class="card mb-4 bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Detalles del retiro</h5>
+                                <ul class="list-group list-group-flush text-start">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Estudiante:</span> 
+                                        <span>{{ registro.nombre_estudiante }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">RUT Estudiante:</span> 
+                                        <span>{{ registro.rut_estudiante }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Curso:</span> 
+                                        <span>{{ registro.curso }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">RUT de quien retira:</span> 
+                                        <span>{{ registro.rut_persona_retira }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Relación:</span> 
+                                        <span>{{ registro.get_tipo_persona_display }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Motivo:</span> 
+                                        <span>{{ registro.get_motivo_retiro_display }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Inspector a cargo:</span> 
+                                        <span>{{ registro.inspector_cargo }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="fw-bold">Fecha y hora:</span> 
+                                        <span>{{ registro.hora_retiro|date:"d/m/Y H:i" }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Volver al menú principal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

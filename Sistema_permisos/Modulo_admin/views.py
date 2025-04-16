@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm
-from .models import Administrador, Areas, Curso
+from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm, InspectorForm
+from .models import Administrador, Areas, Curso, Inspector
 from Modulo_funcionarios.models import RegistroSalida
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -489,6 +489,61 @@ def eliminar_curso_view(request, id):
     
     messages.success(request, 'Curso eliminado correctamente')
     return redirect('Modulo_admin:cursos')
+
+
+#MODULO ALUMNOS / INPECTORES.
+
+@login_required(login_url='Modulo_admin:login_admin')
+def inspectores_view(request):
+    # objects ya filtra los inspectores eliminados gracias al manager personalizado
+    inspectores = Inspector.objects.all()
+    cursos = Curso.objects.all()
+    return render(request, 'alumnos_folder/inspectores_folder/inspectores.html', {
+        'inspectores': inspectores,
+        'cursos': cursos
+    })
+
+@login_required(login_url='Modulo_admin:login_admin')
+def registrar_inspector_view(request):
+    if request.method == 'POST':
+        form = InspectorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Inspector registrado correctamente')
+            return redirect('Modulo_admin:inspectores')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    return redirect('Modulo_admin:inspectores')
+
+@login_required(login_url='Modulo_admin:login_admin')
+def editar_inspector_view(request, id):
+    inspector = get_object_or_404(Inspector, id=id)
+    if request.method == 'POST':
+        form = InspectorForm(request.POST, instance=inspector)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Inspector editado correctamente')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en {field}: {error}')
+    return redirect('Modulo_admin:inspectores')
+
+@login_required(login_url='Modulo_admin:login_admin')
+def eliminar_inspector_view(request, id):
+    # Usar all_objects para encontrar incluso inspectores eliminados
+    inspector = get_object_or_404(Inspector.all_objects, id=id)
+    
+    # Marcar como eliminado en lugar de eliminar físicamente
+    inspector.is_deleted = True
+    inspector.deleted_at = timezone.now()
+    inspector.save()
+    
+    messages.success(request, 'Inspector eliminado correctamente')
+    return redirect('Modulo_admin:inspectores')
+
 
 
 
