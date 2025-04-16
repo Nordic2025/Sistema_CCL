@@ -610,22 +610,21 @@ def editar_alumno(request, id):
     return redirect('Modulo_admin:alumnos')
 
 
+
+@login_required(login_url='Modulo_admin:login_admin')
 def eliminar_alumno(request, id):
     """Vista para eliminar un alumno."""
     alumno = get_object_or_404(Alumno, id=id)
     nombre = alumno.nombre
     
-    # Marcar como inactivo en lugar de eliminar físicamente
-    alumno.is_deleted = True
-    alumno.save()
+    alumno.delete()
 
-    
     messages.success(request, f'Alumno {nombre} eliminado correctamente')
     return redirect('Modulo_admin:alumnos')
 
 
 
-
+@login_required(login_url='Modulo_admin:login_admin')
 def agregar_familiar(request, id, familiar_num):
     """Vista para agregar un familiar a un alumno."""
     alumno = get_object_or_404(Alumno, id=id)

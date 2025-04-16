@@ -55,7 +55,8 @@ class Areas(models.Model):
         return f"{self.encargado} - {self.nombre}"
     
     
-# MODELO CURSOS
+# Agregar al final del archivo
+
 class CursoManager(models.Manager):
     def get_queryset(self):
         # Excluir cursos marcados como eliminados
@@ -77,6 +78,7 @@ class Curso(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 #MODELO INSPECTORES
 
@@ -128,12 +130,6 @@ class Inspector(models.Model):
 
 
 
-#Alumnos
-# Add these imports if they're not already present
-from django.db import models
-from django.contrib.auth.models import User
-
-# Add this model to your existing models.py file
 class Alumno(models.Model):
     rut = models.CharField(max_length=15, unique=True)
     nombre = models.CharField(max_length=255)
@@ -147,7 +143,7 @@ class Alumno(models.Model):
     familiar_2_relacion = models.CharField(max_length=100, blank=True, null=True)
     familiar_2_telefono = models.CharField(max_length=20, blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
-    activo = models.BooleanField(default=True)
+
 
     def __str__(self):
         return f"{self.nombre} - {self.curso}"
