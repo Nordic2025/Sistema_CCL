@@ -155,15 +155,19 @@ class Inspector(models.Model):
 class Alumno(models.Model):
     rut = models.CharField(max_length=15, unique=True)
     nombre = models.CharField(max_length=255)
-    curso = models.CharField(max_length=50)
+    curso = models.ForeignKey(Curso, on_delete=models.CASCADE)
     apoderado_titular = models.CharField(max_length=255)
+    rut_apoderadoT = models.CharField(max_length=15, blank=True, null=True)
     apoderado_suplente = models.CharField(max_length=255, blank=True, null=True)
+    rut_apoderadoS = models.CharField(max_length=15, blank=True, null=True)
     familiar_1 = models.CharField(max_length=255, blank=True, null=True)
     familiar_1_relacion = models.CharField(max_length=100, blank=True, null=True)
     familiar_1_telefono = models.CharField(max_length=20, blank=True, null=True)
+    rut_familiar_1 = models.CharField(max_length=15, blank=True, null=True)
     familiar_2 = models.CharField(max_length=255, blank=True, null=True)
     familiar_2_relacion = models.CharField(max_length=100, blank=True, null=True)
     familiar_2_telefono = models.CharField(max_length=20, blank=True, null=True)
+    rut_familiar_2 = models.CharField(max_length=15, blank=True, null=True)
     fecha_registro = models.DateTimeField(auto_now_add=True)
 
 
