@@ -1,7 +1,8 @@
 from django import forms
-from .models import Administrador, Areas, Curso, Inspector
+from .models import Administrador, Areas, Curso, Alumno, Inspector
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+import re
 
 class AdministradorForm(forms.ModelForm):
 
@@ -88,8 +89,80 @@ class AreasForm(forms.ModelForm):
             'encargado': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-#CURSOS FORM
+#Formulario de alumno
+class AlumnoForm(forms.ModelForm):
+    class Meta:
+        model = Alumno
+        fields = ['rut', 'nombre', 'curso', 'apoderado_titular', 'apoderado_suplente']
+        widgets = {
+            'rut': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Ej: 12.345.678-9'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo'}),
+            'curso': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 4° Básico A'}),
+            'apoderado_titular': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado titular'}),
+            'apoderado_suplente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado suplente'}),
+        }
+        
+    def clean_rut(self):
+        """Validar formato y dígito verificador del RUT."""
+        rut = self.cleaned_data.get('rut')
+        
+        # Eliminar puntos y guión para validar
+        rut_limpio = re.sub(r'[^0-9kK]', '', rut)
+        
+        if len(rut_limpio) < 2:
+            raise forms.ValidationError('El RUT ingresado no es válido.')
+            
+        # Separar cuerpo y dígito verificador
+        cuerpo, dv = rut_limpio[:-1], rut_limpio[-1].upper()
+        
+        # Calcular dígito verificador
+        suma = 0
+        multiplo = 2
+        
+        for r in reversed(cuerpo):
+            suma += int(r) * multiplo
+            multiplo = 2 if multiplo == 7 else multiplo + 1
+            
+        resto = suma % 11
+        dv_calculado = '0' if resto == 0 else 'K' if resto == 1 else str(11 - resto)
+        
+        if dv != dv_calculado:
+            raise forms.ValidationError('El RUT ingresado tiene un dígito verificador incorrecto.')
+            
+        # Formatear RUT para guardar
+        rut_formateado = f"{cuerpo[:-6]}.{cuerpo[-6:-3]}.{cuerpo[-3:]}-{dv}" if len(cuerpo) > 6 else f"{cuerpo}-{dv}"
+        
+        return rut_formateado
 
+class FamiliarForm(forms.Form):
+    familiar_nombre = forms.CharField(
+        max_length=255, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del familiar'})
+    )
+    familiar_relacion = forms.CharField(
+        max_length=100, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Tío, Abuelo, etc.'})
+    )
+    familiar_telefono = forms.CharField(
+        max_length=20, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono de contacto'})
+    )
+    
+    def clean_familiar_telefono(self):
+        """Validar formato del teléfono."""
+        telefono = self.cleaned_data.get('familiar_telefono')
+        
+        # Eliminar espacios y caracteres no numéricos
+        telefono_limpio = re.sub(r'[^0-9+]', '', telefono)
+        
+        if len(telefono_limpio) < 8:
+            raise forms.ValidationError('El número de teléfono debe tener al menos 8 dígitos.')
+            
+        return telefono_limpio
+
+
+
+# Formulario de curso
 class CursoForm(forms.ModelForm):
     class Meta:
         model = Curso

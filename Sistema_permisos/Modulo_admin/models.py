@@ -126,3 +126,34 @@ class Inspector(models.Model):
     def __str__(self):
         return f"{self.nombre} - {self.rut}"
 
+
+
+#Alumnos
+# Add these imports if they're not already present
+from django.db import models
+from django.contrib.auth.models import User
+
+# Add this model to your existing models.py file
+class Alumno(models.Model):
+    rut = models.CharField(max_length=15, unique=True)
+    nombre = models.CharField(max_length=255)
+    curso = models.CharField(max_length=50)
+    apoderado_titular = models.CharField(max_length=255)
+    apoderado_suplente = models.CharField(max_length=255, blank=True, null=True)
+    familiar_1 = models.CharField(max_length=255, blank=True, null=True)
+    familiar_1_relacion = models.CharField(max_length=100, blank=True, null=True)
+    familiar_1_telefono = models.CharField(max_length=20, blank=True, null=True)
+    familiar_2 = models.CharField(max_length=255, blank=True, null=True)
+    familiar_2_relacion = models.CharField(max_length=100, blank=True, null=True)
+    familiar_2_telefono = models.CharField(max_length=20, blank=True, null=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.curso}"
+
+    class Meta:
+        verbose_name = "Alumno"
+        verbose_name_plural = "Alumnos"
+        ordering = ['curso', 'nombre']
+
