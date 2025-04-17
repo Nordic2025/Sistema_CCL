@@ -15,7 +15,7 @@ class RegistroRetiroForm(forms.ModelForm):
         ]
         widgets = {
             'rut_persona_retira': forms.HiddenInput(),  # Este campo se llena automáticamente
-            'nombre_persona_retira': forms.HiddenInput(),  # Este campo también se llenará automáticamente
+            'nombre_persona_retira': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}), 
             'rut_estudiante': forms.Select(attrs={'class': 'form-select'}),
             'nombre_estudiante': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'curso': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),

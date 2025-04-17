@@ -13,68 +13,83 @@ def verificar_apoderado(request):
         
         # Buscar alumnos donde este RUT sea apoderado titular, suplente o familiar autorizado
         alumnos_apoderado = []
-        nombre_apoderado = None
+        nombre_apoderado = None  # Inicializar variable para el nombre del apoderado
         
-        # Intentar diferentes campos posibles para el RUT del apoderado
-        posibles_campos_apoderado = [
-            ('apoderado_titular', 'rut_apoderadoT'),
-            ('apoderado_suplente', 'rut_apoderadoS'),
-            ('familiar_1', 'rut_familiar_1'),
-            ('familiar_2', 'rut_familiar_2')
-        ]
-        
-        for nombre_campo, rut_campo in posibles_campos_apoderado:
-            try:
-                # Crear un diccionario de filtro dinámicamente
-                filtro = {rut_campo: rut_apoderado}
-                alumnos = Alumno.objects.filter(**filtro)
-                
-                for alumno in alumnos:
-                    # Determinar el tipo de persona basado en el campo
-                    tipo_persona = "Otro"
-                    if 'apoderado_titular' in nombre_campo:
-                        tipo_persona = "Apoderado"
-                        # Guardar el nombre del apoderado titular
-                        if not nombre_apoderado and hasattr(alumno, 'apoderado_titular'):
-                            nombre_apoderado = getattr(alumno, 'apoderado_titular')
-                    elif 'apoderado_suplente' in nombre_campo:
-                        tipo_persona = "Apoderado Suplente"
-                        # Guardar el nombre del apoderado suplente
-                        if not nombre_apoderado and hasattr(alumno, 'apoderado_suplente'):
-                            nombre_apoderado = getattr(alumno, 'apoderado_suplente')
-                    elif 'familiar_1' in nombre_campo:
-                        # Guardar el nombre del familiar 1
-                        if not nombre_apoderado and hasattr(alumno, 'familiar_1'):
-                            nombre_apoderado = getattr(alumno, 'familiar_1')
-                    elif 'familiar_2' in nombre_campo:
-                        # Guardar el nombre del familiar 2
-                        if not nombre_apoderado and hasattr(alumno, 'familiar_2'):
-                            nombre_apoderado = getattr(alumno, 'familiar_2')
+        try:
+            # Intentar diferentes campos posibles para el RUT del apoderado
+            posibles_campos_apoderado = [
+                ('apoderado_titular', 'rut_apoderadoT'),
+                ('apoderado_suplente', 'rut_apoderadoS'),
+                ('familiar_1', 'rut_familiar_1'),
+                ('familiar_2', 'rut_familiar_2')
+            ]
+            
+            for nombre_campo, rut_campo in posibles_campos_apoderado:
+                try:
+                    # Crear un diccionario de filtro dinámicamente
+                    filtro = {rut_campo: rut_apoderado}
+                    alumnos = Alumno.objects.filter(**filtro)
                     
-                    alumnos_apoderado.append({
-                        'rut': alumno.rut,
-                        'nombre': alumno.nombre,
-                        'curso': str(alumno.curso),
-                        'tipo_persona': tipo_persona
-                    })
-            except:
-                # Si el campo no existe en el modelo, simplemente continuamos
-                continue
-        
-        if alumnos_apoderado:
+                    for alumno in alumnos:
+                        # Determinar el tipo de persona basado en el campo
+                        tipo_persona = "Otro"
+                        
+                        # Asignar el nombre del apoderado según el campo que coincidió
+                        if nombre_campo == 'apoderado_titular':
+                            tipo_persona = "Apoderado"
+                            if not nombre_apoderado:
+                                nombre_apoderado = alumno.apoderado_titular
+                        elif nombre_campo == 'apoderado_suplente':
+                            tipo_persona = "Apoderado Suplente"
+                            if not nombre_apoderado:
+                                nombre_apoderado = alumno.apoderado_suplente
+                        elif nombre_campo == 'familiar_1':
+                            tipo_persona = "Familiar"
+                            if not nombre_apoderado:
+                                nombre_apoderado = alumno.familiar_1
+                        elif nombre_campo == 'familiar_2':
+                            tipo_persona = "Familiar"
+                            if not nombre_apoderado:
+                                nombre_apoderado = alumno.familiar_2
+                        
+                        alumnos_apoderado.append({
+                            'rut': alumno.rut,
+                            'nombre': alumno.nombre,
+                            'curso': str(alumno.curso),
+                            'tipo_persona': tipo_persona
+                        })
+                except Exception as e:
+                    print(f"Error al procesar campo {nombre_campo}: {str(e)}")
+                    # Si el campo no existe en el modelo, simplemente continuamos
+                    continue
+            
+            if alumnos_apoderado:
+                # Si no se encontró el nombre, usar un valor por defecto
+                if not nombre_apoderado:
+                    nombre_apoderado = "Apoderado Autorizado"
+                
+                print(f"Nombre del apoderado encontrado: {nombre_apoderado}")
+                
+                return JsonResponse({
+                    'valido': True,
+                    'alumnos': alumnos_apoderado,
+                    'nombre_apoderado': nombre_apoderado,  # Devolver el nombre del apoderado
+                    'mensaje': 'Persona autorizada verificada correctamente'
+                })
+            else:
+                return JsonResponse({
+                    'valido': False,
+                    'mensaje': 'El RUT ingresado no corresponde a ninguna persona autorizada para retirar estudiantes'
+                })
+        except Exception as e:
+            print(f"Error en verificar_apoderado: {str(e)}")
             return JsonResponse({
-                'valido': True,
-                'alumnos': alumnos_apoderado,
-                'nombre_apoderado': nombre_apoderado,  # Devolver el nombre del apoderado
-                'mensaje': 'Persona autorizada verificada correctamente'
-            })
-        else:
-            return JsonResponse({
-                'valido': False,
-                'mensaje': 'El RUT ingresado no corresponde a ninguna persona autorizada para retirar estudiantes'
+                'error': f'Error al procesar la solicitud: {str(e)}',
+                'valido': False
             })
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
 
 
 def obtener_datos_alumno(request):
@@ -225,18 +240,26 @@ def retiro_justificacion_view(request):
 def formulario_retiro_view(request):
     if request.method == "POST":
         form = RegistroRetiroForm(request.POST)
-        if form.is_valid():
-            # Guardamos el formulario
-            registro = form.save(commit=False)
-            registro.hora_retiro = timezone.now()
-            registro.save()
-            
-            # Redirigir a una página de confirmación
-            return redirect('Modulo_alumnos:confirmacion_retiro', registro_id=registro.id)
+        try:
+            if form.is_valid():
+                # Guardamos el formulario
+                registro = form.save(commit=False)
+                registro.hora_retiro = timezone.now()
+                registro.save()
+                
+                # Redirigir a una página de confirmación
+                return redirect('Modulo_alumnos:confirmacion_retiro', registro_id=registro.id)
+            else:
+                print("Errores en el formulario:", form.errors)
+        except Exception as e:
+            print("Error al procesar el formulario:", str(e))
+            # Puedes mostrar un mensaje de error al usuario
+            messages.error(request, f"Error al procesar el formulario: {str(e)}")
     else:
         form = RegistroRetiroForm()
     
     return render(request, 'formulario_retiro.html', {'form': form})
+
 
 def confirmacion_retiro_view(request, registro_id):
     registro = RegistroRetiro.objects.get(id=registro_id)

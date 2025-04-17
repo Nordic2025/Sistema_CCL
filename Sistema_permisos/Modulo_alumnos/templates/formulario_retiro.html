@@ -38,7 +38,11 @@
                             
                             <input type="hidden" id="rut_persona_retira" name="rut_persona_retira">
                             
-                 
+                            <div class="form-group mb-3">
+                                <label for="id_nombre_persona_retira" class="form-label">Nombre de quien retira:</label>
+                                <input type="text" class="form-control" id="id_nombre_persona_retira" name="nombre_persona_retira" readonly>
+                            </div>
+                            
                             <div class="form-group mb-3">
                                 <label for="rut_estudiante" class="form-label">RUT del estudiante:</label>
                                 <select class="form-select" id="rut_estudiante" name="rut_estudiante" required>
@@ -94,6 +98,8 @@
         const btnVerificarApoderado = document.getElementById('btnVerificarApoderado');
         const rutApoderadoInput = document.getElementById('rut_apoderado');
         const rutPersonaRetiraInput = document.getElementById('rut_persona_retira');
+        const nombrePersonaRetiraInput = document.getElementById('id_nombre_persona_retira');
+            if (!nombrePersonaRetiraInput) {console.error('No se encontró el campo nombre_persona_retira');}
         const resultadoVerificacion = document.getElementById('resultadoVerificacion');
         const rutEstudianteSelect = document.getElementById('rut_estudiante');
         const nombreEstudianteInput = document.getElementById('nombre_estudiante');
@@ -174,95 +180,106 @@
         aplicarFormatoRut(rutApoderadoInput);
         
         // Función para verificar el apoderado
-        function verificarApoderado() {
-            const rutApoderado = rutApoderadoInput.value.trim();
-            
-            // Validar formato del RUT
-            if (!validarFormatoRut(rutApoderado)) {
-                Swal.fire({
-                    title: 'Formato de RUT incorrecto',
-                    text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
-                    icon: 'error',
-                    confirmButtonText: 'Entendido'
-                });
-                return;
-            }
-            
-            // Mostrar indicador de carga
+       // Función para verificar el apoderado
+function verificarApoderado() {
+    const rutApoderado = rutApoderadoInput.value.trim();
+    
+    // Validar formato del RUT
+    if (!validarFormatoRut(rutApoderado)) {
+        Swal.fire({
+            title: 'Formato de RUT incorrecto',
+            text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+        });
+        return;
+    }
+    
+    // Mostrar indicador de carga
+    resultadoVerificacion.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Verificando apoderado...</p>
+        </div>
+    `;
+    
+    // Realizar la petición AJAX para verificar el apoderado
+    fetch(`{% url 'Modulo_alumnos:verificar_apoderado' %}?rut_apoderado=${rutApoderado}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.valido) {
+            // Si el apoderado es válido, mostrar mensaje de éxito y habilitar paso 2
             resultadoVerificacion.innerHTML = `
-                <div class="text-center">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                    <p class="mt-2">Verificando apoderado...</p>
+                <div class="alert alert-success">
+                    <h5 class="alert-heading">¡Persona autorizada verificada!</h5>
+                    <p>${data.mensaje}</p>
                 </div>
             `;
             
-            // Realizar la petición AJAX para verificar el apoderado
-            fetch(`{% url 'Modulo_alumnos:verificar_apoderado' %}?rut_apoderado=${rutApoderado}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.valido) {
-                    // Si el apoderado es válido, mostrar mensaje de éxito y habilitar paso 2
-                    resultadoVerificacion.innerHTML = `
-                        <div class="alert alert-success">
-                            <h5 class="alert-heading">¡Persona autorizada verificada!</h5>
-                            <p>${data.mensaje}</p>
-                        </div>
-                    `;
-                    
-                    // Guardar el RUT del apoderado en el campo oculto
-                    rutPersonaRetiraInput.value = rutApoderado;
-                    
-                    // Llenar el select con los alumnos asociados al apoderado
-                    rutEstudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
-                    data.alumnos.forEach(alumno => {
-                        const option = document.createElement('option');
-                        option.value = alumno.rut;
-                        option.textContent = `${alumno.nombre} (${alumno.rut})`;
-                        option.dataset.nombre = alumno.nombre;
-                        option.dataset.curso = alumno.curso;
-                        option.dataset.tipoPersona = alumno.tipo_persona;
-                        rutEstudianteSelect.appendChild(option);
-                    });
-                    
-                    // Mostrar el paso 2
-                    paso2.style.display = 'block';
-                    
-                    // Desplazarse suavemente al paso 2
-                    paso2.scrollIntoView({ behavior: 'smooth' });
-                    
-                } else {
-                    // Si el apoderado no es válido, mostrar mensaje de error
-                    resultadoVerificacion.innerHTML = `
-                        <div class="alert alert-danger">
-                            <h5 class="alert-heading">Error de verificación</h5>
-                            <p>${data.mensaje}</p>
-                        </div>
-                    `;
-                    
-                    // Ocultar el paso 2
-                    paso2.style.display = 'none';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                resultadoVerificacion.innerHTML = `
-                    <div class="alert alert-danger">
-                        <h5 class="alert-heading">Error de conexión</h5>
-                        <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
-                    </div>
-                `;
-                
-                // Ocultar el paso 2
-                paso2.style.display = 'none';
+            // Guardar el RUT del apoderado en el campo oculto
+            rutPersonaRetiraInput.value = rutApoderado;
+            
+            // Guardar el nombre del apoderado en el campo visible
+            if (data.nombre_apoderado) {
+                 nombrePersonaRetiraInput.value = data.nombre_apoderado;
+                console.log('Nombre del apoderado asignado:', data.nombre_apoderado);
+            } else {
+                nombrePersonaRetiraInput.value = "Apoderado Autorizado";
+                console.log('Usando nombre por defecto');
+            }
+            
+            // Llenar el select con los alumnos asociados al apoderado
+            rutEstudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
+            data.alumnos.forEach(alumno => {
+                const option = document.createElement('option');
+                option.value = alumno.rut;
+                option.textContent = `${alumno.nombre} (${alumno.rut})`;
+                option.dataset.nombre = alumno.nombre;
+                option.dataset.curso = alumno.curso;
+                option.dataset.tipoPersona = alumno.tipo_persona;
+                rutEstudianteSelect.appendChild(option);
             });
+            
+            // Mostrar el paso 2
+            paso2.style.display = 'block';
+            
+            // Desplazarse suavemente al paso 2
+            paso2.scrollIntoView({ behavior: 'smooth' });
+            
+        } else {
+            // Si el apoderado no es válido, mostrar mensaje de error
+            resultadoVerificacion.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5 class="alert-heading">Error de verificación</h5>
+                    <p>${data.mensaje}</p>
+                </div>
+            `;
+            
+            // Ocultar el paso 2
+            paso2.style.display = 'none';
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultadoVerificacion.innerHTML = `
+            <div class="alert alert-danger">
+                <h5 class="alert-heading">Error de conexión</h5>
+                <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
+            </div>
+        `;
+        
+        // Ocultar el paso 2
+        paso2.style.display = 'none';
+    });
+}
+
         
         // Evento para el botón de verificar apoderado
         btnVerificarApoderado.addEventListener('click', verificarApoderado);
@@ -329,77 +346,69 @@
                     cursoInput.value = data.curso;
                     inspectorCargoInput.value = data.inspector;
                     
-                    // Seleccionar automáticamente el tipo de persona
-                    if (data.tipo_persona) {
-                        const radioButtons = document.querySelectorAll('input[name="tipo_persona"]');
-                        radioButtons.forEach(radio => {
-                            if (radio.value === data.tipo_persona) {
-                                radio.checked = true;
-                            }
-                        });
-                    }
-                    
                     // Verificar si está autorizado
                     if (!data.autorizado) {
                         Swal.fire({
                             title: 'Advertencia',
-                            text: 'Esta persona no está registrada como apoderado autorizador',
                             text: 'Esta persona no está registrada como apoderado autorizado para este estudiante.',
-                        icon: 'warning',
+                            icon: 'warning',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                } else {
+                    nombreEstudianteInput.value = '';
+                    cursoInput.value = '';
+                    inspectorCargoInput.value = '';
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.mensaje,
+                        icon: 'error',
                         confirmButtonText: 'Entendido'
                     });
                 }
-            } else {
+            })
+            .catch(error => {
+                console.error('Error:', error);
                 nombreEstudianteInput.value = '';
                 cursoInput.value = '';
                 inspectorCargoInput.value = '';
                 
                 Swal.fire({
-                    title: 'Error',
-                    text: data.mensaje,
+                    title: 'Error de conexión',
+                    text: 'Ocurrió un error al obtener los datos del estudiante. Por favor, intente nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+            });
+        }
+        
+        // Evento para cuando cambia el estudiante seleccionado
+        rutEstudianteSelect.addEventListener('change', obtenerDatosAlumno);
+        
+        // Validar el formulario antes de enviar
+        formularioRetiro.addEventListener('submit', function(event) {
+            // Verificar que todos los campos estén completos
+            if (!rutPersonaRetiraInput.value || 
+                !rutEstudianteSelect.value ||
+                !nombreEstudianteInput.value ||
+                !cursoInput.value ||
+                !document.querySelector('select[name="motivo_retiro"]').value) {
+                
+                event.preventDefault();
+                
+                Swal.fire({
+                    title: 'Formulario incompleto',
+                    text: 'Por favor complete todos los campos requeridos.',
                     icon: 'error',
                     confirmButtonText: 'Entendido'
                 });
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            nombreEstudianteInput.value = '';
-            cursoInput.value = '';
-            inspectorCargoInput.value = '';
-            
-            Swal.fire({
-                title: 'Error de conexión',
-                text: 'Ocurrió un error al obtener los datos del estudiante. Por favor, intente nuevamente.',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
         });
-    }
-    
-    // Evento para cuando cambia el estudiante seleccionado
-    rutEstudianteSelect.addEventListener('change', obtenerDatosAlumno);
-    
-        // Validar el formulario antes de enviar
-        formularioRetiro.addEventListener('submit', function(event) {
-        // Verificar que todos los campos estén completos
-        if (!rutPersonaRetiraInput.value || 
-            !rutEstudianteSelect.value ||
-            !nombreEstudianteInput.value ||
-            !cursoInput.value ||
-            !document.querySelector('select[name="motivo_retiro"]').value) {
-            
-            event.preventDefault();
-            
-            Swal.fire({
-                title: 'Formulario incompleto',
-                text: 'Por favor complete todos los campos requeridos.',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-        }
     });
-});
 </script>
+                    
+                    
+
     
 {% endblock %}
