@@ -12,6 +12,15 @@ class RegistroRetiro(models.Model):
         ('Prefiero no decirlo', 'Prefiero no decirlo'),
     ]
 
+    ESTADOS_CHOICES =[
+        ('waiting', 'En Espera'),
+        ('confirmed', 'Confirmado'),
+        ('rejected', 'Rechazado'),
+        ('timeout', 'Tiempo de espera agotado'),
+    ]
+
+    estado = models.CharField(max_length=20, choices=ESTADOS_CHOICES, default='waiting')
+    mensaje_respuesta = models.TextField(blank=True, null=True)
     
     # Validador para RUT chileno (formato: 12.345.678-9)
     rut_validator = RegexValidator(

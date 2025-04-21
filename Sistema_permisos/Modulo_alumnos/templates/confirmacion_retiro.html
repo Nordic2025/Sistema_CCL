@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    Retiro Registrado - Colegio Concepcion Linares
+    Confirmación de Retiro - Colegio Concepción Linares
 {% endblock %}
 
 {% block content %}
@@ -12,15 +12,14 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-success text-white text-center py-4">
                     <h3 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Retiro Registrado
+                        <i class="fas fa-check-circle me-2"></i>Retiro Confirmado
                     </h3>
                 </div>
                 <div class="card-body p-5 text-center">
                     <div>
-                        <h2 class="mb-4 display-4" style="font-weight: bold;">¡Retiro Exitoso!</h2>
+                        <h2 class="mb-4">¡Retiro Autorizado!</h2>
                         <div class="alert alert-success p-3 mb-4">
-                            <p class="mb-1">El retiro ha sido registrado correctamente</p>
-                            <h5 class="my-3">Estudiante: <strong>{{ registro.nombre_estudiante }}</strong></h5>
+                            <p class="mb-1">¡El retiro ha sido autorizado por el inspector a cargo!</p>
                         </div>
                         
                         <div class="card mb-4 bg-light">
@@ -28,8 +27,8 @@
                                 <h5 class="card-title">Detalles del retiro</h5>
                                 <ul class="list-group list-group-flush text-start">
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">RUT Estudiante:</span> 
-                                        <span>{{ registro.rut_estudiante }}</span>
+                                        <span class="fw-bold">Alumno:</span> 
+                                        <span>{{ registro.nombre_estudiante }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span class="fw-bold">Curso:</span> 
@@ -37,23 +36,29 @@
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span class="fw-bold">Retirado por:</span> 
-                                        <span>{{ registro.nombre_persona_retira }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">RUT de quien retira:</span> 
-                                        <span>{{ registro.rut_persona_retira }}</span>
+                                        <span>{{ registro.nombre_persona_retira  }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span class="fw-bold">Motivo:</span> 
                                         <span>{{ registro.get_motivo_retiro_display }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Fecha y hora:</span> 
+                                        <span class="fw-bold">Hora:</span> 
                                         <span>{{ registro.hora_retiro|date:"d/m/Y H:i" }}</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Inspector a cargo:</span> 
-                                        <span>{{ registro.inspector_cargo }}</span>
+                                        <span class="fw-bold">Estado:</span> 
+                                        <span class="text-success fw-bold">
+                                            {% if registro.estado == 'confirmed' %}
+                                                Confirmado
+                                            {% elif registro.estado == 'rejected' %}
+                                                Rechazado
+                                            {% elif registro.estado == 'timeout' %}
+                                                Pendiente de verificación
+                                            {% else %}
+                                                {{ registro.estado }}
+                                            {% endif %}
+                                        </span>
                                     </li>
                                 </ul>
                             </div>
