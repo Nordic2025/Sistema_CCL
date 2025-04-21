@@ -34,8 +34,6 @@ body {
 
 
 
-
-
 /* Estilos para el encabezado */
 .encabezado_principal {
     display: flex;
@@ -282,6 +280,175 @@ body {
 }
 
 
+
+/*Menu lateral*/
+.menuLateral {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    background: linear-gradient(180deg, #6f82be, #5a6ba0);
+    overflow-x: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-top: 15px;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+}
+
+/* Estilo para el botón de cerrar menú */
+.menuLateral .cerrarMenubtn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+/* Estilo para el icono dentro del botón de cerrar */
+.menuLateral .cerrarMenubtn img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+    filter: brightness(0) invert(1); /* Makes the icon white */
+    display: block; /* Ensures proper centering */
+    margin: 0; /* Reset any margins */
+}
+
+
+/* Hover para el botón de cerrar */
+.menuLateral .cerrarMenubtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.menuLateral .cerrarMenubtn:hover img {
+    transform: rotate(90deg);
+}
+
+.menuLateral a {
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    margin: 10px 15px;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menuLateral a img {
+    width: 24px;        
+    height: 24px;       
+    margin-right: 15px; 
+    vertical-align: middle; 
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    transition: all 0.3s ease;
+}
+
+.menu_icono {
+    width: 24px;
+    height: 24px;
+    margin-right: 15px;
+    vertical-align: middle;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.menuLateral a:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    background: #2b1572;
+    z-index: 1;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.menuLateral a:hover {
+    color: #ffffff;
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.menuLateral a:hover:before {
+    transform: scaleY(1);
+}
+
+.menuLateral a:hover img, 
+.menuLateral a:hover .menu_icono {
+    transform: scale(1.1);
+}
+
+.abrirMenubtn {
+      font-size: 30px; 
+      background: none; 
+      border: none; 
+      color: #2b1572; 
+      cursor: pointer; 
+      padding: 10px; 
+      margin-right: 20px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.abrirMenubtn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      background: rgba(43, 21, 114, 0.05);
+}
+
+.menuLateral a.active {
+    color: white;
+    background: rgba(43, 21, 114, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.menuLateral a.active:before {
+    transform: scaleY(1);
+}
+
+.menuLateral a i {
+    margin-right: 15px;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+/*Logo menu lateral*/
+.menuLateral .logoCCL {
+      display: block;
+      margin: 20px auto;
+      text-align: center;
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      background: transparent;
+}
+
+
+
 footer {
     background-color: #6f82be;
     width: 100%;
@@ -499,172 +666,6 @@ body.menu-open .container {
     font-size: 16px;
     margin-bottom: 5px;
     display: block;
-}
-
-/*Menu lateral*/
-.menuLateral {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    background: linear-gradient(180deg, #6f82be, #5a6ba0);
-    overflow-x: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    padding-top: 15px;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
-}
-
-/* Estilo para el botón de cerrar menú */
-.menuLateral .cerrarMenubtn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 1001;
-}
-
-/* Estilo para el icono dentro del botón de cerrar */
-.menuLateral .cerrarMenubtn img {
-    width: 24px;
-    height: 24px;
-    transition: transform 0.3s ease;
-    filter: brightness(0) invert(1); /* Makes the icon white */
-    display: block; /* Ensures proper centering */
-    margin: 0; /* Reset any margins */
-}
-
-
-/* Hover para el botón de cerrar */
-.menuLateral .cerrarMenubtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.1);
-}
-
-.menuLateral .cerrarMenubtn:hover img {
-    transform: rotate(90deg);
-}
-
-.menuLateral a {
-    padding: 15px 20px;
-    text-decoration: none;
-    font-size: 18px;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    transition: all 0.3s ease;
-    margin: 10px 15px;
-    border-radius: 10px;
-    position: relative;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.menuLateral a img {
-    width: 24px;        
-    height: 24px;       
-    margin-right: 15px; 
-    vertical-align: middle; 
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-    transition: all 0.3s ease;
-}
-
-.menu_icono {
-    width: 24px;
-    height: 24px;
-    margin-right: 15px;
-    vertical-align: middle;
-    object-fit: contain;
-    transition: all 0.3s ease;
-}
-
-.menuLateral a:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 5px;
-    background: #2b1572;
-    z-index: 1;
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
-}
-
-.menuLateral a:hover {
-    color: #ffffff;
-    transform: translateX(5px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.menuLateral a:hover:before {
-    transform: scaleY(1);
-}
-
-.menuLateral a:hover img, 
-.menuLateral a:hover .menu_icono {
-    transform: scale(1.1);
-}
-
-.abrirMenubtn {
-      font-size: 30px; 
-      background: none; 
-      border: none; 
-      color: #2b1572; 
-      cursor: pointer; 
-      padding: 10px; 
-      margin-right: 20px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.abrirMenubtn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      background: rgba(43, 21, 114, 0.05);
-}
-
-.menuLateral a.active {
-    color: white;
-    background: rgba(43, 21, 114, 0.3);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.menuLateral a.active:before {
-    transform: scaleY(1);
-}
-
-.menuLateral a i {
-    margin-right: 15px;
-    font-size: 20px;
-    transition: all 0.3s ease;
-}
-
-/*Logo menu lateral*/
-.menuLateral .logoCCL {
-      display: block;
-      margin: 20px auto;
-      text-align: center;
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      background: transparent;
 }
 
 /* Clase para el contenido principal */

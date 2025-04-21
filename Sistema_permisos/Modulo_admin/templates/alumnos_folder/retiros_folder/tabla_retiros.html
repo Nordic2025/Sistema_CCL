@@ -1,1 +1,353 @@
-<h1>Tabla de Retiros</h1>
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Retiros{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Retiros</h1>  
+    
+    <!-- Filtros combinados (buscador, curso y nivel) -->
+    <div class="row mb-4 mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filtros</h5>
+          </div>
+          <div class="card-body">
+            <form id="filtroForm" method="get" action="{% url 'Modulo_admin:retiros' %}" class="row g-3">
+              <!-- Buscador -->
+              <div class="col-md-4">
+                <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
+                <input type="text" id="busqueda" name="busqueda" class="form-control" placeholder="Nombre o RUT"
+                  value="{{ busqueda }}" autocomplete="off">
+              </div>
+
+              <!-- Filtro por curso -->
+              <div class="col-md-3">
+                <label for="curso" class="form-label">Curso:</label>
+                <select class="form-select" id="curso" name="curso">
+                  <option value="">Todos los cursos</option>
+                  {% for curso in cursos %}
+                  <option value="{{ curso.id }}" {% if curso_filtro == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <div class="d-grid gap-2 w-100">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                  </button>
+                  {% if busqueda or curso_filtro or nivel_filtro %}
+                  <a href="{% url 'Modulo_admin:retiros' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Limpiar filtros
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Indicadores de filtros activos -->
+    {% if busqueda or curso_filtro or nivel_filtro %}
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="alert alert-info">
+          <h5 class="alert-heading">Filtros activos:</h5>
+          <ul class="mb-0">
+            {% if busqueda %}
+            <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
+            {% endif %}
+            {% if curso_filtro %}
+            <li>Curso: <strong>{{ curso_nombre }}</strong></li>
+            {% endif %}
+            </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+          <table class="tabla_ancha">
+            <thead class="thead_custom">
+              <tr>
+                <th>RUT Apoderado/Familiar </th>
+                <th>Nombre Apoderado/Familiar</th>
+                <th>Nombre Alumno</th>
+                <th>RUT Alumno</th>
+                <th>Curso del Alumno</th>
+                <th>Fecha y hora de retiro</th>
+                <th>Motivo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="tbody_custom">
+              {% for retiro in retiros %}
+              <tr>
+                <td>{{ retiro.rut_AF }}</td>
+                <td>{{ retiro.nombre_AF }}</td>
+                <td>{{ retiro.nombreA }}</td>
+                <td>{{ retiro.rutA }}</td>
+                <td>{{ retiro.cursoA }}</td>
+                <td>{{ retiro.fecha_retiro }}</td>
+                <td>{{ retiro.motivo}} </td
+                {% comment %} <td>
+                  {% if user.is_superuser %}
+                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editarAlumnoModal{{ alumno.id }}">
+                    Editar
+                  </button>
+                  {% endif %}
+                </td> {% endcomment %}
+              </tr>
+              
+              {% if user.is_superuser %}
+              <!-- Modal para Editar Retiro -->
+              <div class="modal fade" id="editarRetiroModal{{ retiro.id }}" tabindex="-1" aria-labelledby="editarRetiroModalLabel{{ retiro.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg"> 
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editarRetiroModalLabel{{ retiro.id }}">Editar Retiro</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form method="POST" action="{% url 'Modulo_admin:editar_retiro' retiro.id %}" class="retiroForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                          <div class="col-md-6">
+                            <h5 class="mb-3">Información del Apoderado/Familiar</h5>
+                            <div class="mb-3">
+                              <label for="rut_AF{{ retiro.id }}" class="form-label">RUT Apoderado/Familiar</label>
+                              <input type="text" class="form-control rut-input" id="rut_AF{{ retiro.id }}" name="rut_AF" value="{{ retiro.rut_AF }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="nombre_AF{{ retiro.id }}" class="form-label">Nombre Apoderado/Familiar</label>
+                              <input type="text" class="form-control" id="nombre_AF{{ retiro.id }}" name="nombre_AF" value="{{ retiro.nombre_AF }}">
+                            </div>
+                          </div>
+                          
+                          <div class="col-md-6">
+                            <h5 class="mb-3">Información del Alumno</h5>
+                            <div class="mb-3">
+                              <label for="nombreA{{ retiro.id }}" class="form-label">Nombre Alumno</label>
+                              <input type="text" class="form-control" id="nombreA{{ retiro.id }}" name="nombreA" value="{{ retiro.nombreA }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="rutA{{ retiro.id }}" class="form-label">RUT Alumno</label>
+                              <input type="text" class="form-control rut-input" id="rutA{{ retiro.id }}" name="rutA" value="{{ retiro.rutA }}">
+                            </div>
+                            <div class="mb-3">
+                              <label for="cursoA{{ retiro.id }}" class="form-label">Curso del Alumno</label>
+                              <input type="text" class="form-control" id="cursoA{{ retiro.id }}" name="cursoA" value="{{ retiro.cursoA }}">
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label for="fecha_retiro{{ retiro.id }}" class="form-label">Fecha y hora de retiro</label>
+                              <input type="datetime-local" class="form-control" id="fecha_retiro{{ retiro.id }}" name="fecha_retiro" value="{{ retiro.fecha_retiro|date:'Y-m-d\TH:i' }}">
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="mb-3">
+                              <label for="motivo{{ retiro.id }}" class="form-label">Motivo del retiro</label>
+                              <textarea class="form-control" id="motivo{{ retiro.id }}" name="motivo" rows="3">{{ retiro.motivo }}</textarea>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+              {% empty %}
+              <tr>
+                <td colspan="5">No hay retiros registrados.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Contador de resultados -->
+    <div class="row mt-3 mb-3">
+      <div class="col-md-12">
+        <div class="alert alert-secondary">
+          <strong>Total de registros:</strong> <span id="totalRegistros">{{ total_registros }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    
+
+    <!-- Script para SweetAlert -->
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Función para aplicar el formateo de RUT a un elemento
+          function aplicarFormateoRut(elemento) {
+            elemento.addEventListener('input', function() {
+              let valor = this.value.replace(/\./g, '').replace(/-/g, '');
+              if (valor.length > 1) {
+                // Obtener dígito verificador
+                let dv = valor.slice(-1);
+                // Obtener cuerpo del RUT
+                let rutCuerpo = valor.slice(0, -1);
+                // Formatear RUT
+                let rutFormateado = '';
+                for (let i = rutCuerpo.length; i > 0; i -= 3) {
+                  const inicio = Math.max(0, i - 3);
+                  rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+                }
+                rutFormateado = rutFormateado.substring(1) + '-' + dv;
+                this.value = rutFormateado;
+              }
+            });
+          }
+      
+          // Función para inicializar todos los campos de RUT
+          function inicializarCamposRut() {
+            document.querySelectorAll('.rut-input').forEach(aplicarFormateoRut);
+            console.log('Campos RUT inicializados:', document.querySelectorAll('.rut-input').length);
+          }
+      
+          // Inicializar campos existentes
+          inicializarCamposRut();
+      
+          // Reinicializar cuando se abre cualquier modal
+          document.querySelectorAll('.modal').forEach(function(modal) {
+            modal.addEventListener('shown.bs.modal', function() {
+              setTimeout(inicializarCamposRut, 100); // Pequeño retraso para asegurar que el DOM está listo
+            });
+          });
+      
+          // Observar cambios en el DOM para aplicar formateo a nuevos campos
+          const observer = new MutationObserver(function(mutations) {
+            let needsInit = false;
+            mutations.forEach(function(mutation) {
+              if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                needsInit = true;
+              }
+            });
+            if (needsInit) {
+              inicializarCamposRut();
+            }
+          });
+      
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+          
+          // Validación de RUT para todos los formularios
+          function validarRut(rut) {
+            // Eliminar puntos y guiones
+            rut = rut.replace(/\./g, '').replace(/-/g, '');
+            
+            // Verificar longitud mínima
+            if (rut.length < 2) return false;
+            
+            // Separar cuerpo y dígito verificador
+            const cuerpo = rut.slice(0, -1);
+            const dv = rut.slice(-1).toUpperCase();
+            
+            // Calcular dígito verificador
+            let suma = 0;
+            let multiplicador = 2;
+            
+            // Recorrer el cuerpo de derecha a izquierda
+            for (let i = cuerpo.length - 1; i >= 0; i--) {
+              suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+              multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+            }
+            
+            // Calcular dígito esperado
+            const resto = suma % 11;
+            const dvEsperado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+            
+            // Comparar dígito verificador
+            return dv === dvEsperado;
+          }
+          
+          // Validación al enviar los formularios
+          const retiroForms = document.querySelectorAll('.retiroForm');
+          retiroForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+              const rutInputs = this.querySelectorAll('.rut-input');
+              let formValido = true;
+              
+              rutInputs.forEach(function(input) {
+                // Solo validar si el campo tiene valor (permite campos opcionales)
+                if (input.value.trim() !== '') {
+                  if (!validarRut(input.value)) {
+                    formValido = false;
+                    input.classList.add('is-invalid');
+                    
+                    // Crear mensaje de error si no existe
+                    let errorMsg = input.nextElementSibling;
+                    if (!errorMsg || !errorMsg.classList.contains('invalid-feedback')) {
+                      errorMsg = document.createElement('div');
+                      errorMsg.classList.add('invalid-feedback');
+                      input.parentNode.insertBefore(errorMsg, input.nextSibling);
+                    }
+                    errorMsg.textContent = 'RUT inválido. Verifique el formato y dígito verificador.';
+                  } else {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                    
+                    // Eliminar mensaje de error si existe
+                    const errorMsg = input.nextElementSibling;
+                    if (errorMsg && errorMsg.classList.contains('invalid-feedback')) {
+                      errorMsg.remove();
+                    }
+                  }
+                }
+              });
+              
+              if (!formValido) {
+                e.preventDefault();
+                Swal.fire({
+                  icon: 'error',
+                  title: '¡Error de validación!',
+                  text: 'Hay uno o más RUTs inválidos en el formulario. Por favor, verifique los campos marcados.',
+                  confirmButtonText: 'Entendido'
+                });
+              }
+            });
+          });
+          
+      </script>
+      
+      
+        
+      {% if messages %}
+          {% for message in messages %}
+        <script>
+          mensaje('{{ message.tags }}', '{{ message }}');
+        </script>
+          {% endfor %}
+      {% endif %}
+    
+{% endblock %}
