@@ -190,7 +190,37 @@
 
         
     </script>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Seleccionar todos los formularios en la página
+            const forms = document.querySelectorAll('form');
+            
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    // Obtener todos los botones de tipo submit dentro del formulario
+                    const submitButtons = this.querySelectorAll('button[type="submit"], input[type="submit"]');
+                    
+                    // Deshabilitar todos los botones de envío
+                    submitButtons.forEach(button => {
+                        // Guardar el texto original del botón
+                        const originalText = button.innerHTML || button.value;
+                        
+                        // Cambiar el texto y deshabilitar
+                        if (button.tagName === 'BUTTON') {
+                            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+                        } else {
+                            button.value = 'Procesando...';
+                        }
+                        
+                        button.disabled = true;
+                        
+                        // Almacenar el texto original como atributo de datos
+                        button.setAttribute('data-original-text', originalText);
+                    });
+                });
+            });
+        });
+        </script>
 
 </body>
 </html> 
