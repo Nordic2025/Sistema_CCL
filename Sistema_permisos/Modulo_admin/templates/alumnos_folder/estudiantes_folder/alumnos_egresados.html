@@ -1,0 +1,145 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Alumnos Egresados{% endblock %}
+
+{% block content %}
+<div class="container main-content">
+  <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Alumnos Egresados</h1>  
+  
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <a href="{% url 'Modulo_admin:alumnos' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Volver a Alumnos Activos
+      </a>
+    </div>
+    <div class="col-md-6 text-end">
+      <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          Filtrar por Año de Egreso
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="{% url 'Modulo_admin:alumnos_egresados' %}">Todos los años</a></li>
+          <li><hr class="dropdown-divider"></li>
+          {% for año in años_egreso %}
+            <li><a class="dropdown-item" href="{% url 'Modulo_admin:alumnos_egresados' %}?año={{ año }}">{{ año }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card shadow">
+    <div class="card-header bg-secondary text-white">
+      <h5 class="mb-0">Listado de Alumnos Egresados</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>RUT</th>
+              <th>Nombre</th>
+              <th>Último Curso</th>
+              <th>Año de Egreso</th>
+              <th>Apoderado Titular</th>
+              <th>Teléfono</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for egresado in egresados %}
+            <tr>
+              <td>{{ egresado.rut }}</td>
+              <td>{{ egresado.nombre }}</td>
+              <td>{{ egresado.ultimo_curso }}</td>
+              <td>{{ egresado.año_egreso }}</td>
+              <td>{{ egresado.apoderado_titular }}</td>
+              <td>{{ egresado.telefono_apoderadoT }}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detalleEgresadoModal{{ egresado.id }}">
+                  <i class="fas fa-eye"></i> Ver Detalles
+                </button>
+              </td>
+            </tr>
+            
+            <!-- Modal de Detalles -->
+            <div class="modal fade" id="detalleEgresadoModal{{ egresado.id }}" tabindex="-1" aria-labelledby="detalleEgresadoModalLabel{{ egresado.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="detalleEgresadoModalLabel{{ egresado.id }}">Detalles del Alumno Egresado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <h6 class="border-bottom pb-2">Información del Alumno</h6>
+                        <p><strong>RUT:</strong> {{ egresado.rut }}</p>
+                        <p><strong>Nombre:</strong> {{ egresado.nombre }}</p>
+                        <p><strong>Último Curso:</strong> {{ egresado.ultimo_curso }}</p>
+                        <p><strong>Año de Egreso:</strong> {{ egresado.año_egreso }}</p>
+                      </div>
+                      <div class="col-md-6">
+                        <h6 class="border-bottom pb-2">Apoderado Titular</h6>
+                        <p><strong>Nombre:</strong> {{ egresado.apoderado_titular }}</p>
+                        <p><strong>RUT:</strong> {{ egresado.rut_apoderadoT }}</p>
+                        <p><strong>Teléfono:</strong> {{ egresado.telefono_apoderadoT }}</p>
+                      </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                      <div class="col-md-6">
+                        <h6 class="border-bottom pb-2">Apoderado Suplente</h6>
+                        {% if egresado.apoderado_suplente %}
+                          <p><strong>Nombre:</strong> {{ egresado.apoderado_suplente }}</p>
+                          <p><strong>RUT:</strong> {{ egresado.rut_apoderadoS }}</p>
+                          <p><strong>Teléfono:</strong> {{ egresado.telefono_apoderadoS }}</p>
+                        {% else %}
+                          <p class="text-muted">No registrado</p>
+                        {% endif %}
+                      </div>
+                      <div class="col-md-6">
+                        <h6 class="border-bottom pb-2">Familiar 1</h6>
+                        {% if egresado.familiar_1 %}
+                          <p><strong>Nombre:</strong> {{ egresado.familiar_1 }}</p>
+                          <p><strong>RUT:</strong> {{ egresado.rut_familiar_1 }}</p>
+                          <p><strong>Relación:</strong> {{ egresado.familiar_1_relacion }}</p>
+                          <p><strong>Teléfono:</strong> {{ egresado.familiar_1_telefono }}</p>
+                        {% else %}
+                          <p class="text-muted">No registrado</p>
+                        {% endif %}
+                      </div>
+                    </div>
+                    
+                    {% if egresado.familiar_2 %}
+                    <div class="row mt-3">
+                      <div class="col-md-6">
+                        <h6 class="border-bottom pb-2">Familiar 2</h6>
+                        <p><strong>Nombre:</strong> {{ egresado.familiar_2 }}</p>
+                        <p><strong>RUT:</strong> {{ egresado.rut_familiar_2 }}</p>
+                        <p><strong>Relación:</strong> {{ egresado.familiar_2_relacion }}</p>
+                        <p><strong>Teléfono:</strong> {{ egresado.familiar_2_telefono }}</p>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center">No hay alumnos egresados registrados</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

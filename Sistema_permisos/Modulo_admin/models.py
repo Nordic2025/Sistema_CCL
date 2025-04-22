@@ -181,3 +181,34 @@ class Alumno(models.Model):
         verbose_name_plural = "Alumnos"
         ordering = ['curso', 'nombre']
 
+
+
+
+class AlumnoEgresado(models.Model):
+    rut = models.CharField(max_length=15, unique=True)
+    nombre = models.CharField(max_length=255)
+    ultimo_curso = models.CharField(max_length=50)  # Almacena el último curso (4° Medio X)
+    apoderado_titular = models.CharField(max_length=255)
+    rut_apoderadoT = models.CharField(max_length=15, blank=True, null=True)
+    telefono_apoderadoT = models.CharField(max_length=20, blank=True, null=True)
+    apoderado_suplente = models.CharField(max_length=255, blank=True, null=True)
+    rut_apoderadoS = models.CharField(max_length=15, blank=True, null=True)
+    telefono_apoderadoS = models.CharField(max_length=20, blank=True, null=True)
+    familiar_1 = models.CharField(max_length=255, blank=True, null=True)
+    familiar_1_relacion = models.CharField(max_length=100, blank=True, null=True)
+    familiar_1_telefono = models.CharField(max_length=20, blank=True, null=True)
+    rut_familiar_1 = models.CharField(max_length=15, blank=True, null=True)
+    familiar_2 = models.CharField(max_length=255, blank=True, null=True)
+    familiar_2_relacion = models.CharField(max_length=100, blank=True, null=True)
+    familiar_2_telefono = models.CharField(max_length=20, blank=True, null=True)
+    rut_familiar_2 = models.CharField(max_length=15, blank=True, null=True)
+    fecha_egreso = models.DateField(auto_now_add=True)
+    año_egreso = models.IntegerField()  # Año en que egresó
+
+    def __str__(self):
+        return f"{self.nombre} - Egresado {self.año_egreso}"
+
+    class Meta:
+        verbose_name = "Alumno Egresado"
+        verbose_name_plural = "Alumnos Egresados"
+        ordering = ['-año_egreso', 'nombre']

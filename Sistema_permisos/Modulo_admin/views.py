@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm, AlumnoForm, FamiliarForm, InspectorForm
-from .models import Administrador, Areas, Curso, Alumno, Inspector
+from .models import Administrador, Areas, Curso, Alumno, Inspector, AlumnoEgresado
 from Modulo_funcionarios.models import RegistroSalida
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from functools import wraps
 from django.db import transaction
+import re
 
 
 # Decorador para verificar si el usuario es staff
@@ -742,3 +743,178 @@ def justificativos_view(request):
 @login_required(login_url='Modulo_admin:login_admin')
 def grafico_alumnos_view(request):
     return render(request, 'alumnos_folder/grafico_folder/grafico.html')
+
+
+# BOTON ABANZAR DE AÑO
+def promocion_anual_view(request):
+    """Vista para realizar la promoción anual de todos los alumnos."""
+    if request.method != 'POST':
+        messages.error(request, 'Método no permitido')
+        return redirect('Modulo_admin:alumnos')
+    
+    try:
+        with transaction.atomic():  # Usar transacción para asegurar integridad
+            # 1. Obtener todos los alumnos agrupados por curso
+            cursos = Curso.objects.all()
+            año_actual = datetime.now().year
+            
+            # 2. Procesar cada curso
+            for curso in cursos:
+                alumnos_curso = Alumno.objects.filter(curso=curso)
+                
+                # Extraer información del nombre del curso
+                curso_info = curso.nombre.strip()
+                
+                # Detectar si es Pre-Kinder, Kinder, Básica o Media
+                if "Pre-Kinder" in curso_info:
+                    # Pre-Kinder a Kinder
+                    nuevo_nivel = "Kinder"
+                    letra = re.search(r'[A-Z]$', curso_info)
+                    letra = letra.group(0) if letra else ""
+                    nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                    
+                    # Buscar o crear el nuevo curso
+                    nuevo_curso, created = Curso.objects.get_or_create(
+                        nombre=nuevo_nombre,
+                        nivel="Pre-basica"  # Mantener en pre-básica
+                    )
+                    
+                    # Actualizar alumnos
+                    for alumno in alumnos_curso:
+                        alumno.curso = nuevo_curso
+                        alumno.save()
+                
+                elif "Kinder" in curso_info:
+                    # Kinder a 1° Básico
+                    nuevo_nivel = "1° Básico"
+                    letra = re.search(r'[A-Z]$', curso_info)
+                    letra = letra.group(0) if letra else ""
+                    nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                    
+                    # Buscar o crear el nuevo curso
+                    nuevo_curso, created = Curso.objects.get_or_create(
+                        nombre=nuevo_nombre,
+                        nivel="Basica"  # Cambiar a básica
+                    )
+                    
+                    # Actualizar alumnos
+                    for alumno in alumnos_curso:
+                        alumno.curso = nuevo_curso
+                        alumno.save()
+                
+                elif "Básico" in curso_info or "Basico" in curso_info:
+                    # Extraer el número de básico
+                    match = re.search(r'(\d+)°?\s*[Bb][aá]sico', curso_info)
+                    if match:
+                        nivel_actual = int(match.group(1))
+                        letra = re.search(r'[A-Z]$', curso_info)
+                        letra = letra.group(0) if letra else ""
+                        
+                        if nivel_actual < 8:
+                            # 1°-7° Básico pasan al siguiente básico
+                            nuevo_nivel = f"{nivel_actual + 1}° Básico"
+                            nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                            
+                            # Buscar o crear el nuevo curso
+                            nuevo_curso, created = Curso.objects.get_or_create(
+                                nombre=nuevo_nombre,
+                                nivel="Basica"
+                            )
+                            
+                            # Actualizar alumnos
+                            for alumno in alumnos_curso:
+                                alumno.curso = nuevo_curso
+                                alumno.save()
+                        
+                        elif nivel_actual == 8:
+                            # 8° Básico pasa a 1° Medio
+                            nuevo_nivel = "1° Medio"
+                            nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                            
+                            # Buscar o crear el nuevo curso
+                            nuevo_curso, created = Curso.objects.get_or_create(
+                                nombre=nuevo_nombre,
+                                nivel="Media"
+                            )
+                            
+                            # Actualizar alumnos
+                            for alumno in alumnos_curso:
+                                alumno.curso = nuevo_curso
+                                alumno.save()
+                
+                elif "Medio" in curso_info:
+                    # Extraer el número de medio
+                    match = re.search(r'(\d+)°?\s*[Mm]edio', curso_info)
+                    if match:
+                        nivel_actual = int(match.group(1))
+                        letra = re.search(r'[A-Z]$', curso_info)
+                        letra = letra.group(0) if letra else ""
+                        
+                        if nivel_actual < 4:
+                            # 1°-3° Medio pasan al siguiente medio
+                            nuevo_nivel = f"{nivel_actual + 1}° Medio"
+                            nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                            
+                            # Buscar o crear el nuevo curso
+                            nuevo_curso, created = Curso.objects.get_or_create(
+                                nombre=nuevo_nombre,
+                                nivel="Media"
+                            )
+                            
+                            # Actualizar alumnos
+                            for alumno in alumnos_curso:
+                                alumno.curso = nuevo_curso
+                                alumno.save()
+                        
+                        elif nivel_actual == 4:
+                            # 4° Medio pasa a Egresados
+                            for alumno in alumnos_curso:
+                                # Crear registro de alumno egresado
+                                AlumnoEgresado.objects.create(
+                                    rut=alumno.rut,
+                                    nombre=alumno.nombre,
+                                    ultimo_curso=curso.nombre,
+                                    apoderado_titular=alumno.apoderado_titular,
+                                    rut_apoderadoT=alumno.rut_apoderadoT,
+                                    telefono_apoderadoT=alumno.telefono_apoderadoT,
+                                    apoderado_suplente=alumno.apoderado_suplente,
+                                    rut_apoderadoS=alumno.rut_apoderadoS,
+                                    telefono_apoderadoS=alumno.telefono_apoderadoS,
+                                    familiar_1=alumno.familiar_1,
+                                    familiar_1_relacion=alumno.familiar_1_relacion,
+                                    familiar_1_telefono=alumno.familiar_1_telefono,
+                                    rut_familiar_1=alumno.rut_familiar_1,
+                                    familiar_2=alumno.familiar_2,
+                                    familiar_2_relacion=alumno.familiar_2_relacion,
+                                    familiar_2_telefono=alumno.familiar_2_telefono,
+                                    rut_familiar_2=alumno.rut_familiar_2,
+                                    año_egreso=año_actual
+                                )
+                                
+                                # Eliminar el alumno de la tabla de alumnos activos
+                                alumno.delete()
+            
+            # Registrar la acción en el log
+            messages.success(request, f'Promoción anual completada exitosamente. Los alumnos han sido promovidos al siguiente año académico.')
+            return redirect('Modulo_admin:alumnos')
+    
+    except Exception as e:
+        messages.error(request, f'Error al realizar la promoción anual: {str(e)}')
+        return redirect('Modulo_admin:alumnos')
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+@staff_required
+def alumnos_egresados_view(request):
+    """Vista para mostrar la lista de alumnos egresados."""
+    egresados = AlumnoEgresado.objects.all()
+    
+    # Agrupar por año de egreso
+    años_egreso = AlumnoEgresado.objects.values_list('año_egreso', flat=True).distinct().order_by('-año_egreso')
+    
+    context = {
+        'egresados': egresados,
+        'años_egreso': años_egreso
+    }
+    
+    return render(request, 'alumnos_folder/estudiantes_folder/alumnos_egresados.html', context)

@@ -78,7 +78,67 @@
       </div>
     </div>
     {% endif %}
-    
+
+      <!-- Boton para avanzar de año -->
+      {% if user.is_superuser %}
+      <div class="d-flex mb-3">
+        <button type="button" class="btn btn_general me-2" data-bs-toggle="modal" data-bs-target="#agregarAlumnoModal">
+          Registrar nuevo alumno
+        </button>
+        <button type="button" class="btn btn-warning" id="btnPromocionAnual">
+          <i class="fas fa-graduation-cap"></i> Pasar al Siguiente Año
+        </button>
+      </div>
+      {% endif %}
+
+      
+    <!-- Modal para alerta de confirmacion avnzar al año siguiente --> 
+
+    <div class="modal fade" id="promocionAnualModal" tabindex="-1" aria-labelledby="promocionAnualModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-warning">
+            <h5 class="modal-title" id="promocionAnualModalLabel">
+              <i class="fas fa-exclamation-triangle"></i> Confirmación de Promoción Anual
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger">
+              <h4 class="alert-heading text-center">¡ATENCIÓN!</h4>
+              <p class="text-center"><strong>Esta acción es IRREVERSIBLE</strong></p>
+              <hr>
+              <p>Está a punto de promover a todos los alumnos al siguiente año académico:</p>
+              <ul>
+                <li>Los alumnos avanzarán al siguiente nivel según el sistema educativo</li>
+                <li>Los alumnos de 4° Medio serán enviados a la tabla "Egresados"</li>
+                <li>Se mantendrán las mismas secciones (letras) por curso</li>
+              </ul>
+              <p>Los casos especiales (repitentes, traslados, etc.) deberán gestionarse manualmente después de este proceso.</p>
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="confirmarPromocion">
+              <label class="form-check-label" for="confirmarPromocion">
+                Entiendo que esta acción no se puede deshacer
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <form action="{% url 'Modulo_admin:promocion_anual' %}" method="POST" id="formPromocionAnual">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning" id="btnConfirmarPromocion" disabled>
+                Confirmar Promoción
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
     <div class="row">
       <div class="col-md-12">
         <div class="tabla_global">
@@ -1024,6 +1084,49 @@
         });
       </script>
         
+       <!-- Script para manejar la promoción anual -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Botón para abrir el modal de promoción
+        const btnPromocionAnual = document.getElementById('btnPromocionAnual');
+        if (btnPromocionAnual) {
+          btnPromocionAnual.addEventListener('click', function() {
+            const promocionModal = new bootstrap.Modal(document.getElementById('promocionAnualModal'));
+            promocionModal.show();
+          });
+        }
+        
+        // Checkbox de confirmación
+        const confirmarPromocion = document.getElementById('confirmarPromocion');
+        const btnConfirmarPromocion = document.getElementById('btnConfirmarPromocion');
+        
+        if (confirmarPromocion && btnConfirmarPromocion) {
+          confirmarPromocion.addEventListener('change', function() {
+            btnConfirmarPromocion.disabled = !this.checked;
+          });
+        }
+        
+        // Formulario de promoción
+        const formPromocionAnual = document.getElementById('formPromocionAnual');
+        if (formPromocionAnual) {
+          formPromocionAnual.addEventListener('submit', function(e) {
+            if (!confirmarPromocion.checked) {
+              e.preventDefault();
+              Swal.fire({
+                icon: 'error',
+                title: 'Confirmación requerida',
+                text: 'Debe confirmar que entiende que esta acción es irreversible',
+                confirmButtonText: 'Entendido'
+              });
+            } else {
+              // Mostrar indicador de carga
+              btnConfirmarPromocion.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+              btnConfirmarPromocion.disabled = true;
+            }
+          });
+        }
+      });
+    </script>
       
       
         

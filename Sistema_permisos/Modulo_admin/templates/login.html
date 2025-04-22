@@ -12,7 +12,37 @@
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
     <title>Gestion Permisos Colegio Concepcion | {% block title %}{% endblock %}</title>
+
+
+    <!-- Estilos para el footer fijo -->
+    <style>
+      html, body {
+          height: 100%;
+          margin: 0;
+      }
+      
+      body {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh; /* viewport height */
+      }
+      
+      .content-wrapper {
+          flex: 1 0 auto; /* Esto hace que el contenido ocupe todo el espacio disponible */
+      }
+      
+      .footer {
+          flex-shrink: 0; /* Evita que el footer se encoja */
+          background-color: #6f82be;
+          padding: 1rem 0;
+          text-align: center;
+          width: 100%;
+          margin-top: auto; /* Empuja el footer hacia abajo */
+      }
+  </style>
 </head>
+
+
 
 <body>
   <header class="encabezado_principal">

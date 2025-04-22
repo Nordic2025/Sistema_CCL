@@ -58,17 +58,12 @@ urlpatterns = [
     path('justificaciones/', views.justificativos_view, name='justificaciones'),
     path('grafico_alumnos/', views.grafico_alumnos_view, name='grafico_alumnos'),
 
-
-
-
-
-
-
-
-
-
-
-
-
+    path('promocion-anual/', views.promocion_anual_view, name='promocion_anual'),
+    path('alumnos-egresados/', views.alumnos_egresados_view, name='alumnos_egresados'),
 ]
+
+
+
+
+
 
