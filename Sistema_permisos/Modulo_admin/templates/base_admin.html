@@ -9,157 +9,187 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/sweetalert2.min.css' %}">
     <link rel="icon" href="{% static 'images/favicon.ico' %}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
     <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
     <script src="{% static 'js/highcharts.js' %}"></script>
     <script src="{% static 'js/exporting.js' %}"></script>
-    
     <script src="{% static 'js/html2canvas.min.js' %}"></script>
     <script src="{% static 'js/jspdf.umd.min.js' %}"></script>
 
     <title>{% block title %} {% endblock %}</title>
+
+
+    <style>
+
+        /* Si estás usando imágenes SVG en lugar de iconos de fuente */
+    .menu_icono {
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        margin-right: 0.75rem !important;
+    }
+
+
+    /* Para iconos en el sidebar colapsado */
+    .sidebar.collapsed .menu-link i, 
+    .sidebar.collapsed .dropdown-btn i:first-child,
+    .sidebar.collapsed .menu_icono {
+        margin-right: 0 !important;
+    }
+
+
+    /* Para iconos en submenús */
+    .submenu-link i,
+    .submenu-link .menu_icono {
+        font-size: 1rem !important;
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+    }
+
+    </style>
 </head>
 
-
-<style>
-    .no {
-        display: block
-    }
-    
-    .menu-section {
-        margin-top: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 10px;
-    }
-    
-    .section-title {
-        color: #f8f9fa;
-        font-weight: bold;
-        padding: 10px 15px;
-        font-size: 16px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .section-items {
-        padding-left: 15px;
-    }
-    
-    .section-items a {
-        padding: 8px 15px 8px 30px;
-    }
-    
-    .menu-section-toggle {
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .menu-section-toggle::after {
-        content: '▼';
-        font-size: 12px;
-        transition: transform 0.3s;
-    }
-    
-    .menu-section-toggle.collapsed::after {
-        transform: rotate(-90deg);
-    }
-    
-    .menu-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 15px;
-        width: 100%;
-        position: relative;
-    }
-    
-    .menu-header .logoCCL {
-        margin: 0 auto;
-        display: block;
-        max-width: 70%;
-    }
-    
-    .menu-header .cerrarMenubtn {
-        position: absolute;
-        right: 15px;
-    }
-</style>
-
-
 <body>
-    <header class="encabezado_principal">
-        <button class="abrirMenubtn" onclick="abrirMenu()">☰</button>
-        <a href="{% url 'Modulo_admin:grafico' %}">
-            <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
-        </a>
-        <h1 class="h1_global">Ingresos Colegio Concepcion</h1>
-        <li class="nav-item dropdown no">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="user-display">{{ user.first_name }} {{ user.last_name }}</span>
-                <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
-            </a>
-            <ul class="dropdown-menu" style="width:100%; text-align: center; font-size: 18px;">
-                <li>
-                    <form method="POST" action="{% url 'Modulo_admin:logout_admin' %}">
-                        {% csrf_token %}
-                        <button class="dropdown-item text-danger" type="submit">Cerrar sesión</button>
-                    </form>
-                </li>
-            </ul>
-        </li>
-    </header>
+    <!-- Botón móvil para abrir sidebar -->
+    <button class="mobile-toggle" id="mobileToggle" onclick="cerrarMenu()">
+        <i class='bx bx-menu'></i>
+    </button>
 
-    <div id="menuLateral" class="menuLateral">
-        
-        <div class="menu-header">
-            <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
-            <a href="javascript:void(0)" class="cerrarMenubtn" onclick="cerrarMenu()"><img src="{% static "icon/x.svg" %}" alt="Cerrar menú" class="menu_icono"></a>
-        </div>
-        
-        
-        <a href="{% url 'Modulo_admin:grafico' %}" style="margin-top: 40px;"><img src="{% static "icon/hogar.svg" %}" alt="Logo de Inicio" class="menu_icono" >Inicio</a>
-        
-        <!-- Sección de Funcionarios -->
-        <div class="menu-section">
-            <div class="section-title menu-section-toggle" data-bs-toggle="collapse" data-bs-target="#funcionariosSection" aria-expanded="true">
-                Funcionarios
+    <!-- Sidebar -->
+    <aside class="sidebar collapsed" id="sidebar" onclick="cerrarMenu()">
+        <!-- Encabezado del sidebar -->
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <img src="{% static 'images/logo_ccl.png' %}" alt="Logo Colegio Concepcion">
+                <span>Colegio Concepcion</span>
             </div>
-            <div id="funcionariosSection" class="collapse show section-items">
-                <a href="{% url 'Modulo_admin:historial_permisos' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono"> Permisos Completados</a>
-                <a href="{% url 'Modulo_admin:historial_salidas' %}"><img src="{% static "icon/tabla.svg" %}" alt="Logo de Tabla" class="menu_icono">Salidas Activas</a>
-                <a href="{% url 'Modulo_admin:administradores' %}"><img src="{% static "icon/usuarios.svg" %}" alt="Logo de Administrador" class="menu_icono">Administradores</a>
-                <a href="{% url 'Modulo_admin:area' %}"><img src="{% static "icon/area.svg" %}" alt="Logo de Área" class="menu_icono">Área</a>
-            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class='bx bx-chevron-left'></i>
+            </button>
         </div>
 
-        <!-- Sección de Alumnos -->
-        <div class="menu-section">
-            <div class="section-title menu-section-toggle" data-bs-toggle="collapse" data-bs-target="#alumnosSection" aria-expanded="true">
-                Alumnos
+        <!-- Menú de navegación -->
+        <ul class="sidebar-menu">
+            <!-- Inicio -->
+            <li class="menu-item" data-tooltip="Inicio">
+                <a href="{% url 'Modulo_admin:grafico' %}" class="menu-link">
+                    <img src="{% static 'icon/hogar.svg' %}" alt="Inicio" class="menu_icono">
+                    <span>Inicio</span>
+                </a>
+            </li>
+
+            <!-- Funcionarios -->
+            <li class="menu-item" data-tooltip="Funcionarios">
+                <button class="dropdown-btn" id="funcionariosDropdown">
+                    <img src="{% static 'icon/usuarios.svg' %}" alt="Inicio" class="menu_icono" style="color: white;">
+                    <span>Funcionarios</span>
+                    <i class='bx bx-chevron-down'></i>
+                </button>
+                <ul class="submenu" id="funcionariosSubmenu">
+                    <li>
+                        <a href="{% url 'Modulo_admin:historial_permisos' %}" class="submenu-link">
+                            Permisos Completados
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:historial_salidas' %}" class="submenu-link">
+                            Salidas Activas
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:administradores' %}" class="submenu-link">
+                            Administradores
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:area' %}" class="submenu-link">
+                            Área
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Alumnos -->
+            <li class="menu-item" data-tooltip="Alumnos">
+                <button class="dropdown-btn" id="alumnosDropdown">
+                    <img src="{% static 'icon/alumnos.svg' %}" alt="Inicio" class="menu_icono" style="color: white;">
+                    <span>Alumnos</span>
+                    <i class='bx bx-chevron-down'></i>
+                </button>
+                <ul class="submenu" id="alumnosSubmenu">
+                    <li>
+                        <a href="{% url 'Modulo_admin:grafico_alumnos' %}" class="submenu-link">
+                            Gráficos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:retiros' %}" class="submenu-link">
+                            Retiros
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:justificaciones' %}" class="submenu-link">
+                            Justificativos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:alumnos' %}" class="submenu-link">
+                            Alumnos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="submenu-link">
+                            Egresados
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:cursos'%}" class="submenu-link">
+                            Cursos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Modulo_admin:inspectores'%}" class="submenu-link">
+                            Inspectores
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <!-- Perfil de usuario -->
+        <div class="user-profile" id="userProfile" onclick="toogleProfileMenu()"> 
+            <div class="user-avatar">
+                {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
             </div>
-            <div id="alumnosSection" class="collapse show section-items">
-                <a href="{% url 'Modulo_admin:grafico_alumnos' %}"><img src="{% static "icon/grafico.svg" %}" alt="Logo de Tabla" class="menu_icono">Graficos</a>
-                <a href="{% url 'Modulo_admin:retiros' %}"><img src="{% static "icon/retiros.svg" %}" alt="Logo de Tabla" class="menu_icono">Retiros</a>
-                <a href="{% url 'Modulo_admin:justificaciones' %}"><img src="{% static "icon/justificativo.svg" %}" alt="Logo de Tabla" class="menu_icono">Justificativos</a>
-                <a href="{% url 'Modulo_admin:alumnos' %}"><img src="{% static "icon/alumnos.svg" %}" alt="Logo de Tabla" class="menu_icono">Alumnos</a>
-                <a href="#"><img src="{% static "icon/alumno_egresado.svg" %}" alt="Logo de Tabla" class="menu_icono">Egresados</a>
-                <a href="{% url 'Modulo_admin:cursos'%}"><img src="{% static "icon/cursos.svg" %}" alt="Logo de Tabla" class="menu_icono">Cursos</a>
-                <a href="{% url 'Modulo_admin:inspectores'%}"><img src="{% static "icon/inspector.svg" %}" alt="Logo de Tabla" class="menu_icono">Inspectores</a>
+            <div class="user-info">
+                <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                <div class="user-email">{{ user.email }}</div>
             </div>
+            <form method="POST" action="{% url 'Modulo_admin:logout_admin' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <i class='bx bx-log-out'></i>
+                </button>
+            </form>
         </div>
+    </aside>
+
+    <!-- Contenido principal - Estructura corregida -->
+    <div class="main-wrapper">
+        <header class="main-header">
+            <h1 class="page-title">Ingresos Colegio Concepcion</h1>
+        </header>
+
+        <main class="main-body">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="main-footer">
+            Copyright © Colegio Concepcion - Linares 2025
+        </footer>
     </div>
-    
-    <main class="contenido">
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer class="footer">
-        Copyright © Colegio Concepcion - Linares 2025
-    </footer>
 
     {% if messages %}
         {% for message in messages %}
@@ -167,29 +197,120 @@
                 mensaje('{{ message.tags }}', '{{ message }}');
             </script>
         {% endfor %}
-
     {% endif %}
 
-     <!-- Script para cerrar el menú al hacer clic fuera de él -->
-     <script>
+
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Función para cerrar el menú cuando se hace clic fuera de él
-            document.addEventListener('click', function(event) {
-                var menuLateral = document.getElementById('menuLateral');
-                var abrirMenuBtn = document.querySelector('.abrirMenubtn');
-                
-                // Verificar si el menú está abierto
-                if (menuLateral.style.width && menuLateral.style.width !== '0px') {
-                    // Verificar si el clic fue fuera del menú y no en el botón de abrir
-                    if (!menuLateral.contains(event.target) && event.target !== abrirMenuBtn) {
-                        cerrarMenu();
+            // Referencias a elementos
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileToggle = document.getElementById('mobileToggle');
+            const funcionariosDropdown = document.getElementById('funcionariosDropdown');
+            const alumnosDropdown = document.getElementById('alumnosDropdown');
+            const funcionariosSubmenu = document.getElementById('funcionariosSubmenu');
+            const alumnosSubmenu = document.getElementById('alumnosSubmenu');
+            
+            // Alternar sidebar colapsado
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                // Cerrar submenús al colapsar
+                funcionariosSubmenu.classList.remove('show');
+                alumnosSubmenu.classList.remove('show');
+                funcionariosDropdown.classList.remove('active');
+                alumnosDropdown.classList.remove('active');
+            });
+            
+
+            
+            // Alternar submenús
+            funcionariosDropdown.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Si el sidebar está colapsado, expandirlo primero
+                if (sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.remove('collapsed');
+                    setTimeout(() => {
+                        toggleSubmenu(funcionariosDropdown, funcionariosSubmenu);
+                    }, 300);
+                } else {
+                    toggleSubmenu(funcionariosDropdown, funcionariosSubmenu);
+                    // Cerrar el otro submenú
+                    alumnosSubmenu.classList.remove('show');
+                    alumnosDropdown.classList.remove('active');
+                }
+            });
+            
+            alumnosDropdown.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Si el sidebar está colapsado, expandirlo primero
+                if (sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.remove('collapsed');
+                    setTimeout(() => {
+                        toggleSubmenu(alumnosDropdown, alumnosSubmenu);
+                    }, 300);
+                } else {
+                    toggleSubmenu(alumnosDropdown, alumnosSubmenu);
+                    // Cerrar el otro submenú
+                    funcionariosSubmenu.classList.remove('show');
+                    funcionariosDropdown.classList.remove('active');
+                }
+            });
+            
+            function toggleSubmenu(button, submenu) {
+                button.classList.toggle('active');
+                submenu.classList.toggle('show');
+            }
+            
+            // Marcar la página actual como activa 
+            const currentPath = window.location.pathname;
+            const allLinks = document.querySelectorAll('.menu-link, .submenu-link');
+            let activeFound = false;
+            
+            allLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && currentPath.includes(href) && href !== '#') {
+                    // No marcar como activo si es la página de inicio y estamos en otra página
+                    if (href.includes('grafico') && currentPath !== href && !currentPath.endsWith('/')) {
+                        return;
+                    }
+                    
+                    link.classList.add('active');
+                    activeFound = true;
+                    
+                    // Si es un enlace de submenú, mostrar el submenú y marcar el dropdown
+                    if (link.classList.contains('submenu-link')) {
+                        const submenu = link.closest('.submenu');
+                        const dropdown = submenu.previousElementSibling;
+                        
+                        submenu.classList.add('show');
+                        dropdown.classList.add('active');
                     }
                 }
             });
+            
+            // Solo marcar inicio como activo si estamos exactamente en esa página o en la raíz
+            if (!activeFound && (currentPath.endsWith('/grafico/') || currentPath === '/')) {
+                const homeLink = document.querySelector('.menu-link[href*="grafico"]');
+                if (homeLink) {
+                    homeLink.classList.add('active');
+                }
+            }
+            
+            // Responsive: ajustar sidebar en pantallas pequeñas
+            function checkScreenSize() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('collapsed');
+                    sidebar.classList.remove('open');
+                }
+            }
+            
+            // Verificar tamaño de pantalla al cargar y al redimensionar
+            checkScreenSize();
+            window.addEventListener('resize', checkScreenSize);
         });
-
-        
     </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Seleccionar todos los formularios en la página
@@ -221,6 +342,5 @@
             });
         });
         </script>
-
 </body>
 </html>

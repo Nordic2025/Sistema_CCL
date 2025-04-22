@@ -142,20 +142,14 @@ body {
     gap: 40px;
     align-items: center;
     width: 100%;
-    min-height: 60vh; /* Asegura que ocupe suficiente altura vertical */
-    margin: 0 auto; /* Centrado horizontal */
+    min-height: 60vh;
+    margin: 0 auto; 
 }
 
 .btn_container {
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-/* Este placeholder ocupa el espacio de 'Próximamente' en el de Funcionarios */
-.a_principal_placeholder {
-    height: 38px; /* ajustá al mismo alto que .a_principal */
-    width: 100%;
 }
 
 .btn_container:hover {
@@ -280,172 +274,481 @@ body {
 }
 
 
+/*MENU LATERAL*/
 
-/*Menu lateral*/
-.menuLateral {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    background: linear-gradient(180deg, #6f82be, #5a6ba0);
-    overflow-x: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    padding-top: 15px;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+/* Variables de color */
+:root {
+    --primary: #6f82be;
+    --primary-dark: #5a6ba0;
+    --primary-light: #8a9ad0;
+    --accent: #2b1572;
+    --text-light: #ffffff;
+    --text-dark: #333333;
+    --bg-light: #f8f9fa;
+    --bg-dark: #343a40;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+    --transition: all 0.3s ease;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow: 0 4px 8px rgba(0,0,0,0.15);
+    --radius: 0.5rem;
 }
 
-/* Estilo para el botón de cerrar menú */
-.menuLateral .cerrarMenubtn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 40px;
-    height: 40px;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    width: 250px;
+    height: 100vh;
+    background-color: var(--primary);
+    transition: var(--transition);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    overflow: hidden;
+}
+
+.sidebar-logo img {
+    width: 2rem !important;
+    height: 2rem !important;
+    object-fit: contain;
+    background-color: white;
+    border-radius: 50%;
+    padding: 0.25rem;
+}
+
+.sidebar-logo span {
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: var(--text-light);
+    white-space: nowrap;
+    transition: var(--transition);
+}
+
+.sidebar.collapsed .sidebar-logo span {
+    opacity: 0;
+    width: 0;
+}
+
+/* Botón de toggle */
+.sidebar-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    transition: var(--transition);
+    position: absolute;
+    right: -1rem;
+    top: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-toggle i {
+    font-size: 1.25rem;
+    transition: var(--transition);
+}
+
+.sidebar.collapsed .sidebar-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Sidebar Menu */
+.sidebar-menu {
+    list-style: none;
+    padding: 1rem 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+}
+
+
+
+.menu-item {
+    margin-bottom: 0.25rem !important;
+    position: relative;
+}
+
+/* Asegurando que todos los iconos estén alineados correctamente */
+.menu-link, .dropdown-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem !important;
+    color: var(--text-light);
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.menu-link:hover, 
+.menu-link.active,
+.dropdown-btn:hover,
+.dropdown-btn.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-link i, .dropdown-btn i:first-child {
+    font-size: 1.25rem;
+    width: 1.5rem; 
+    text-align: center; 
+    margin-right: 0.75rem;
+    transition: var(--transition);
+}
+
+.sidebar.collapsed .menu-link, 
+.sidebar.collapsed .dropdown-btn {
+    padding: 0.75rem !important;
+    justify-content: center;
+}
+
+.sidebar.collapsed .menu-link i, 
+.sidebar.collapsed .dropdown-btn i:first-child {
+    margin-right: 0;
+}
+
+.sidebar.collapsed .menu-link span, 
+.sidebar.collapsed .dropdown-btn span {
+    opacity: 0;
+    width: 0;
+}
+
+/* Dropdown Menu */
+.dropdown-btn {
+    width: 100%;
     background: transparent;
     border: none;
-    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s ease;
+    text-align: left;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.dropdown-btn i:last-child {
+    margin-left: auto;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.dropdown-btn.active i:last-child {
+    transform: rotate(180deg);
+}
+
+.sidebar.collapsed .dropdown-btn i:last-child {
+    opacity: 0;
+    width: 0;
+}
+
+/* Submenu */
+.submenu {
+    list-style: none;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding-left: 1rem;
+}
+
+.submenu.show {
+    max-height: 500px;
+}
+
+.submenu-link {
+    display: block;
+    padding: 0.6rem 0.5rem 0.6rem 2.25rem;
+    color: var(--text-light);
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.submenu-link:hover,
+.submenu-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+/* Submenu en sidebar colapsado */
+.sidebar.collapsed .menu-item:hover .submenu {
+    position: absolute;
+    left: 70px;
+    top: 0;
+    min-width: 200px;
+    max-height: none;
+    background-color: var(--primary);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 0.5rem;
     z-index: 1001;
 }
 
-/* Estilo para el icono dentro del botón de cerrar */
-.menuLateral .cerrarMenubtn img {
-    width: 24px;
-    height: 24px;
-    transition: transform 0.3s ease;
-    filter: brightness(0) invert(1); /* Makes the icon white */
-    display: block; /* Ensures proper centering */
-    margin: 0; /* Reset any margins */
+.sidebar.collapsed .submenu-link {
+    padding: 0.6rem 1rem;
 }
 
-
-/* Hover para el botón de cerrar */
-.menuLateral .cerrarMenubtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.1);
-}
-
-.menuLateral .cerrarMenubtn:hover img {
-    transform: rotate(90deg);
-}
-
-.menuLateral a {
-    padding: 15px 20px;
-    text-decoration: none;
-    font-size: 18px;
-    color: #ffffff;
+/* Usuario */
+.user-profile {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
-    transition: all 0.3s ease;
-    margin: 10px 15px;
-    border-radius: 10px;
-    position: relative;
+    gap: 0.75rem;
+    transition: var(--transition);
+
+}
+
+.user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    background-color: #2b1572;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.user-info {
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
+    transition: var(--transition);
 }
 
-.menuLateral a img {
-    width: 24px;        
-    height: 24px;       
-    margin-right: 15px; 
-    vertical-align: middle; 
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-    transition: all 0.3s ease;
+.user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.menu_icono {
-    width: 24px;
-    height: 24px;
-    margin-right: 15px;
-    vertical-align: middle;
-    object-fit: contain;
-    transition: all 0.3s ease;
+
+.logout-btn {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
 }
 
-.menuLateral a:before {
-    content: '';
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar.collapsed .user-info {
+    opacity: 0;
+    width: 0;
+}
+
+/* Main Content*/
+.main-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin-left: 250px;
+    transition: var(--transition);
+}
+
+.sidebar.collapsed ~ .main-wrapper {
+    margin-left: 70px;
+}
+
+/* Header */
+.main-header {
+    background-color: var(--primary);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-light);
+    width: 100%;
+}
+
+.page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Content */
+.main-body {
+    flex: 1;
+    padding: 1.5rem;
+    width: 100%;
+}
+
+/* Footer */
+.main-footer {
+    background-color: var(--primary);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+}
+
+/* Mobile Toggle */
+.mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1001;
+    background-color: var(--primary);
+    color: var(--text-light);
+    border: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-toggle i {
+    font-size: 1.25rem !important;
+
+}
+
+/* Tooltip para sidebar colapsado */
+.sidebar.collapsed .menu-item {
+    position: relative;
+}
+
+.sidebar.collapsed .menu-item:hover::after {
+    content: attr(data-tooltip);
     position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 5px;
-    background: #2b1572;
-    z-index: 1;
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+    pointer-events: none;
 }
 
-.menuLateral a:hover {
-    color: #ffffff;
-    transform: translateX(5px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+/* Responsive */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--shadow);
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+
+    .mobile-toggle {
+        display: flex;
+    }
+
+    .main-header {
+        padding-left: 4rem;
+    }
 }
 
-.menuLateral a:hover:before {
-    transform: scaleY(1);
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.menuLateral a:hover img, 
-.menuLateral a:hover .menu_icono {
-    transform: scale(1.1);
+.fade-in {
+    animation: fadeIn 0.3s ease forwards;
 }
 
-.abrirMenubtn {
-      font-size: 30px; 
-      background: none; 
-      border: none; 
-      color: #2b1572; 
-      cursor: pointer; 
-      padding: 10px; 
-      margin-right: 20px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+/*FIN MENU LATERAL*/
 
-.abrirMenubtn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      background: rgba(43, 21, 114, 0.05);
-}
-
-.menuLateral a.active {
-    color: white;
-    background: rgba(43, 21, 114, 0.3);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.menuLateral a.active:before {
-    transform: scaleY(1);
-}
-
-.menuLateral a i {
-    margin-right: 15px;
-    font-size: 20px;
-    transition: all 0.3s ease;
-}
-
-/*Logo menu lateral*/
-.menuLateral .logoCCL {
-      display: block;
-      margin: 20px auto;
-      text-align: center;
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      background: transparent;
-}
 
 
 
@@ -803,7 +1106,7 @@ body.menu-open .main-content {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 30vh; /* Ajusta según necesites */    
+    min-height: 30vh;
 }
 
 
@@ -845,11 +1148,6 @@ body.menu-open .main-content {
         text-align: center;
     }
 
-    /* Estilos para "Próximamente" en móviles */
-    .a_principal {
-        font-size: 16px;
-        margin-top: 8px;
-    }
   
     /*Card login*/
     .centrar_card {

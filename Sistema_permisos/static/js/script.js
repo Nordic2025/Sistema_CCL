@@ -27,13 +27,15 @@ function mensaje(type, texto) {
 //Menu lateral
 
 function abrirMenu() {
-    document.getElementById("menuLateral").style.width = "250px";
+    document.getElementById("sidebar ").style.width = "250px";
     document.getElementById("menu-open").style.marginLeft = "250px";
 }
 
 function cerrarMenu() {
-    document.getElementById("menuLateral").style.width = "0";
-    document.getElementById("menu-open").style.marginLeft = "0";
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+        sidebar.classList.remove("open");
+    }
 }
 
 
