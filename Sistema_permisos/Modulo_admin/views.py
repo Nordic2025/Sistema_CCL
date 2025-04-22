@@ -904,17 +904,30 @@ def promocion_anual_view(request):
 
 
 @login_required(login_url='Modulo_admin:login_admin')
-@staff_required
 def alumnos_egresados_view(request):
     """Vista para mostrar la lista de alumnos egresados."""
-    egresados = AlumnoEgresado.objects.all()
+    # Obtener el año de filtro si existe
+    año_filtro = request.GET.get('año')
     
-    # Agrupar por año de egreso
+    # Filtrar los egresados según el año seleccionado
+    if año_filtro:
+        try:
+            año_filtro = int(año_filtro)
+            egresados = AlumnoEgresado.objects.filter(año_egreso=año_filtro)
+        except ValueError:
+            # Si el año no es un número válido, mostrar todos
+            egresados = AlumnoEgresado.objects.all()
+    else:
+        # Si no hay filtro, mostrar todos
+        egresados = AlumnoEgresado.objects.all()
+    
+    # Obtener todos los años de egreso disponibles para el filtro
     años_egreso = AlumnoEgresado.objects.values_list('año_egreso', flat=True).distinct().order_by('-año_egreso')
     
     context = {
         'egresados': egresados,
-        'años_egreso': años_egreso
+        'años_egreso': años_egreso,
+        'año_filtro': año_filtro
     }
     
     return render(request, 'alumnos_folder/estudiantes_folder/alumnos_egresados.html', context)
