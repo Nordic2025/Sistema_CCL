@@ -97,16 +97,20 @@ class AlumnoForm(forms.ModelForm):
         empty_label="Seleccione un curso",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    
     class Meta:
         model = Alumno
-        fields = ['rut', 'nombre', 'curso', 'apoderado_titular', 'rut_apoderadoT', 'apoderado_suplente', 'rut_apoderadoS']
+        fields = ['rut', 'nombre', 'curso', 'apoderado_titular', 'rut_apoderadoT', 'telefono_apoderadoT', 
+                 'apoderado_suplente', 'rut_apoderadoS', 'telefono_apoderadoS']
         widgets = {
             'rut': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Ej: 12.345.678-9'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre completo'}),
             'apoderado_titular': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado titular'}),
             'rut_apoderadoT': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Rut del apoderado titular'}),
+            'telefono_apoderadoT': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono del apoderado titular'}),
             'apoderado_suplente': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del apoderado suplente'}),
             'rut_apoderadoS': forms.TextInput(attrs={'class': 'form-control rut-input', 'placeholder': 'Rut del apoderado suplente'}),
+            'telefono_apoderadoS': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Teléfono del apoderado suplente'}),
         }
         
     def clean_rut(self):

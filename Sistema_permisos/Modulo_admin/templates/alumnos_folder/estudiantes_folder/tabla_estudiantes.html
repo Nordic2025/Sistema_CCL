@@ -167,6 +167,14 @@
                               <input type="text" class="form-control rut-input" id="rut_apoderadoT{{ alumno.id }}" name="rut_apoderadoT" value="{{ alumno.rut_apoderadoT|default:'' }}">
                             </div>
                             <div class="mb-3">
+                              <label for="telefono_apoderadoT{{ alumno.id }}" class="form-label">Teléfono Apoderado Titular</label>
+                              <div class="input-group">
+                                <span class="input-group-text">+56</span>
+                                <input type="text" class="form-control telefono-input" id="telefono_apoderadoT{{ alumno.id }}" name="telefono_apoderadoT" value="{{ alumno.telefono_apoderadoT|default:''|slice:'3:' }}" maxlength="9">
+                              </div>
+                              <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
+                            </div>
+                            <div class="mb-3">
                               <label for="apoderado_suplente{{ alumno.id }}" class="form-label">Apoderado Suplente</label>
                               <input type="text" class="form-control" id="apoderado_suplente{{ alumno.id }}" name="apoderado_suplente" value="{{ alumno.apoderado_suplente|default:'' }}">
                             </div>
@@ -174,6 +182,14 @@
                               <label for="rut_apoderadoS{{ alumno.id }}" class="form-label">RUT Apoderado Suplente</label>
                               <input type="text" class="form-control rut-input" id="rut_apoderadoS{{ alumno.id }}" name="rut_apoderadoS" value="{{ alumno.rut_apoderadoS|default:'' }}">
                             </div>
+                          </div>
+                          <div class="mb-3">
+                            <label for="telefono_apoderadoS{{ alumno.id }}" class="form-label">Teléfono Apoderado Suplente</label>
+                            <div class="input-group">
+                              <span class="input-group-text">+56</span>
+                              <input type="text" class="form-control telefono-input" id="telefono_apoderadoS{{ alumno.id }}" name="telefono_apoderadoS" value="{{ alumno.telefono_apoderadoS|default:''|slice:'3:' }}" maxlength="9">
+                            </div>
+                            <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
                           </div>
                         </div>
                         
@@ -196,7 +212,11 @@
                             </div>
                             <div class="mb-3">
                               <label for="familiar_1_telefono{{ alumno.id }}" class="form-label">Teléfono</label>
-                              <input type="text" class="form-control" id="familiar_1_telefono{{ alumno.id }}" name="familiar_1_telefono" value="{{ alumno.familiar_1_telefono|default:'' }}">
+                              <div class="input-group">
+                                <span class="input-group-text">+56</span>
+                                <input type="text" class="form-control telefono-input" id="familiar_1_telefono{{ alumno.id }}" name="familiar_1_telefono" value="{{ alumno.familiar_1_telefono|default:''|slice:'3:' }}" maxlength="9">
+                              </div>
+                              <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
                             </div>
                           </div>
                           
@@ -216,7 +236,11 @@
                             </div>
                             <div class="mb-3">
                               <label for="familiar_2_telefono{{ alumno.id }}" class="form-label">Teléfono</label>
-                              <input type="text" class="form-control" id="familiar_2_telefono{{ alumno.id }}" name="familiar_2_telefono" value="{{ alumno.familiar_2_telefono|default:'' }}">
+                              <div class="input-group">
+                                <span class="input-group-text">+56</span>
+                                <input type="text" class="form-control telefono-input" id="familiar_2_telefono{{ alumno.id }}" name="familiar_2_telefono" value="{{ alumno.familiar_2_telefono|default:''|slice:'3:' }}" maxlength="9">
+                              </div>
+                              <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
                             </div>
                           </div>
                         </div>
@@ -257,8 +281,10 @@
                               <h5 class="card-title">Apoderados</h5>
                               <p><strong>Apoderado Titular:</strong> {{ alumno.apoderado_titular }}</p>
                               <p><strong>RUT Apoderado Titular:</strong> {{ alumno.rut_apoderadoT|default:"No registrado" }}</p>
+                              <p><strong>Telefono Apoderado Titular:</strong> {{ alumno.telefono_apoderadoT|default:"No registrado" }}</p>
                               <p><strong>Apoderado Suplente:</strong> {{ alumno.apoderado_suplente|default:"No registrado" }}</p>
                               <p><strong>RUT Apoderado Suplente:</strong> {{ alumno.rut_apoderadoS|default:"No registrado" }}</p>
+                              <p><strong>Telefono Apoderado Suplente:</strong> {{ alumno.telefono_apoderadoS|default:"No registrado" }}</p>
                             </div>
                           </div>
                         </div>
@@ -549,6 +575,20 @@
                       {% endif %}
                     </div>
                     <div class="mb-3">
+                      <label for="{{ form.telefono_apoderadoT.id_for_label }}" class="form-label">Teléfono Apoderado Titular</label>
+                      <div class="input-group">
+                        <span class="input-group-text">+56</span>
+                        <input type="text" class="form-control telefono-input" id="{{ form.telefono_apoderadoT.id_for_label }}" name="{{ form.telefono_apoderadoT.html_name }}" value="{{ form.telefono_apoderadoT.value|default:'' }}" maxlength="9" placeholder="912345678">
+                      </div>
+                      <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
+                      {% if form.telefono_apoderadoT.errors %}
+                        <div class="text-danger">
+                          {% for error in form.telefono_apoderadoT.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    <div class="mb-3">
                       <label for="{{ form.apoderado_suplente.id_for_label }}" class="form-label">Apoderado Suplente</label>
                       {{ form.apoderado_suplente }}
                       <small class="form-text text-muted">Opcional</small>
@@ -567,6 +607,21 @@
                       {% if form.rut_apoderadoS.errors %}
                         <div class="text-danger">
                           {% for error in form.rut_apoderadoS.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                    <div class="mb-3">
+                      <label for="{{ form.telefono_apoderadoS.id_for_label }}" class="form-label">Teléfono Apoderado Suplente</label>
+                      <div class="input-group">
+                        <span class="input-group-text">+56</span>
+                        <input type="text" class="form-control telefono-input" id="{{ form.telefono_apoderadoS.id_for_label }}" name="{{ form.telefono_apoderadoS.html_name }}" value="{{ form.telefono_apoderadoS.value|default:'' }}" maxlength="9" placeholder="912345678">
+                      </div>
+                      <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
+                      {% if form.telefono_apoderadoS.errors %}
+                        <div class="text-danger">
+                          {% for error in form.telefono_apoderadoS.errors %}
                             {{ error }}
                           {% endfor %}
                         </div>
