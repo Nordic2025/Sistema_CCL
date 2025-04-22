@@ -21,10 +21,8 @@
 
     <title>{% block title %} {% endblock %}</title>
 
-
     <style>
-
-        
+      
         .menu_icono {
             width: 1.25rem !important;
             height: 1.25rem !important;
@@ -74,7 +72,7 @@
         <ul class="sidebar-menu">
             <!-- Inicio -->
             <li class="menu-item" data-tooltip="Inicio">
-                <a href="{% url 'Modulo_admin:grafico' %}" class="menu-link">
+                <a href="{% url 'Modulo_admin:inicio' %}" class="menu-link">
                     <img src="{% static 'icon/hogar.svg' %}" alt="Inicio" class="menu_icono">
                     <span>Inicio</span>
                 </a>
@@ -88,6 +86,11 @@
                     <i class='bx bx-chevron-down'></i>
                 </button>
                 <ul class="submenu" id="funcionariosSubmenu">
+                    <li>
+                        <a href="{% url 'Modulo_admin:grafico' %}" class="submenu-link">
+                            Grafico
+                        </a>
+                    </li>
                     <li>
                         <a href="{% url 'Modulo_admin:historial_permisos' %}" class="submenu-link">
                             Permisos Completados
@@ -271,7 +274,7 @@
                 const href = link.getAttribute('href');
                 if (href && currentPath.includes(href) && href !== '#') {
                     // No marcar como activo si es la página de inicio y estamos en otra página
-                    if (href.includes('grafico') && currentPath !== href && !currentPath.endsWith('/')) {
+                    if (href.includes('inicio') && currentPath !== href && !currentPath.endsWith('/')) {
                         return;
                     }
                     
@@ -292,8 +295,8 @@
 
             
             // Solo marcar inicio como activo si estamos exactamente en esa página o en la raíz
-            if (!activeFound && (currentPath.endsWith('/grafico/') || currentPath === '/')) {
-                const homeLink = document.querySelector('.menu-link[href*="grafico"]');
+            if (!activeFound && (currentPath.endsWith('/inicio/') || currentPath === '/')) {
+                const homeLink = document.querySelector('.menu-link[href*="inicio"]');
                 if (homeLink) {
                     homeLink.classList.add('active');
                 }
@@ -307,10 +310,6 @@
                 }
             }
 
-
-
-
-            
             // Verificar tamaño de pantalla al cargar y al redimensionar
             checkScreenSize();
             window.addEventListener('resize', checkScreenSize);

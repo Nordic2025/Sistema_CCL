@@ -42,7 +42,7 @@ def login_admin(request):
                 administrador = Administrador.objects.get(user=user)
                 login(request, user)
                 messages.success(request, f'Bienvenido, {administrador.nombre}')
-                return redirect('Modulo_admin:grafico')
+                return redirect('Modulo_admin:inicio')
             except Administrador.DoesNotExist:
                 messages.error(request, 'Este usuario no tiene permisos de administrador')
         else:
@@ -59,7 +59,67 @@ def logout_admin(request):
     return redirect('Modulo_admin:login_admin')
 
 
+#Vista de Inicio en el modulo admin
+@login_required(login_url='Modulo_admin:login_admin')
+def inicio_view(request):
+
+    dias_semana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
     
+
+    # Obtener la fecha actual y la fecha de hace 7 dias
+    fecha_actual = timezone.now().date()
+    fecha_inicio = fecha_actual - timedelta(days=6)
+
+    # Inicializacion de las listas
+    fechas = []
+    datos_permisos = []
+    datos_retiros = []
+
+    # Generar datos para cada dia
+    for i in range(7):
+        dia = fecha_inicio + timedelta(days=i)
+        dia_siguiente = dia + timedelta(days=1)
+
+        # Formato para mostrar los dias
+        dia_semana = dia.weekday()
+        nombre_dia = dias_semana[dia_semana]
+        fechas.append(nombre_dia)
+
+        # Conteo de permisos completados de ese dia
+        permisos_dia = RegistroSalida.objects.filter(
+            hora_salida__date__gte=dia, 
+            hora_salida__date__lt=dia_siguiente, 
+            hora_regreso__isnull=False
+        ).count()
+        datos_permisos.append(permisos_dia)
+
+        # Para retiros, usar un valor de ejemplo por ahora
+        retiros_dia = 0
+        datos_retiros.append(retiros_dia)
+
+    # Obtener estadistica de los permisos
+    permisos_activos = RegistroSalida.objects.filter(hora_regreso__isnull=True).count()
+
+    # Obtener los ultimos 5 permisos
+    permisos_recientes = RegistroSalida.objects.order_by('-hora_salida')[:5]
+
+    # Convertir listas a formato JSON para el template
+    import json
+    fechas_json = json.dumps(fechas)
+    datos_permisos_json = json.dumps(datos_permisos)
+    datos_retiros_json = json.dumps(datos_retiros)
+
+    # Contexto
+    context = {
+        'fechas': fechas_json,
+        'datos_permisos': datos_permisos_json,
+        'datos_retiros': datos_retiros_json,
+        'permisos_activos': permisos_activos,
+        'permisos_recientes': permisos_recientes,
+    }
+
+    return render(request, 'inicio.html', context)
+
 
 
 # Vista grafico 

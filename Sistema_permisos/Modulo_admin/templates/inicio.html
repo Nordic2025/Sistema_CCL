@@ -1,0 +1,411 @@
+{% extends 'base_admin.html' %}
+
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Panel de Administrador{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-container">
+    {% comment %} Seccion de Bienvenida {% endcomment %}
+    <div class= "bienvenida mb-4">
+        <h2> Bienvenido de vuelta, {{ user.first_name }} </h2>
+        <p> Panel de administración Colegio Concepción de Linares </p>
+    </div>
+
+    {% comment %} Apartado de Resumen {% endcomment %}
+    <div class="row mb-4">
+        <div class= "col-md-3 col-sm-6 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Permisos Activos</h6>
+                            <h3 class="card-title mb0">{{permisos_activos|default:"0"}}</h3>
+                        </div>
+                        <div class="dashboard-icon bg-primary">
+                            <i class="bx bx-calendar-check"></i>
+                        </div>
+                    </div>
+                    <p class="card-text mt-3">
+                        <a href="{% url 'Modulo_admin:historial_salidas' %}" class="text-primary"> Ver Detalles
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class= "col-md-3 col-sm-6 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Retiros de hoy</h6>
+                            <h3 class="card-title mb0">{{retiros_hoy|default:"0"}}</h3>
+                        </div>
+                        <div class="dashboard-icon bg-success">
+                            <i class="bx bx-exit"></i>
+                        </div>
+                    </div>
+                    <p class="card-text mt-3">
+                        <a href="{% url 'Modulo_admin:retiros' %}" class="text-success"> Ver detalles
+                            <i class='bx bx-right-arrow-alt'></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class= "col-md-3 col-sm-6 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Justificativos</h6>
+                            <h3 class="card-title mb-0">{{ justificativos|default:"0" }}</h3>
+                        </div>
+                        <div class="dashboard-icon bg-warning">
+                            <i class="bx bx-file"></i>
+                        </div>
+                    </div>
+                    {% comment %} PONER LINK DE Justificativos {% endcomment %}
+                    <p class="card-text mt-3">
+                        <a href="#" class="text-warning"> Ver detalles
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class= "col-md-3 col-sm-6 mb-3">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total de Alumnos</h6>
+                            <h3 class="card-title mb-0">{{ total_alumnos|default:"0" }}</h3>
+                        </div>
+                        <div class="dashboard-icon bg-info">
+                            <i class="bx bx-group"></i>
+                        </div>
+                    </div>
+                    <p class="card-text mt-3">
+                        <a href="{% url 'Modulo_admin:alumnos' %}" class="text-info"> Ver detalles
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {% comment %} Accesos rapidos y graficos {% endcomment %}
+        <div class="row mb-4">
+            {% comment %} Accesos rapidos {% endcomment %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="card-title">Accesos rápidos</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-access-grid">
+                            <a href="{% url 'Modulo_admin:retiros' %}" class="quick-access-item">
+                                <div class="quick-access-icon bg-primary-light">
+                                    <i class="bx bx-exit"></i>
+                                </div>
+                                <span>Retiros</span>
+                            </a>
+                            <a href="{% url 'Modulo_admin:historial_permisos' %}" class="quick-access-item">
+                                <div class="quick-access-icon bg-primary-light">
+                                    <i class="bx bx-history"></i>
+                                </div>
+                                <div class="text-center w-100">
+                                    <span class="d-inline-block">Historial de Permisos</span>
+                                </div>
+                            </a>
+                            <a href="{% url 'Modulo_admin:administradores' %}" class="quick-access-item">
+                                <div class="quick-access-icon bg-primary-light">
+                                    <i class="bx bx-user-circle"></i>
+                                </div>
+                                <span>Administradores</span>
+                            </a>
+                            <a href="{% url 'Modulo_admin:cursos' %}" class="quick-access-item">
+                                <div class="quick-access-icon bg-primary-light">
+                                    <i class="bx bx-book-open"></i>
+                                </div>
+                                <span>Cursos</span>
+                            </a>
+                            <a href="{% url 'Modulo_admin:alumnos' %}" class="quick-access-item">
+                                <div class="quick-access-icon bg-primary-light">
+                                    <i class="bx bx-user"></i>
+                                </div>
+                                <span>Alumnos</span>
+                            </a>
+                            <a href="{% url 'Modulo_admin:inspectores' %}" class="quick-access-item">
+                                <div class="quick-access-icon bg-primary-light">
+                                    <i class="bx bx-shield-quarter"></i>
+                                </div>
+                                <span>Inspectores</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% comment %} Grafico simple {% endcomment %}
+            <div class="col-md-8 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Resumen de Actividad | Permisos completados y Retiros Semanal</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Ver gráficos completos
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                    <li><a class="dropdown-item" href="{% url 'Modulo_admin:grafico' %}">Gráfico de Funcionarios</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'Modulo_admin:grafico_alumnos' %}">Gráfico de Retiros</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="mini-chart" style="height: 250px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} Estilos {% endcomment %}
+    <style>
+        .dashboard-container {
+            padding: 1.5rem 0;
+            margin-right: 4rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+        
+        .w-100 {
+            width: 100%;
+        }
+        
+        .d-inline-block {
+            display: inline-block;
+        }
+
+        .bienvenida h2{
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border:none;
+            height: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-icon i {
+            width: 40px;
+            height: 40px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .dashboard-icon i {
+            font-size: 1.5rem;
+        }
+
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap:12px;
+        }
+
+        .quick-access-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            padding: 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-access-item:hover {
+            background-color:rgba(165, 185, 202, 0.84);
+            transform: translateY(-5px);
+        }
+
+        .quick-access-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .quick-access-icon i {
+            font-size: 1.5rem;
+        }
+
+        .bg-primary-light {
+            background-color: rgba(13, 110, 253, 0.15);
+            color: #0d6efd;
+        }
+
+        .bg-success-light {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: #198754;
+        }
+
+        .bg-warning-light {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+
+        .bg-info-light {
+            background-color: rgba(13, 202, 240, 0.15);
+            color: #0dcaf0;
+        }
+
+        .bg-danger-light {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545
+        }
+
+        .bg-secondary-light {
+            background-color: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+        }
+
+        .card-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-weight: 600;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .table td {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 035em 0.65em;
+        }
+
+        @media (max-width: 768px) {
+            .quick-access-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .quick-access-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fechas = {{fechas|safe}};
+            const datosPermisos = {{datos_permisos|safe}};
+            const datosRetiros = {{datos_retiros|safe}};
+            
+            // Crear el mini gráfico
+            Highcharts.chart('mini-chart', {
+                chart: {
+                    type: 'column',
+                    style: {
+                        fontFamily: 'Arial, sans-serif'
+                    },
+                    spacingBottom: 20,
+                    spacingTop: 20,
+                    spacingLeft: 20,
+                    spacingRight: 20
+                },
+                title: {
+                    text: null
+                },
+                xAxis: {
+                    categories: fechas,
+                    crosshair: true
+                },
+                labels: {
+                    style:{
+                        fontSize: '12px'
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Cantidad'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:20px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        '<td style="padding:0"><b>{point.y}</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Permisos',
+                    color: '#6f82be',
+                    data: datosPermisos
+                }, {
+                    name: 'Retiros',
+                    color: '#ffc107',
+                    data: datosRetiros
+                }],
+                exporting: {
+                    enabled: false
+                },
+            });
+        });
+   
+    </script>
+
+{% endblock %}      
