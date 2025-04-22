@@ -24,29 +24,29 @@
 
     <style>
 
-        /* Si estás usando imágenes SVG en lugar de iconos de fuente */
-    .menu_icono {
-        width: 1.25rem !important;
-        height: 1.25rem !important;
-        margin-right: 0.75rem !important;
-    }
+        
+        .menu_icono {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            margin-right: 0.75rem !important;
+        }
 
 
-    /* Para iconos en el sidebar colapsado */
-    .sidebar.collapsed .menu-link i, 
-    .sidebar.collapsed .dropdown-btn i:first-child,
-    .sidebar.collapsed .menu_icono {
-        margin-right: 0 !important;
-    }
+        /* Para iconos en el sidebar colapsado */
+        .sidebar.collapsed .menu-link i, 
+        .sidebar.collapsed .dropdown-btn i:first-child,
+        .sidebar.collapsed .menu_icono {
+            margin-right: 0 !important;
+        }
 
 
-    /* Para iconos en submenús */
-    .submenu-link i,
-    .submenu-link .menu_icono {
-        font-size: 1rem !important;
-        width: 1.25rem !important;
-        height: 1.25rem !important;
-    }
+        /* Para iconos en submenús */
+        .submenu-link i,
+        .submenu-link .menu_icono {
+            font-size: 1rem !important;
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+        }
 
     </style>
 </head>
@@ -200,9 +200,9 @@
     {% endif %}
 
 
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             // Referencias a elementos
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
@@ -211,7 +211,8 @@
             const alumnosDropdown = document.getElementById('alumnosDropdown');
             const funcionariosSubmenu = document.getElementById('funcionariosSubmenu');
             const alumnosSubmenu = document.getElementById('alumnosSubmenu');
-            
+
+
             // Alternar sidebar colapsado
             sidebarToggle.addEventListener('click', function() {
                 sidebar.classList.toggle('collapsed');
@@ -223,7 +224,6 @@
             });
             
 
-            
             // Alternar submenús
             funcionariosDropdown.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -288,6 +288,8 @@
                     }
                 }
             });
+
+
             
             // Solo marcar inicio como activo si estamos exactamente en esa página o en la raíz
             if (!activeFound && (currentPath.endsWith('/grafico/') || currentPath === '/')) {
@@ -304,6 +306,10 @@
                     sidebar.classList.remove('open');
                 }
             }
+
+
+
+
             
             // Verificar tamaño de pantalla al cargar y al redimensionar
             checkScreenSize();

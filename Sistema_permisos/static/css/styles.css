@@ -518,6 +518,10 @@ body {
     max-height: 500px;
 }
 
+.sidebar.collapsed .submenu {
+    display: none;
+}
+
 .submenu-link {
     display: block;
     padding: 0.6rem 0.5rem 0.6rem 2.25rem;
