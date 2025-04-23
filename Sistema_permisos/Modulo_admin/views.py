@@ -59,7 +59,6 @@ def logout_admin(request):
     return redirect('Modulo_admin:login_admin')
 
 
-    
 
 
 # Vista grafico 
@@ -741,4 +740,92 @@ def justificativos_view(request):
 
 @login_required(login_url='Modulo_admin:login_admin')
 def grafico_alumnos_view(request):
-    return render(request, 'alumnos_folder/grafico_folder/grafico.html')
+    # Obtener todos los cursos
+    cursos = Curso.objects.all().values_list('nombre', flat=True)
+    cursos_list = list(cursos)
+    
+    # Obtener datos de retiros desde el modelo RegistroRetiro
+    from Modulo_alumnos.models import RegistroRetiro
+    from django.db.models import Count
+    
+    # Obtener parámetros de filtrado
+    fecha_inicio = request.GET.get('fecha_inicio', '')
+    fecha_fin = request.GET.get('fecha_fin', '')
+    cursos_filtro = request.GET.get('cursos', '')
+    
+    # Iniciar con todos los retiros
+    retiros = RegistroRetiro.objects.all()
+    
+    # Aplicar filtros si se proporcionan
+    if fecha_inicio:
+        try:
+            fecha_inicio_obj = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+            retiros = retiros.filter(hora_retiro__date__gte=fecha_inicio_obj)
+        except ValueError:
+            pass
+            
+    if fecha_fin:
+        try:
+            fecha_fin_obj = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+            # Ajustar fecha_fin para incluir todo el día
+            fecha_fin_obj = datetime.combine(fecha_fin_obj, datetime.max.time())
+            retiros = retiros.filter(hora_retiro__date__lte=fecha_fin_obj)
+        except ValueError:
+            pass
+    
+    if cursos_filtro:
+        cursos_lista = cursos_filtro.split(',')
+        retiros = retiros.filter(curso__in=cursos_lista)
+    
+    # Función para clasificar un curso en su nivel educativo
+    def clasificar_nivel(curso):
+        if 'Pre-Kinder' in curso or 'Kinder' in curso:
+            return 'Pre-Básica'
+        elif 'Básico' in curso or any(f"{i}°" in curso for i in range(1, 9)):
+            return 'Básica'
+        else:
+            return 'Media'
+    
+    # Contar retiros por curso
+    retiros_por_curso = retiros.values('curso').annotate(total=Count('id'))
+    
+    # Contar retiros por motivo
+    retiros_por_motivo = retiros.values('motivo_retiro').annotate(total=Count('id'))
+    
+    # Preparar datos para el gráfico
+    datos_retiros = {}
+    
+    # Contar retiros por nivel educativo
+    niveles = {
+        'Pre-Básica': 0,
+        'Básica': 0,
+        'Media': 0
+    }
+    
+    # Procesar los datos de retiros por curso para agruparlos por nivel
+    for item in retiros_por_curso:
+        curso = item['curso']
+        total = item['total']
+        nivel = clasificar_nivel(curso)
+        niveles[nivel] += total
+        
+        # Guardar también el total por curso
+        if 'por_curso' not in datos_retiros:
+            datos_retiros['por_curso'] = {}
+        datos_retiros['por_curso'][curso] = total
+    
+    datos_retiros['por_nivel'] = niveles
+    
+    # Procesar los datos de retiros por motivo
+    datos_retiros['por_motivo'] = {item['motivo_retiro']: item['total'] for item in retiros_por_motivo}
+    
+    # Convertir a JSON para pasar al template
+    import json
+    datos_retiros_json = json.dumps(datos_retiros)
+    cursos_json = json.dumps(cursos_list)
+    context = {
+        'datos_retiros': datos_retiros_json,
+        'cursos': cursos_json
+    }
+    
+    return render(request, 'alumnos_folder/grafico_folder/grafico.html', context)
