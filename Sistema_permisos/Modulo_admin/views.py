@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
@@ -805,6 +806,7 @@ def grafico_alumnos_view(request):
     return render(request, 'alumnos_folder/grafico_folder/grafico.html')
 
 
+
 # BOTON ABANZAR DE AÑO
 def promocion_anual_view(request):
     """Vista para realizar la promoción anual de todos los alumnos."""
@@ -812,123 +814,291 @@ def promocion_anual_view(request):
         messages.error(request, 'Método no permitido')
         return redirect('Modulo_admin:alumnos')
     
+    # Verificar si se está solicitando solo la validación
+    is_validation_only = request.POST.get('validation_only') == 'true'
+    
     try:
+        # 1. Obtener todos los cursos actuales
+        cursos_actuales = Curso.objects.all()
+        cursos_necesarios = []
+        
+        # 2. Verificar qué cursos serían necesarios para la promoción
+        for curso in cursos_actuales:
+            alumnos_curso = Alumno.objects.filter(curso=curso)
+            if not alumnos_curso.exists():
+                continue  # Ignorar cursos sin alumnos
+                
+            # Extraer información del nombre del curso
+            curso_info = curso.nombre.strip()
+            
+            # Detectar si es Pre-Kinder, Kinder, Básica o Media
+            if "Pre-Kinder" in curso_info:
+                # Extraer la letra de sección
+                letra_match = re.search(r'Pre-Kinder\s+([A-Z])', curso_info)
+                letra = letra_match.group(1) if letra_match else ""
+                
+                # Pre-Kinder a Kinder
+                nuevo_nivel = "Kinder"
+                nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                
+                # Verificar si el curso ya existe
+                if not Curso.objects.filter(nombre__exact=nuevo_nombre).exists():
+                    cursos_necesarios.append({
+                        'nombre': nuevo_nombre,
+                        'nivel': "Pre-basica"
+                    })
+                
+            elif "Kinder" in curso_info and "Pre-Kinder" not in curso_info:
+                # Extraer la letra de sección
+                letra_match = re.search(r'Kinder\s+([A-Z])', curso_info)
+                letra = letra_match.group(1) if letra_match else ""
+                
+                # Kinder a 1° Básico
+                nuevo_nivel = "1° Básico"
+                nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                
+                # Verificar si el curso ya existe
+                if not Curso.objects.filter(nombre__exact=nuevo_nombre).exists():
+                    cursos_necesarios.append({
+                        'nombre': nuevo_nombre,
+                        'nivel': "Basica"
+                    })
+                
+            elif "Básico" in curso_info or "Basico" in curso_info:
+                # Extraer el número de básico
+                match = re.search(r'(\d+)°?\s*[Bb][aá]sico', curso_info)
+                if match:
+                    nivel_actual = int(match.group(1))
+                    
+                    # Extraer la letra de sección
+                    letra_match = re.search(r'[Bb][aá]sico\s+([A-Z])', curso_info)
+                    letra = letra_match.group(1) if letra_match else ""
+                    
+                    if nivel_actual < 8:
+                        # 1°-7° Básico pasan al siguiente básico
+                        nuevo_nivel = f"{nivel_actual + 1}° Básico"
+                        nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                        
+                        # Verificar si el curso ya existe
+                        if not Curso.objects.filter(nombre__exact=nuevo_nombre).exists():
+                            cursos_necesarios.append({
+                                'nombre': nuevo_nombre,
+                                'nivel': "Basica"
+                            })
+                    
+                    elif nivel_actual == 8:
+                        # 8° Básico pasa a 1° Medio
+                        nuevo_nivel = "1° Medio"
+                        nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                        
+                        # Verificar si el curso ya existe
+                        if not Curso.objects.filter(nombre__exact=nuevo_nombre).exists():
+                            cursos_necesarios.append({
+                                'nombre': nuevo_nombre,
+                                'nivel': "Media"
+                            })
+            
+            elif "Medio" in curso_info:
+                # Extraer el número de medio
+                match = re.search(r'(\d+)°?\s*[Mm]edio', curso_info)
+                if match:
+                    nivel_actual = int(match.group(1))
+                    
+                    # Extraer la letra de sección
+                    letra_match = re.search(r'[Mm]edio\s+([A-Z])', curso_info)
+                    letra = letra_match.group(1) if letra_match else ""
+                    
+                    if nivel_actual < 4:
+                        # 1°-3° Medio pasan al siguiente medio
+                        nuevo_nivel = f"{nivel_actual + 1}° Medio"
+                        nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
+                        
+                        # Verificar si el curso ya existe
+                        if not Curso.objects.filter(nombre__exact=nuevo_nombre).exists():
+                            cursos_necesarios.append({
+                                'nombre': nuevo_nombre,
+                                'nivel': "Media"
+                            })
+        
+        # Si solo estamos validando, devolver la lista de cursos necesarios
+        if is_validation_only:
+            return JsonResponse({
+                'success': len(cursos_necesarios) == 0,
+                'cursos_necesarios': cursos_necesarios
+            })
+        
+        # Si hay cursos necesarios, no permitir la promoción
+        if cursos_necesarios:
+            mensaje = "No se puede realizar la promoción anual porque faltan los siguientes cursos: "
+            mensaje += ", ".join([curso['nombre'] for curso in cursos_necesarios])
+            messages.error(request, mensaje)
+            return redirect('Modulo_admin:alumnos')
+        
+        # Si no hay cursos necesarios, proceder con la promoción
         with transaction.atomic():  # Usar transacción para asegurar integridad
             # 1. Obtener todos los alumnos agrupados por curso
             cursos = Curso.objects.all()
             año_actual = datetime.now().year
             
+            # Crear un diccionario para almacenar los alumnos que ya han sido procesados
+            alumnos_procesados = set()
+            
             # 2. Procesar cada curso
             for curso in cursos:
+                # Obtener alumnos que aún no han sido procesados
                 alumnos_curso = Alumno.objects.filter(curso=curso)
+                if not alumnos_curso.exists():
+                    continue  # Ignorar cursos sin alumnos
                 
                 # Extraer información del nombre del curso
                 curso_info = curso.nombre.strip()
                 
                 # Detectar si es Pre-Kinder, Kinder, Básica o Media
                 if "Pre-Kinder" in curso_info:
+                    # Extraer la letra de sección
+                    letra_match = re.search(r'Pre-Kinder\s+([A-Z])', curso_info)
+                    letra = letra_match.group(1) if letra_match else ""
+                    
                     # Pre-Kinder a Kinder
                     nuevo_nivel = "Kinder"
-                    letra = re.search(r'[A-Z]$', curso_info)
-                    letra = letra.group(0) if letra else ""
                     nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                     
-                    # Buscar o crear el nuevo curso
-                    nuevo_curso, created = Curso.objects.get_or_create(
-                        nombre=nuevo_nombre,
-                        nivel="Pre-basica"  # Mantener en pre-básica
-                    )
-                    
-                    # Actualizar alumnos
-                    for alumno in alumnos_curso:
-                        alumno.curso = nuevo_curso
-                        alumno.save()
+                    # Buscar el curso (ya sabemos que existe)
+                    try:
+                        nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
+                        
+                        # Actualizar alumnos
+                        for alumno in alumnos_curso:
+                            # Verificar si el alumno ya fue procesado
+                            if alumno.id in alumnos_procesados:
+                                continue
+                                
+                            alumno.curso = nuevo_curso
+                            alumno.save()
+                            alumnos_procesados.add(alumno.id)
+                    except Curso.DoesNotExist:
+                        # Si por alguna razón el curso no existe, lanzar error
+                        raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                 
-                elif "Kinder" in curso_info:
+                elif "Kinder" in curso_info and "Pre-Kinder" not in curso_info:
+                    # Extraer la letra de sección
+                    letra_match = re.search(r'Kinder\s+([A-Z])', curso_info)
+                    letra = letra_match.group(1) if letra_match else ""
+                    
                     # Kinder a 1° Básico
                     nuevo_nivel = "1° Básico"
-                    letra = re.search(r'[A-Z]$', curso_info)
-                    letra = letra.group(0) if letra else ""
                     nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                     
-                    # Buscar o crear el nuevo curso
-                    nuevo_curso, created = Curso.objects.get_or_create(
-                        nombre=nuevo_nombre,
-                        nivel="Basica"  # Cambiar a básica
-                    )
-                    
-                    # Actualizar alumnos
-                    for alumno in alumnos_curso:
-                        alumno.curso = nuevo_curso
-                        alumno.save()
+                    # Buscar el curso (ya sabemos que existe)
+                    try:
+                        nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
+                        
+                        # Actualizar alumnos
+                        for alumno in alumnos_curso:
+                            # Verificar si el alumno ya fue procesado
+                            if alumno.id in alumnos_procesados:
+                                continue
+                                
+                            alumno.curso = nuevo_curso
+                            alumno.save()
+                            alumnos_procesados.add(alumno.id)
+                    except Curso.DoesNotExist:
+                        # Si por alguna razón el curso no existe, lanzar error
+                        raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                 
                 elif "Básico" in curso_info or "Basico" in curso_info:
                     # Extraer el número de básico
                     match = re.search(r'(\d+)°?\s*[Bb][aá]sico', curso_info)
                     if match:
                         nivel_actual = int(match.group(1))
-                        letra = re.search(r'[A-Z]$', curso_info)
-                        letra = letra.group(0) if letra else ""
+                        
+                        # Extraer la letra de sección
+                        letra_match = re.search(r'[Bb][aá]sico\s+([A-Z])', curso_info)
+                        letra = letra_match.group(1) if letra_match else ""
                         
                         if nivel_actual < 8:
                             # 1°-7° Básico pasan al siguiente básico
                             nuevo_nivel = f"{nivel_actual + 1}° Básico"
                             nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                             
-                            # Buscar o crear el nuevo curso
-                            nuevo_curso, created = Curso.objects.get_or_create(
-                                nombre=nuevo_nombre,
-                                nivel="Basica"
-                            )
-                            
-                            # Actualizar alumnos
-                            for alumno in alumnos_curso:
-                                alumno.curso = nuevo_curso
-                                alumno.save()
+                            # Buscar el curso (ya sabemos que existe)
+                            try:
+                                nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
+                                
+                                # Actualizar alumnos
+                                for alumno in alumnos_curso:
+                                    # Verificar si el alumno ya fue procesado
+                                    if alumno.id in alumnos_procesados:
+                                        continue
+                                        
+                                    alumno.curso = nuevo_curso
+                                    alumno.save()
+                                    alumnos_procesados.add(alumno.id)
+                            except Curso.DoesNotExist:
+                                # Si por alguna razón el curso no existe, lanzar error
+                                raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                         
                         elif nivel_actual == 8:
                             # 8° Básico pasa a 1° Medio
                             nuevo_nivel = "1° Medio"
                             nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                             
-                            # Buscar o crear el nuevo curso
-                            nuevo_curso, created = Curso.objects.get_or_create(
-                                nombre=nuevo_nombre,
-                                nivel="Media"
-                            )
-                            
-                            # Actualizar alumnos
-                            for alumno in alumnos_curso:
-                                alumno.curso = nuevo_curso
-                                alumno.save()
+                            # Buscar el curso (ya sabemos que existe)
+                            try:
+                                nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
+                                
+                                # Actualizar alumnos
+                                for alumno in alumnos_curso:
+                                    # Verificar si el alumno ya fue procesado
+                                    if alumno.id in alumnos_procesados:
+                                        continue
+                                        
+                                    alumno.curso = nuevo_curso
+                                    alumno.save()
+                                    alumnos_procesados.add(alumno.id)
+                            except Curso.DoesNotExist:
+                                # Si por alguna razón el curso no existe, lanzar error
+                                raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                 
                 elif "Medio" in curso_info:
                     # Extraer el número de medio
                     match = re.search(r'(\d+)°?\s*[Mm]edio', curso_info)
                     if match:
                         nivel_actual = int(match.group(1))
-                        letra = re.search(r'[A-Z]$', curso_info)
-                        letra = letra.group(0) if letra else ""
+                        
+                        # Extraer la letra de sección
+                        letra_match = re.search(r'[Mm]edio\s+([A-Z])', curso_info)
+                        letra = letra_match.group(1) if letra_match else ""
                         
                         if nivel_actual < 4:
                             # 1°-3° Medio pasan al siguiente medio
                             nuevo_nivel = f"{nivel_actual + 1}° Medio"
                             nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                             
-                            # Buscar o crear el nuevo curso
-                            nuevo_curso, created = Curso.objects.get_or_create(
-                                nombre=nuevo_nombre,
-                                nivel="Media"
-                            )
-                            
-                            # Actualizar alumnos
-                            for alumno in alumnos_curso:
-                                alumno.curso = nuevo_curso
-                                alumno.save()
+                            # Buscar el curso (ya sabemos que existe)
+                            try:
+                                nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
+                                
+                                # Actualizar alumnos
+                                for alumno in alumnos_curso:
+                                    # Verificar si el alumno ya fue procesado
+                                    if alumno.id in alumnos_procesados:
+                                        continue
+                                        
+                                    alumno.curso = nuevo_curso
+                                    alumno.save()
+                                    alumnos_procesados.add(alumno.id)
+                            except Curso.DoesNotExist:
+                                # Si por alguna razón el curso no existe, lanzar error
+                                raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                         
                         elif nivel_actual == 4:
                             # 4° Medio pasa a Egresados
                             for alumno in alumnos_curso:
+                                # Verificar si el alumno ya fue procesado
+                                if alumno.id in alumnos_procesados:
+                                    continue
+                                    
                                 # Crear registro de alumno egresado
                                 AlumnoEgresado.objects.create(
                                     rut=alumno.rut,
@@ -953,6 +1123,7 @@ def promocion_anual_view(request):
                                 
                                 # Eliminar el alumno de la tabla de alumnos activos
                                 alumno.delete()
+                                alumnos_procesados.add(alumno.id)
             
             # Registrar la acción en el log
             messages.success(request, f'Promoción anual completada exitosamente. Los alumnos han sido promovidos al siguiente año académico.')
@@ -961,7 +1132,7 @@ def promocion_anual_view(request):
     except Exception as e:
         messages.error(request, f'Error al realizar la promoción anual: {str(e)}')
         return redirect('Modulo_admin:alumnos')
-
+    
 
 @login_required(login_url='Modulo_admin:login_admin')
 def alumnos_egresados_view(request):

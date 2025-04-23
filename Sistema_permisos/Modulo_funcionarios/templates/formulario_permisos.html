@@ -228,4 +228,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+    .input-readonly {
+        background-color: #f8f9fa !important;
+        cursor: not-allowed !important;
+        opacity: 0.8 !important;
+        color: #6c757d !important;
+        pointer-events: none !important;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aplicar la clase al campo de área perteneciente
+        const areaInput = document.getElementById('id_area_perteneciente');
+        if (areaInput) {
+            areaInput.classList.add('input-readonly');
+            areaInput.setAttribute('readonly', 'readonly');
+        }
+    });
+</script>
+
+
 {% endblock %}
