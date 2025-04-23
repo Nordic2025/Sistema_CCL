@@ -1,0 +1,38 @@
+2025/04/21-11:51:51.152 6fec Reusing MANIFEST C:\Users\Windows\Desktop\Sistema_CCL\Sistema_permisos\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/21-11:51:51.153 6fec Recovering log #186
+2025/04/21-11:51:51.246 6fec Reusing old log C:\Users\Windows\Desktop\Sistema_CCL\Sistema_permisos\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000186.log 
+2025/04/21-11:51:56.965 3a24 Level-0 table #195: started
+2025/04/21-11:51:56.982 3a24 Level-0 table #195: 248502 bytes OK
+2025/04/21-11:51:56.985 3a24 Delete type=0 #186
+2025/04/21-11:51:56.987 3a24 Manual compaction at level-0 from '\x002\x00\x00\x00' @ 72057594037927935 : 1 .. '\x003\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/21-11:52:02.059 9804 Compacting 1@1 + 5@2 files
+2025/04/21-11:52:02.197 9804 Generated table #196@1: 19901 keys, 2184749 bytes
+2025/04/21-11:52:02.259 9804 Generated table #197@1: 3429 keys, 2154896 bytes
+2025/04/21-11:52:02.379 9804 Generated table #198@1: 20891 keys, 2210923 bytes
+2025/04/21-11:52:02.533 9804 Generated table #199@1: 44230 keys, 2201756 bytes
+2025/04/21-11:52:02.766 9804 Generated table #200@1: 79935 keys, 1734227 bytes
+2025/04/21-11:52:02.766 9804 Compacted 1@1 + 5@2 files => 10486551 bytes
+2025/04/21-11:52:02.767 9804 compacted to: files[ 0 0 5 0 0 0 0 ]
+2025/04/21-11:52:02.768 9804 Delete type=2 #188
+2025/04/21-11:52:02.768 9804 Delete type=2 #189
+2025/04/21-11:52:02.768 9804 Delete type=2 #190
+2025/04/21-11:52:02.768 9804 Delete type=2 #191
+2025/04/21-11:52:02.768 9804 Delete type=2 #192
+2025/04/21-11:52:02.768 9804 Delete type=2 #195
+2025/04/21-12:37:19.239 3a24 Level-0 table #202: started
+2025/04/21-12:37:19.276 3a24 Level-0 table #202: 1196753 bytes OK
+2025/04/21-12:37:19.281 3a24 Delete type=0 #194
+2025/04/21-12:37:19.769 3a24 Compacting 1@1 + 5@2 files
+2025/04/21-12:37:19.823 3a24 Generated table #203@1: 27222 keys, 2191541 bytes
+2025/04/21-12:37:19.846 3a24 Generated table #204@1: 3427 keys, 2155943 bytes
+2025/04/21-12:37:19.883 3a24 Generated table #205@1: 17046 keys, 2197902 bytes
+2025/04/21-12:37:19.928 3a24 Generated table #206@1: 30589 keys, 2198850 bytes
+2025/04/21-12:37:20.017 3a24 Generated table #207@1: 99712 keys, 2149885 bytes
+2025/04/21-12:37:20.017 3a24 Compacted 1@1 + 5@2 files => 10894121 bytes
+2025/04/21-12:37:20.018 3a24 compacted to: files[ 0 0 5 0 0 0 0 ]
+2025/04/21-12:37:20.018 3a24 Delete type=2 #196
+2025/04/21-12:37:20.018 3a24 Delete type=2 #197
+2025/04/21-12:37:20.019 3a24 Delete type=2 #198
+2025/04/21-12:37:20.019 3a24 Delete type=2 #199
+2025/04/21-12:37:20.019 3a24 Delete type=2 #200
+2025/04/21-12:37:20.019 3a24 Delete type=2 #202

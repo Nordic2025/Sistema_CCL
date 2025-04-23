@@ -76,6 +76,23 @@
                                 </button>
                             </div>
                         </form>
+                        <!-- PANTALLA CARGA, MENSAJE WSP -->
+                        <div id="loadingScreen" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center p-5">
+                                        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                        <h4 class="mb-3">Procesando retiro</h4>
+                                        <p class="mb-4">Esperando confirmación del inspector...</p>
+                                        <div id="loadingMessage" class="alert alert-info">
+                                            Enviando notificación al inspector...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="mt-3">
@@ -390,22 +407,157 @@ function verificarApoderado() {
         formularioRetiro.addEventListener('submit', function(event) {
             // Verificar que todos los campos estén completos
             if (!rutPersonaRetiraInput.value || 
-                !rutEstudianteSelect.value ||
-                !nombreEstudianteInput.value ||
-                !cursoInput.value ||
-                !document.querySelector('select[name="motivo_retiro"]').value) {
-                
-                event.preventDefault();
-                
-                Swal.fire({
-                    title: 'Formulario incompleto',
-                    text: 'Por favor complete todos los campos requeridos.',
-                    icon: 'error',
-                    confirmButtonText: 'Entendido'
-                });
-            }
+        !rutEstudianteSelect.value ||
+        !nombreEstudianteInput.value ||
+        !cursoInput.value ||
+        !document.querySelector('select[name="motivo_retiro"]').value) {
+        
+        event.preventDefault();
+        
+        Swal.fire({
+            title: 'Formulario incompleto',
+            text: 'Por favor complete todos los campos requeridos.',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+        });
+        return;
+    }
+    
+    submitForm(event);
+});
+
+function submitForm(event) {
+    event.preventDefault();
+    console.log("Formulario enviado");
+    
+    // Mostrar modal de carga
+    var myModal = new bootstrap.Modal(document.getElementById('loadingScreen'));
+    myModal.show();
+    console.log("Modal mostrado");
+    
+    // Obtener datos del formulario
+    const formData = new FormData(formularioRetiro);
+    
+    // Enviar formulario mediante AJAX
+    fetch('{% url "Modulo_alumnos:procesar_retiro" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+        
+        if (data.retiro_id) {
+            // Iniciar verificación periódica del estado
+            console.log("Iniciando verificación para retiro ID:", data.retiro_id);
+            checkRetiroStatus(data.retiro_id);
+        } else {
+            // Ocultar modal de carga
+            myModal.hide();
+            
+            // Mostrar error
+            Swal.fire({
+                title: 'Error',
+                text: data.message || 'Ocurrió un error al procesar el retiro.',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        
+        // Ocultar modal de carga
+        myModal.hide();
+        
+        // Mostrar error
+        Swal.fire({
+            title: 'Error',
+            text: 'Ocurrió un error al procesar la solicitud.',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
         });
     });
+}
+// Función para verificar el estado del retiro periódicamente
+function checkRetiroStatus(retiroId) {
+    console.log(`Iniciando polling para retiroId: ${retiroId}`);
+    
+    const checkInterval = setInterval(() => {
+        console.log(`Verificando estado del retiro ${retiroId}...`);
+        
+        fetch(`{% url "Modulo_alumnos:verificar_estado_retiro" %}?retiro_id=${retiroId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(`Estado actual del retiro ${retiroId}:`, data);
+            
+            if (data.status === 'confirmed') {
+                // Retiro confirmado, detener el polling y redirigir
+                console.log(`Retiro ${retiroId} confirmado, redirigiendo a:`, data.redirect_url);
+                clearInterval(checkInterval);
+                window.location.href = data.redirect_url;
+            } else if (data.status === 'rejected') {
+                // Retiro rechazado, detener el polling y mostrar mensaje
+                console.log(`Retiro ${retiroId} rechazado`);
+                clearInterval(checkInterval);
+                
+                // Ocultar el modal de carga
+                var loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingScreen'));
+                if (loadingModal) {
+                    loadingModal.hide();
+                } else {
+                    $('#loadingScreen').modal('hide'); // Fallback para Bootstrap 4
+                }
+                
+                Swal.fire({
+                    title: 'Retiro rechazado',
+                    text: data.message || 'El inspector ha rechazado el retiro.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
+                });
+            } else if (data.status === 'timeout') {
+                // Tiempo de espera agotado
+                console.log(`Tiempo de espera agotado para retiro ${retiroId}`);
+                clearInterval(checkInterval);
+                
+                // Ocultar el modal de carga
+                var loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingScreen'));
+                if (loadingModal) {
+                    loadingModal.hide();
+                } else {
+                    $('#loadingScreen').modal('hide'); // Fallback para Bootstrap 4
+                }
+                
+                Swal.fire({
+                    title: 'Tiempo de espera agotado',
+                    text: 'No se recibió respuesta del inspector. El retiro ha sido registrado pero requiere verificación.',
+                    icon: 'info',
+                    confirmButtonText: 'Continuar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = data.redirect_url;
+                    }
+                });
+            }
+            // Si status sigue siendo 'waiting', continuamos el polling
+        })
+        .catch(error => {
+            console.error(`Error al verificar estado del retiro ${retiroId}:`, error);
+            // No detenemos el polling por errores de red temporales
+        });
+    }, 3000); // Verificar cada 3 segundos
+}
+})
+
+        
 </script>
                     
                     

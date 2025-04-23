@@ -278,11 +278,11 @@
                           </div>
                           {% else %}
                           <div class="mb-3">
-                            <button type="button" class="btn btn-sm btn-success" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#agregarFamiliar1Modal{{ alumno.id }}">
+                          <button type="button" class="btn btn-sm btn-success nested-modal-btn" 
+                            data-target-modal="#agregarFamiliar1Modal{{ alumno.id }}"
+                            data-parent-modal="#verDetalleModal{{ alumno.id }}">
                               + Añadir Familiar 1
-                            </button>
+                          </button>
                           </div>
                           {% endif %}
                           
@@ -316,15 +316,16 @@
               </div>
               
               <!-- Modal para Añadir Familiar 1 -->
-              <div class="modal fade" id="agregarFamiliar1Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true">
+              <div class="modal fade" id="agregarFamiliar1Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true" data-bs-backdrop="static">
                 <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="agregarFamiliar1ModalLabel{{ alumno.id }}">Añadir Familiar 1 | {{ alumno.nombre }}</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 1 %}" class="familiarForm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="agregarFamiliar1ModalLabel{{ alumno.id }}">Añadir Familiar 1 | {{ alumno.nombre }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 1 %}" class="familiarForm">
+                                {% csrf_token %}
                             {% csrf_token %}
                             <div class="mb-3">
                               <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
@@ -373,12 +374,12 @@
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                               <button type="submit" class="btn btn-success">Guardar Familiar</button>
-                            </div>
-                        </form>
-                    </div>
+                          </div>
+                      </form>
                   </div>
-                </div>
               </div>
+          </div>
+      </div>
 
             <!-- Modal para Añadir Familiar 2 -->
             <div class="modal fade" id="agregarFamiliar2Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true">
@@ -751,6 +752,113 @@
           });
         });
       </script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar correctamente los modales anidados
+            const detalleModals = document.querySelectorAll('[id^="verDetalleModal"]');
+            
+            detalleModals.forEach(function(detalleModal) {
+                // Obtener todos los botones que abren modales anidados dentro de este modal de detalles
+                const nestedModalButtons = detalleModal.querySelectorAll('[data-bs-toggle="modal"]');
+                
+                nestedModalButtons.forEach(function(btn) {
+                    const targetModalId = btn.getAttribute('data-bs-target');
+                    const targetModal = document.querySelector(targetModalId);
+                    
+                    if (targetModal) {
+                        // Cuando se abre el modal anidado, ocultar (pero no destruir) el modal padre
+                        targetModal.addEventListener('show.bs.modal', function() {
+                            const detalleModalInstance = bootstrap.Modal.getInstance(detalleModal);
+                            if (detalleModalInstance) {
+                                // Guardar una referencia al modal padre en el modal hijo
+                                targetModal.parentModal = detalleModalInstance;
+                                detalleModal.style.display = 'none';
+                                // Mantener el fondo oscuro
+                                document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                                    backdrop.style.zIndex = '1055'; // Asegurar que el backdrop esté detrás del nuevo modal
+                                });
+                            }
+                        });
+                        
+                        // Cuando se cierra el modal anidado, restaurar el modal padre
+                        targetModal.addEventListener('hidden.bs.modal', function() {
+                            if (targetModal.parentModal) {
+                                detalleModal.style.display = 'block';
+                                detalleModal.classList.add('show');
+                                // Asegurarse de que el modal padre siga siendo interactivo
+                                detalleModal.style.zIndex = '1050';
+                            }
+                        });
+                        
+                        // Manejar específicamente los botones de cancelar/cerrar en el modal anidado
+                        const closeButtons = targetModal.querySelectorAll('[data-bs-dismiss="modal"], .btn-close, .btn-secondary');
+                        closeButtons.forEach(function(closeBtn) {
+                            closeBtn.addEventListener('click', function() {
+                                const modalInstance = bootstrap.Modal.getInstance(targetModal);
+                                if (modalInstance) {
+                                    modalInstance.hide();
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+            
+            // Limpiar los backdrops huérfanos si los hay
+            window.addEventListener('click', function(e) {
+                if (e.target.classList.contains('modal-backdrop') && !document.querySelector('.modal.show')) {
+                    e.target.remove();
+                }
+            });
+        });
+      </script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar botones de modales anidados
+            document.querySelectorAll('.nested-modal-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const targetModalId = this.getAttribute('data-target-modal');
+                    const parentModalId = this.getAttribute('data-parent-modal');
+                    
+                    const targetModal = document.querySelector(targetModalId);
+                    const parentModal = document.querySelector(parentModalId);
+                    
+                    if (targetModal && parentModal) {
+                        // Ocultar el modal padre
+                        const parentModalInstance = bootstrap.Modal.getInstance(parentModal);
+                        if (parentModalInstance) {
+                            parentModalInstance.hide();
+                        }
+                        
+                        // Mostrar el modal hijo después de un breve retraso
+                        setTimeout(function() {
+                            const targetModalInstance = new bootstrap.Modal(targetModal);
+                            targetModalInstance.show();
+                            
+                            // Guardar referencia al modal padre
+                            targetModal.parentModalId = parentModalId;
+                        }, 300);
+                    }
+                });
+            });
+            
+            // Manejar el cierre de modales anidados
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    if (this.parentModalId) {
+                        setTimeout(function() {
+                            const parentModal = document.querySelector(modal.parentModalId);
+                            if (parentModal) {
+                                const parentModalInstance = new bootstrap.Modal(parentModal);
+                                parentModalInstance.show();
+                            }
+                        }, 300);
+                    }
+                });
+            });
+        });
+      </script>
+        
       
       
         
