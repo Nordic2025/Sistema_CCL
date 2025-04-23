@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import json
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -254,13 +253,6 @@ def obtener_telefono_inspector(inspector_nombre):
         print(f"Error al obtener teléfono del inspector: {str(e)}")
         return None
 
-=======
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.utils import timezone
-from .models import RegistroRetiro
-from .forms import RegistroRetiroForm
->>>>>>> modulo_alumnos
 
 def retiro_justificacion_view(request):
     return render(request, 'retiro_justificacion.html')
@@ -268,7 +260,6 @@ def retiro_justificacion_view(request):
 def formulario_retiro_view(request):
     if request.method == "POST":
         form = RegistroRetiroForm(request.POST)
-<<<<<<< HEAD
         try:
             if form.is_valid():
                 # Guardamos el formulario
@@ -302,22 +293,11 @@ def formulario_retiro_view(request):
             print("Error al procesar el formulario:", str(e))
             # Puedes mostrar un mensaje de error al usuario
             messages.error(request, f"Error al procesar el formulario: {str(e)}")
-=======
-        if form.is_valid():
-            # Guardamos el formulario
-            registro = form.save(commit=False)
-            registro.hora_retiro = timezone.now()
-            registro.save()
-            
-            # Redirigir a una página de confirmación
-            return redirect('Modulo_alumnos:confirmacion_retiro', registro_id=registro.id)
->>>>>>> modulo_alumnos
     else:
         form = RegistroRetiroForm()
     
     return render(request, 'formulario_retiro.html', {'form': form})
 
-<<<<<<< HEAD
 
 
 def confirmacion_retiro_view(request, registro_id):
@@ -552,11 +532,3 @@ def actualizar_estado_retiro(request):
 
 
 
-=======
-def confirmar_retiro_view(request, registro_id):
-    registro = RegistroRetiro.objects.get(id=registro_id)
-    return render(request, 'confirmar_retiro.html', {'registro': registro})
-
-def formulario_justificacion_view(request):
-    return render(request, 'formulario_justificar.html')
->>>>>>> modulo_alumnos
