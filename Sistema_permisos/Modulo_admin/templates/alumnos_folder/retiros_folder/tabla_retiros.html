@@ -40,7 +40,7 @@
                   <button type="submit" class="btn btn-primary">
                     <i class="fas fa-search"></i> Buscar
                   </button>
-                  {% if busqueda or curso_filtro or nivel_filtro %}
+                  {% if busqueda or curso_filtro %}
                   <a href="{% url 'Modulo_admin:retiros' %}" class="btn btn-outline-secondary">
                     <i class="fas fa-times"></i> Limpiar filtros
                   </a>
@@ -92,13 +92,13 @@
             <tbody class="tbody_custom">
               {% for retiro in retiros %}
               <tr>
-                <td>{{ retiro.rut_AF }}</td>
-                <td>{{ retiro.nombre_AF }}</td>
-                <td>{{ retiro.nombreA }}</td>
-                <td>{{ retiro.rutA }}</td>
-                <td>{{ retiro.cursoA }}</td>
-                <td>{{ retiro.fecha_retiro }}</td>
-                <td>{{ retiro.motivo}} </td
+                  <td>{{ retiro.rut_persona_retira }}</td>
+                  <td>{{ retiro.nombre_persona_retira }}</td>
+                  <td>{{ retiro.nombre_estudiante }}</td>
+                  <td>{{ retiro.rut_estudiante }}</td>
+                  <td>{{ retiro.curso }}</td>
+                  <td>{{ retiro.hora_retiro }}</td>
+                  <td>{{ retiro.motivo_retiro }}</td>
                 {% comment %} <td>
                   {% if user.is_superuser %}
                   <button type="button" class="btn btn_editar btn-outline-warning" 
@@ -110,74 +110,6 @@
                 </td> {% endcomment %}
               </tr>
               
-              {% if user.is_superuser %}
-              <!-- Modal para Editar Retiro -->
-              <div class="modal fade" id="editarRetiroModal{{ retiro.id }}" tabindex="-1" aria-labelledby="editarRetiroModalLabel{{ retiro.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-lg"> 
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="editarRetiroModalLabel{{ retiro.id }}">Editar Retiro</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <form method="POST" action="{% url 'Modulo_admin:editar_retiro' retiro.id %}" class="retiroForm">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                          <div class="col-md-6">
-                            <h5 class="mb-3">Información del Apoderado/Familiar</h5>
-                            <div class="mb-3">
-                              <label for="rut_AF{{ retiro.id }}" class="form-label">RUT Apoderado/Familiar</label>
-                              <input type="text" class="form-control rut-input" id="rut_AF{{ retiro.id }}" name="rut_AF" value="{{ retiro.rut_AF }}">
-                            </div>
-                            <div class="mb-3">
-                              <label for="nombre_AF{{ retiro.id }}" class="form-label">Nombre Apoderado/Familiar</label>
-                              <input type="text" class="form-control" id="nombre_AF{{ retiro.id }}" name="nombre_AF" value="{{ retiro.nombre_AF }}">
-                            </div>
-                          </div>
-                          
-                          <div class="col-md-6">
-                            <h5 class="mb-3">Información del Alumno</h5>
-                            <div class="mb-3">
-                              <label for="nombreA{{ retiro.id }}" class="form-label">Nombre Alumno</label>
-                              <input type="text" class="form-control" id="nombreA{{ retiro.id }}" name="nombreA" value="{{ retiro.nombreA }}">
-                            </div>
-                            <div class="mb-3">
-                              <label for="rutA{{ retiro.id }}" class="form-label">RUT Alumno</label>
-                              <input type="text" class="form-control rut-input" id="rutA{{ retiro.id }}" name="rutA" value="{{ retiro.rutA }}">
-                            </div>
-                            <div class="mb-3">
-                              <label for="cursoA{{ retiro.id }}" class="form-label">Curso del Alumno</label>
-                              <input type="text" class="form-control" id="cursoA{{ retiro.id }}" name="cursoA" value="{{ retiro.cursoA }}">
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div class="row">
-                          <div class="col-md-6">
-                            <div class="mb-3">
-                              <label for="fecha_retiro{{ retiro.id }}" class="form-label">Fecha y hora de retiro</label>
-                              <input type="datetime-local" class="form-control" id="fecha_retiro{{ retiro.id }}" name="fecha_retiro" value="{{ retiro.fecha_retiro|date:'Y-m-d\TH:i' }}">
-                            </div>
-                          </div>
-                          <div class="col-md-6">
-                            <div class="mb-3">
-                              <label for="motivo{{ retiro.id }}" class="form-label">Motivo del retiro</label>
-                              <textarea class="form-control" id="motivo{{ retiro.id }}" name="motivo" rows="3">{{ retiro.motivo }}</textarea>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {% endif %}
 
               {% empty %}
               <tr>

@@ -6,6 +6,7 @@ from django.contrib import messages
 from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm, AlumnoForm, FamiliarForm, InspectorForm
 from .models import Administrador, Areas, Curso, Alumno, Inspector, AlumnoEgresado
 from Modulo_funcionarios.models import RegistroSalida
+from Modulo_alumnos.models import RegistroRetiro
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
@@ -95,8 +96,8 @@ def inicio_view(request):
         ).count()
         datos_permisos.append(permisos_dia)
 
-        # Para retiros, usar un valor de ejemplo por ahora
-        retiros_dia = 0
+        # RegistroRetiro
+        retiros_dia = RegistroRetiro.objects.filter(hora_retiro__gte= dia, hora_retiro__lt= dia_siguiente).count()
         datos_retiros.append(retiros_dia)
 
     # Obtener estadistica de los permisos
@@ -104,6 +105,12 @@ def inicio_view(request):
 
     # Obtener los ultimos 5 permisos
     permisos_recientes = RegistroSalida.objects.order_by('-hora_salida')[:5]
+
+    #Obtener estadistica de los retiros
+    retiros_hoy = RegistroRetiro.objects.filter(hora_retiro__gte = dia).count()
+
+    #Obtener todos los alumnos
+    total_alumnos = Alumno.objects.all().count()
 
     # Convertir listas a formato JSON para el template
     import json
@@ -118,6 +125,8 @@ def inicio_view(request):
         'datos_retiros': datos_retiros_json,
         'permisos_activos': permisos_activos,
         'permisos_recientes': permisos_recientes,
+        'retiros_hoy': retiros_hoy,
+        'total_alumnos': total_alumnos,
     }
 
     return render(request, 'inicio.html', context)
@@ -793,7 +802,62 @@ def agregar_familiar(request, id, familiar_num):
 
 @login_required(login_url='Modulo_admin:login_admin')
 def retiros_view(request):
-    return render(request, 'alumnos_folder/retiros_folder/tabla_retiros.html')
+    # Iniciar con todos los retiros
+    retiros = RegistroRetiro.objects.all().order_by('-hora_retiro')
+    cursos = Curso.objects.all()
+
+    # Obtener parámetros de filtrado
+    busqueda = request.GET.get('busqueda', '')
+    curso_filtro = request.GET.get('curso', '')
+    curso_nombre = ""
+    
+    # Aplicar búsqueda por nombre o RUT si se proporciona
+    if busqueda:
+        # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
+        busqueda_rut = busqueda.replace('.', '').replace('-', '')
+        retiros = retiros.filter(
+            Q(nombre_estudiante__icontains=busqueda) | 
+            Q(rut_estudiante__icontains=busqueda_rut) |
+            Q(nombre_persona_retira__icontains=busqueda) |
+            Q(rut_persona_retira__icontains=busqueda_rut)
+        )
+    
+    # Filtrar por curso si se proporciona
+    if curso_filtro:
+        try:
+            # Obtener el objeto curso para mostrar su nombre en los filtros activos
+            curso_obj = Curso.objects.get(id=curso_filtro)
+            curso_nombre = curso_obj.nombre
+            
+            # Filtrar retiros por el curso seleccionado
+            retiros_exactos= retiros.filter (curso__iexact = curso_obj.nombre)
+
+            if retiros_exactos.exists():
+                retiros = retiros_exactos
+            else:
+                numero_match = re.search(r'(\d+[°º]?)', curso_obj.nombre)
+                numero_curso = numero_match.group(1) if numero_match else None
+                nivel_match = re.search(r'[°º]?\s*([A-Za-zÁ-Úá-ú]+)', curso_obj.nombre)
+                nivel_curso = nivel_match.group(1) if nivel_match else None
+
+                if numero_curso and nivel_curso:
+                    retiros = retiros.filter(Q(curso__icontains=numero_curso) & Q(curso__icontains=nivel_curso))
+                else:
+                    retiros = retiros.filter(curso__icontains = curso_obj.nombre)
+        except Curso.DoesNotExist:
+            pass
+    
+    context = {
+        'retiros': retiros,
+        'busqueda': busqueda,
+        'curso_filtro': curso_filtro,
+        'cursos': cursos,
+        'curso_nombre': curso_nombre,
+        'total_registros': retiros.count()
+    }
+    
+    return render(request, 'alumnos_folder/retiros_folder/tabla_retiros.html', context)
+
 
 
 @login_required(login_url='Modulo_admin:login_admin')
