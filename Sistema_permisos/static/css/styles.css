@@ -479,6 +479,10 @@ body {
     width: 0;
 }
 
+.sidebar.collapsed .submenu {
+    display: none;
+}
+
 /* Dropdown Menu */
 .dropdown-btn {
     width: 100%;
