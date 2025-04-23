@@ -14,7 +14,6 @@
                     <h3 class="mb-0">Registrar Retiro de Estudiante</h3>
                 </div>
                 <div class="card-body">
-<<<<<<< HEAD
                     <!-- Paso 1: Verificación de Apoderado -->
                     <div id="paso1" class="mb-4">
                         <h4 class="mb-3">Paso 1: Verificación de Apoderado</h4>
@@ -99,66 +98,6 @@
                     <div class="mt-3">
                         <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left"></i>
-=======
-                    <form method="post" class="mb-3" id="formularioRetiro">
-                        {% csrf_token %}
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.rut_persona_retira.id_for_label }}" class="form-label">RUT de quien retira:</label>
-                            {{ form.rut_persona_retira }}
-                            <small class="form-text text-muted">Ingrese el RUT con formato XX.XXX.XXX-X</small>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label class="form-label">Relación con el estudiante:</label>
-                            <div class="d-flex flex-wrap gap-3">
-                                {% for radio in form.tipo_persona %}
-                                <div class="form-check">
-                                    {{ radio.tag }}
-                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                        {{ radio.choice_label }}
-                                    </label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.rut_estudiante.id_for_label }}" class="form-label">RUT del estudiante:</label>
-                            {{ form.rut_estudiante }}
-                            <small class="form-text text-muted">Ingrese el RUT con formato XX.XXX.XXX-X</small>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.nombre_estudiante.id_for_label }}" class="form-label">Nombre del estudiante:</label>
-                            {{ form.nombre_estudiante }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.curso.id_for_label }}" class="form-label">Curso:</label>
-                            {{ form.curso }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.inspector_cargo.id_for_label }}" class="form-label">Inspector a cargo:</label>
-                            {{ form.inspector_cargo }}
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="{{ form.motivo_retiro.id_for_label }}" class="form-label">Motivo del retiro:</label>
-                            {{ form.motivo_retiro }}
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary" id="btnRegistrarRetiro">
-                                <i class="fas fa-save"></i> Registrar Retiro
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <div class="mt-3">
-                        <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-outline-secondary">
->>>>>>> modulo_alumnos
                             <i class="fas fa-arrow-left"></i> Volver al inicio
                         </a>
                     </div>
@@ -178,7 +117,6 @@
 </style>
 
 <script>
-<<<<<<< HEAD
     document.addEventListener('DOMContentLoaded', function() {
         // Referencias a elementos del DOM
         const paso1 = document.getElementById('paso1');
@@ -635,133 +573,3 @@ function checkRetiroStatus(retiroId) {
 
     
 {% endblock %}
-=======
-document.addEventListener('DOMContentLoaded', function() {
-    const rutPersonaRetiraInput = document.getElementById('{{ form.rut_persona_retira.id_for_label }}');
-    const rutEstudianteInput = document.getElementById('{{ form.rut_estudiante.id_for_label }}');
-    const formulario = document.getElementById('formularioRetiro');
-    const btnRegistrarRetiro = document.getElementById('btnRegistrarRetiro');
-    
-    // Variable para controlar si el formulario ya fue enviado
-    let formularioEnviado = false;
-    
-    // Función para formatear automáticamente el RUT
-    function formatearRut(rut) {
-        // Eliminar puntos y guiones
-        let valor = rut.replace(/\./g, '').replace(/-/g, '');
-        
-        // Obtener dígito verificador
-        let dv = valor.slice(-1);
-        
-        // Obtener cuerpo del RUT
-        let rutCuerpo = valor.slice(0, -1);
-        
-        // Formatear RUT con puntos y guión
-        let rutFormateado = '';
-        
-        // Agregar puntos de miles
-        for (let i = rutCuerpo.length; i > 0; i -= 3) {
-            const inicio = Math.max(0, i - 3);
-            rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
-        }
-        
-        // Eliminar el primer punto
-        rutFormateado = rutFormateado.substring(1);
-        
-        // Agregar guión y dígito verificador
-        return rutFormateado + '-' + dv;
-    }
-    
-    // Función para aplicar formato a un campo RUT
-    function aplicarFormatoRut(inputElement) {
-        // Evento para formatear el RUT mientras se escribe
-        inputElement.addEventListener('input', function(e) {
-            // Guardar la posición del cursor
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            const valorOriginal = this.value;
-            
-            // Eliminar caracteres no numéricos excepto K/k y conservar solo dígitos y K/k
-            let valor = this.value.replace(/[^\dkK]/g, '');
-            
-            // Si hay algo que formatear
-            if (valor.length > 1) {
-                // Formatear el valor
-                this.value = formatearRut(valor);
-                
-                // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
-                const diff = this.value.length - valorOriginal.length;
-                
-                // Restaurar la posición del cursor
-                this.setSelectionRange(start + diff, end + diff);
-            }
-        });
-        
-        // Evento blur para formatear cuando el campo pierde el foco
-        inputElement.addEventListener('blur', function() {
-            if (this.value.length > 1) {
-                // Eliminar caracteres no numéricos excepto K/k
-                let valor = this.value.replace(/[^\dkK]/g, '');
-                this.value = formatearRut(valor);
-            }
-        });
-    }
-    
-    // Aplicar formato a ambos campos RUT
-    aplicarFormatoRut(rutPersonaRetiraInput);
-    aplicarFormatoRut(rutEstudianteInput);
-    
-    // Función para validar formato de RUT chileno
-    function validarFormatoRut(rut) {
-        // Expresión regular para validar formato XX.XXX.XXX-X
-        const rutRegex = /^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$/;
-        return rutRegex.test(rut);
-    }
-    
-    // Interceptar el envío del formulario para validar los RUTs y prevenir múltiples envíos
-    formulario.addEventListener('submit', function(event) {
-                // Prevenir envíos múltiples
-                if (formularioEnviado) {
-            event.preventDefault();
-            return;
-        }
-        
-        const rutPersona = rutPersonaRetiraInput.value.trim();
-        const rutEstudiante = rutEstudianteInput.value.trim();
-        
-        // Validar formato de RUT de la persona que retira
-        if (!validarFormatoRut(rutPersona)) {
-            event.preventDefault();
-            Swal.fire({
-                title: 'Formato de RUT incorrecto',
-                text: 'Por favor ingrese el RUT de quien retira con el formato XX.XXX.XXX-X',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-            rutPersonaRetiraInput.focus();
-            return;
-        }
-        
-        // Validar formato de RUT del estudiante
-        if (!validarFormatoRut(rutEstudiante)) {
-            event.preventDefault();
-            Swal.fire({
-                title: 'Formato de RUT incorrecto',
-                text: 'Por favor ingrese el RUT del estudiante con el formato XX.XXX.XXX-X',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-            rutEstudianteInput.focus();
-            return;
-        }
-        
-        // Si todo está correcto, marcar el formulario como enviado y mostrar indicador de carga
-        formularioEnviado = true;
-        btnRegistrarRetiro.disabled = true;
-        btnRegistrarRetiro.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
-    });
-});
-</script>
-{% endblock %}
-
->>>>>>> modulo_alumnos
