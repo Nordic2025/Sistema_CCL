@@ -53,17 +53,17 @@
                             
                             <div class="form-group mb-3">
                                 <label for="nombre_estudiante" class="form-label">Nombre del estudiante:</label>
-                                <input type="text" class="form-control" id="nombre_estudiante" name="nombre_estudiante" readonly>
+                                <input type="text" class="form-control bg-light" id="nombre_estudiante" name="nombre_estudiante" readonly style="cursor: not-allowed; opacity: 0.8; color: #6c757d;">
                             </div>
                             
                             <div class="form-group mb-3">
                                 <label for="curso" class="form-label">Curso:</label>
-                                <input type="text" class="form-control" id="curso" name="curso" readonly>
+                                <input type="text" class="form-control bg-light" id="curso" name="curso" readonly style="cursor: not-allowed; opacity: 0.8; color: #6c757d;">
                             </div>
                             
                             <div class="form-group mb-3">
                                 <label for="inspector_cargo" class="form-label">Inspector a cargo:</label>
-                                <input type="text" class="form-control" id="inspector_cargo" name="inspector_cargo" readonly>
+                                <input type="text" class="form-control bg-light" id="inspector_cargo" name="inspector_cargo" readonly style="cursor: not-allowed; opacity: 0.8; color: #6c757d;">
                             </div>
                             
                             <div class="form-group mb-3">
@@ -167,6 +167,15 @@
         </div>
     </div>
 </div>
+
+<style>
+    .input-readonly {
+        background-color: #f8f9fa !important;
+        cursor: not-allowed !important;
+        opacity: 0.8 !important;
+        color: #6c757d !important;
+    }
+</style>
 
 <script>
 <<<<<<< HEAD
