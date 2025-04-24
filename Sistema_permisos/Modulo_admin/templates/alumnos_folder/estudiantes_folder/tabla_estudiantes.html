@@ -166,8 +166,8 @@
                   </button>
                   {% if user.is_superuser %}
                   <button type="button" class="btn btn_eliminar btn-outline-danger" 
-                          onclick="confirmarEliminacioneditarmno.id }}', '{{ alumno.nombre }}')">
-                    Eliminar
+                    onclick="confirmarEliminacion('{{ alumno.id }}', '{{ alumno.nombre }}')">
+                      Eliminar
                   </button>
                   {% endif %}
                 </td>
