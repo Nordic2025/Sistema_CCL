@@ -19,7 +19,7 @@
                         <h4 class="mb-3">Paso 1: Verificación de Apoderado</h4>
                         <div class="form-group mb-3">
                             <label for="rut_apoderado" class="form-label">RUT de quien retira:</label>
-                            <input type="text" class="form-control rut-input" id="rut_apoderado" placeholder="Ej: 12.345.678-9" required>
+                            <input type="text" class="form-control rut-input" id="rut_apoderado" placeholder="Ej: 12.345.678-9" maxlength="12" required >
                             <small class="form-text text-muted">Ingrese el RUT con formato XX.XXX.XXX-X</small>
                         </div>
                         <div class="d-grid gap-2">
@@ -135,11 +135,11 @@
         
         // Función para formatear automáticamente el RUT
         function formatearRut(rut) {
-            // Eliminar puntos y guiones
+                // Eliminar puntos y guiones
             let valor = rut.replace(/\./g, '').replace(/-/g, '');
             
-            // Obtener dígito verificador
-            let dv = valor.slice(-1);
+            // Obtener dígito verificador y convertir 'k' a 'K'
+            let dv = valor.slice(-1).toUpperCase();
             
             // Obtener cuerpo del RUT
             let rutCuerpo = valor.slice(0, -1);
@@ -184,16 +184,16 @@
                     this.setSelectionRange(start + diff, end + diff);
                 }
             });
-            
-            // Evento blur para formatear cuando el campo pierde el foco
-            inputElement.addEventListener('blur', function() {
-                if (this.value.length > 1) {
-                    // Eliminar caracteres no numéricos excepto K/k
-                    let valor = this.value.replace(/[^\dkK]/g, '');
-                    this.value = formatearRut(valor);
-                }
-            });
+    
+    // Evento blur para formatear cuando el campo pierde el foco
+    inputElement.addEventListener('blur', function() {
+        if (this.value.length > 1) {
+            // Eliminar caracteres no numéricos excepto K/k
+            let valor = this.value.replace(/[^\dkK]/g, '');
+            this.value = formatearRut(valor);
         }
+    });
+}
         
         // Función para validar formato de RUT chileno
         function validarFormatoRut(rut) {
@@ -208,7 +208,13 @@
         // Función para verificar el apoderado
        // Función para verificar el apoderado
 function verificarApoderado() {
-    const rutApoderado = rutApoderadoInput.value.trim();
+    let rutApoderado = rutApoderadoInput.value.trim();
+    
+    // Normalizar el RUT (convertir 'k' a 'K')
+    rutApoderado = rutApoderado.toUpperCase();
+    
+    // Actualizar el valor en el campo
+    rutApoderadoInput.value = rutApoderado;
     
     // Validar formato del RUT
     if (!validarFormatoRut(rutApoderado)) {

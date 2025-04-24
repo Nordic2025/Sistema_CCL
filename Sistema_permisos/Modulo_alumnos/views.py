@@ -10,20 +10,22 @@ from Modulo_admin.models import Alumno, Inspector, Curso
 from .utils import enviar_notificacion_retiro
 import time
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models.functions import Upper
 
 def verificar_apoderado(request):
     """Vista AJAX para verificar si un RUT corresponde a un apoderado autorizado"""
     if request.method == "GET" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         rut_apoderado = request.GET.get('rut_apoderado')
         
+        # Normalizar el RUT (convertir 'k' a 'K')
+        rut_apoderado = rut_apoderado.upper()
+        
         # Buscar alumnos donde este RUT sea apoderado titular, suplente o familiar autorizado
         alumnos_apoderado = []
         nombre_apoderado = None  # Inicializar variable para el nombre del apoderado
+        alumnos_procesados = set()  # Conjunto para evitar duplicados
         
         try:
-            # Crear un conjunto para evitar duplicados
-            alumnos_procesados = set()
-            
             # Intentar diferentes campos posibles para el RUT del apoderado
             posibles_campos_apoderado = [
                 ('apoderado_titular', 'rut_apoderadoT'),
@@ -34,9 +36,15 @@ def verificar_apoderado(request):
             
             for nombre_campo, rut_campo in posibles_campos_apoderado:
                 try:
-                    # Crear un diccionario de filtro dinámicamente
-                    filtro = {rut_campo: rut_apoderado}
-                    alumnos = Alumno.objects.filter(**filtro)
+                    # Buscar coincidencias usando __iexact para ignorar mayúsculas/minúsculas
+                    alumnos = Alumno.objects.filter(**{f"{rut_campo}__iexact": rut_apoderado})
+                    
+                    # Si no hay resultados, intentar con la versión normalizada
+                    if not alumnos.exists():
+                        # Crear un queryset que compare la versión en mayúsculas del campo
+                        alumnos = Alumno.objects.annotate(
+                            rut_upper=Upper(rut_campo)
+                        ).filter(rut_upper=rut_apoderado)
                     
                     for alumno in alumnos:
                         # Verificar si ya procesamos este alumno para evitar duplicados
