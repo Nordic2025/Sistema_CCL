@@ -21,6 +21,9 @@ def verificar_apoderado(request):
         nombre_apoderado = None  # Inicializar variable para el nombre del apoderado
         
         try:
+            # Crear un conjunto para evitar duplicados
+            alumnos_procesados = set()
+            
             # Intentar diferentes campos posibles para el RUT del apoderado
             posibles_campos_apoderado = [
                 ('apoderado_titular', 'rut_apoderadoT'),
@@ -36,6 +39,13 @@ def verificar_apoderado(request):
                     alumnos = Alumno.objects.filter(**filtro)
                     
                     for alumno in alumnos:
+                        # Verificar si ya procesamos este alumno para evitar duplicados
+                        if alumno.rut in alumnos_procesados:
+                            continue
+                            
+                        # Añadir el RUT del alumno al conjunto de procesados
+                        alumnos_procesados.add(alumno.rut)
+                        
                         # Determinar el tipo de persona basado en el campo
                         tipo_persona = "Otro"
                         
