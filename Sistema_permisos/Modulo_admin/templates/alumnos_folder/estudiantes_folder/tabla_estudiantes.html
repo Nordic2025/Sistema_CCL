@@ -166,8 +166,8 @@
                   </button>
                   {% if user.is_superuser %}
                   <button type="button" class="btn btn_eliminar btn-outline-danger" 
-                          onclick="confirmarEliminacion('{{ alumno.id }}', '{{ alumno.nombre }}')">
-                    Eliminar
+                    onclick="confirmarEliminacion('{{ alumno.id }}', '{{ alumno.nombre }}')">
+                      Eliminar
                   </button>
                   {% endif %}
                 </td>
@@ -247,7 +247,11 @@
                                   <label for="telefono_apoderadoT{{ alumno.id }}" class="form-label">Teléfono</label>
                                   <div class="input-group">
                                     <span class="input-group-text">+56</span>
-                                    <input type="text" class="form-control telefono-input" id="telefono_apoderadoT{{ alumno.id }}" name="telefono_apoderadoT" value="{{ alumno.telefono_apoderadoT|default:''|slice:'3:' }}" maxlength="9">
+                                    {% if alumno.telefono_apoderadoT|default:''|slice:':3' == '+56' %}
+                                      <input type="text" class="form-control telefono-input" id="telefono_apoderadoT{{ alumno.id }}" name="telefono_apoderadoT" value="{{ alumno.telefono_apoderadoT|default:''|slice:'3:' }}" maxlength="9">
+                                    {% else %}
+                                      <input type="text" class="form-control telefono-input" id="telefono_apoderadoT{{ alumno.id }}" name="telefono_apoderadoT" value="{{ alumno.telefono_apoderadoT|default:'' }}" maxlength="9">
+                                    {% endif %}
                                   </div>
                                   <small class="form-text text-muted">Ingrese los 9 dígitos, sin el prefijo +56</small>
                                 </div>
