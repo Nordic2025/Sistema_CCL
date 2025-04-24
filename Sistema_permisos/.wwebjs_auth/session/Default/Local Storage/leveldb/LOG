@@ -1,2 +1,4 @@
-2025/04/23-11:25:34.661 14ec Creating DB C:\Users\CCL\Desktop\Sistema_CCL\Sistema_permisos\.wwebjs_auth\session\Default\Local Storage\leveldb since it was missing.
-2025/04/23-11:25:34.682 14ec Reusing MANIFEST C:\Users\CCL\Desktop\Sistema_CCL\Sistema_permisos\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/04/24-11:05:31.770 25c4 Reusing MANIFEST C:\Users\CCL\Desktop\Sistema_CCL\Sistema_permisos\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/04/24-11:05:31.772 25c4 Recovering log #3
+2025/04/24-11:05:31.775 25c4 Reusing old log C:\Users\CCL\Desktop\Sistema_CCL\Sistema_permisos\.wwebjs_auth\session\Default\Local Storage\leveldb/000003.log 
+2025/04/24-11:05:31.775 25c4 Delete type=2 #5

@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from functools import wraps
 from django.db import transaction
 import re
+from django.core.paginator import Paginator
 
 
 # Decorador para verificar si el usuario es staff
@@ -621,9 +622,15 @@ def eliminar_inspector_view(request, id):
 #Alumnos
 @login_required(login_url='Modulo_admin:login_admin')
 def alumnos_view(request):
+
+    print("Número total de alumnos:", Alumno.objects.count())
+
+    queryset = Alumno.objects.all().order_by('nombre')
+    
     # Iniciar con todos los alumnos no eliminados
     alumnos = Alumno.objects.all()
     cursos = Curso.objects.all()
+
 
     # Obtener parámetros de filtrado
     busqueda = request.GET.get('busqueda', '')
@@ -649,20 +656,35 @@ def alumnos_view(request):
             alumnos = alumnos.filter(curso__id=curso_filtro)
         except Curso.DoesNotExist:
             pass
+
+
+    paginator = Paginator(alumnos, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    total_registros=queryset.count()
+
+    # Después de paginar
+    print("Alumnos en la página actual:", len(page_obj))
+    print("Número de página:", page_obj.number)
+    print("Total de páginas:", page_obj.paginator.num_pages)
         
     
+    # Después de aplicar filtros
+    print("Alumnos después de filtros:", queryset.count())
     form = AlumnoForm()
     familiar_form = FamiliarForm()
     
     context = {
-        'alumnos': alumnos,
+        'alumnos': page_obj,
         'form': form,
         'familiar_form': familiar_form,
         'busqueda': busqueda,
         'curso_filtro': curso_filtro,
         'cursos': cursos,
         'curso_nombre': curso_nombre,
-        'total_registros': alumnos.count()
+        'total_registros': total_registros,
+        'page_obj': page_obj
     }
     
     return render(request, 'alumnos_folder/estudiantes_folder/tabla_estudiantes.html', context)

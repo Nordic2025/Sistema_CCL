@@ -156,11 +156,11 @@ class Alumno(models.Model):
     rut = models.CharField(max_length=15, unique=True)
     nombre = models.CharField(max_length=255)
     curso = models.ForeignKey(Curso, on_delete=models.CASCADE)
-    apoderado_titular = models.CharField(max_length=255)
     rut_apoderadoT = models.CharField(max_length=15, blank=True, null=True)
+    apoderado_titular = models.CharField(max_length=255)
     telefono_apoderadoT = models.CharField(max_length=20, blank=True, null=True, verbose_name='Teléfono Apoderado Titular')
+    rut_apoderadoS = models.CharField(max_length=15, blank=True, null=True)    
     apoderado_suplente = models.CharField(max_length=255, blank=True, null=True)
-    rut_apoderadoS = models.CharField(max_length=15, blank=True, null=True)
     telefono_apoderadoS = models.CharField(max_length=20, blank=True, null=True, verbose_name='Teléfono Apoderado Suplente')
     familiar_1 = models.CharField(max_length=255, blank=True, null=True)
     familiar_1_relacion = models.CharField(max_length=100, blank=True, null=True)
@@ -170,7 +170,7 @@ class Alumno(models.Model):
     familiar_2_relacion = models.CharField(max_length=100, blank=True, null=True)
     familiar_2_telefono = models.CharField(max_length=20, blank=True, null=True)
     rut_familiar_2 = models.CharField(max_length=15, blank=True, null=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 
     def __str__(self):
