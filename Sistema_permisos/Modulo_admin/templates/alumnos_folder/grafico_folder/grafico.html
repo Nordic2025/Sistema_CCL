@@ -138,13 +138,19 @@
             const cursoNormalizado = curso.toLowerCase()
                 .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             
-            console.log('Clasificando curso:', curso, 'normalizado:', cursoNormalizado);
-            
             // Verificar nivel Pre-Básica
             if (cursoNormalizado.includes('pre-kinder') || 
                 cursoNormalizado.includes('prekinder') || 
                 cursoNormalizado.includes('kinder')) {
                 return 'Pre-Básica';
+            }
+            
+            // Verificar nivel Media (verificar primero Media para evitar confusiones)
+            if (cursoNormalizado.includes('medio') || 
+                cursoNormalizado.includes('media') ||
+                /^[i-iv]°?\s?[a-d]$/i.test(cursoNormalizado) ||
+                /^[1-4]°?\s?medio/i.test(cursoNormalizado)) {
+                return 'Media';
             }
             
             // Verificar nivel Básica
@@ -153,14 +159,6 @@
                 /^\d°\s?[a-d]$/i.test(cursoNormalizado) ||
                 /^[1-8]°/.test(cursoNormalizado)) {
                 return 'Básica';
-            }
-            
-            // Verificar nivel Media
-            if (cursoNormalizado.includes('medio') || 
-                cursoNormalizado.includes('media') ||
-                /^[i-iv]°?\s?[a-d]$/i.test(cursoNormalizado) ||
-                /^[1-4]°?\s?medio/i.test(cursoNormalizado)) {
-                return 'Media';
             }
             
             // Si no se puede determinar, verificar por el número
@@ -181,6 +179,193 @@
             console.warn('No se pudo clasificar el curso:', curso);
             return 'Media'; // Valor por defecto
         }
+        
+        // Función para generar botones de filtro
+        function generarBotonesFiltro() {
+            const filtroPrebasica = document.getElementById('filtro-prebasica');
+            const filtroBasica = document.getElementById('filtro-basica');
+            const filtroMedia = document.getElementById('filtro-media');
+            
+            // Limpiar contenedores
+            filtroPrebasica.innerHTML = '';
+            filtroBasica.innerHTML = '';
+            filtroMedia.innerHTML = '';
+            
+            // Clasificar los cursos por nivel
+            cursosPorNivel = {
+                'Pre-Básica': [],
+                'Básica': [],
+                'Media': []
+            };
+            
+            // Reclasificar todos los cursos
+            cursos.forEach(curso => {
+                const nivel = clasificarCurso(curso);
+                cursosPorNivel[nivel].push(curso);
+            });
+            
+            // Ordenar los cursos en cada nivel
+            Object.keys(cursosPorNivel).forEach(nivel => {
+                cursosPorNivel[nivel] = ordenarCursos(cursosPorNivel[nivel]);
+            });
+            
+            console.log('Cursos clasificados por nivel:', cursosPorNivel);
+            
+            // Conjunto para almacenar los cursos seleccionados
+            const cursosSeleccionados = new Set(cursos);
+            
+            // Función para crear botón de filtro
+            function crearBotonFiltro(curso, contenedor) {
+                const btn = document.createElement('button');
+                btn.textContent = curso;
+                btn.className = 'btn btn-sm btn-primary curso-btn';
+                btn.dataset.curso = curso;
+                btn.style.marginRight = '5px';
+                btn.style.marginBottom = '5px';
+                
+                // Evento al hacer clic en un botón de curso
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const cursoSel = this.dataset.curso;
+                    
+                    if (cursosSeleccionados.has(cursoSel)) {
+                        // Desactivar este curso
+                        cursosSeleccionados.delete(cursoSel);
+                        this.classList.remove('btn-primary');
+                        this.classList.add('btn-outline-primary');
+                    } else {
+                        // Activar este curso
+                        cursosSeleccionados.add(cursoSel);
+                        this.classList.remove('btn-outline-primary');
+                        this.classList.add('btn-primary');
+                    }
+                    
+                    actualizarGraficos(Array.from(cursosSeleccionados));
+                    actualizarBotonLimpiarFiltros(cursosSeleccionados);
+                });
+                
+                contenedor.appendChild(btn);
+            }
+            
+            // Función para crear botón de deseleccionar nivel
+            function crearBotonDeseleccionarNivel(nivel, contenedor) {
+                const btn = document.createElement('button');
+                btn.textContent = `Deseleccionar ${nivel}`;
+                btn.className = 'btn btn-sm btn-outline-danger deseleccionar-nivel-btn w-100 mb-2';
+                btn.dataset.nivel = nivel;
+                
+                // Evento al hacer clic en el botón de deseleccionar nivel
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const nivelSel = this.dataset.nivel;
+                    
+                    // Deseleccionar todos los cursos de este nivel
+                    cursosPorNivel[nivelSel].forEach(curso => {
+                        cursosSeleccionados.delete(curso);
+                        const cursoBtn = document.querySelector(`.curso-btn[data-curso="${curso}"]`);
+                        if (cursoBtn) {
+                            cursoBtn.classList.remove('btn-primary');
+                            cursoBtn.classList.add('btn-outline-primary');
+                        }
+                    });
+                    
+                    actualizarGraficos(Array.from(cursosSeleccionados));
+                    actualizarBotonLimpiarFiltros(cursosSeleccionados);
+                });
+                
+                contenedor.appendChild(btn);
+            }
+            
+            // Crear botones para deseleccionar nivel
+            crearBotonDeseleccionarNivel('Pre-Básica', filtroPrebasica);
+            
+            // Crear botones para cada curso de Pre-Básica
+            cursosPorNivel['Pre-Básica'].forEach(curso => {
+                crearBotonFiltro(curso, filtroPrebasica);
+            });
+            
+            // Crear botón para deseleccionar Básica
+            crearBotonDeseleccionarNivel('Básica', filtroBasica);
+            
+            // Crear botones para cada curso de Básica
+            cursosPorNivel['Básica'].forEach(curso => {
+                crearBotonFiltro(curso, filtroBasica);
+            });
+            
+            // Crear botón para deseleccionar Media
+            crearBotonDeseleccionarNivel('Media', filtroMedia);
+            
+            // Crear botones para cada curso de Media
+            cursosPorNivel['Media'].forEach(curso => {
+                crearBotonFiltro(curso, filtroMedia);
+            });
+            
+            // Inicializar el botón de limpiar filtros
+            actualizarBotonLimpiarFiltros(cursosSeleccionados);
+        }
+        
+        // Función para actualizar el botón de limpiar filtros
+        function actualizarBotonLimpiarFiltros(cursosSeleccionados) {
+            // Verificar si ya existe el botón
+            let limpiarFiltrosBtn = document.getElementById('limpiar-filtros-btn');
+            
+            // Si no hay filtros activos (todos los cursos están seleccionados)
+            if (cursosSeleccionados.size === cursos.length) {
+                // Si el botón existe, ocultarlo
+                if (limpiarFiltrosBtn) {
+                    limpiarFiltrosBtn.style.display = 'none';
+                }
+                return;
+            }
+            
+            // Si hay filtros activos y el botón no existe, crearlo
+            if (!limpiarFiltrosBtn) {
+                limpiarFiltrosBtn = document.createElement('button');
+                limpiarFiltrosBtn.id = 'limpiar-filtros-btn';
+                limpiarFiltrosBtn.className = 'btn btn-warning';
+                limpiarFiltrosBtn.innerHTML = '<i class="fas fa-broom me-1"></i> Limpiar filtros';
+                
+                // Evento al hacer clic en el botón de limpiar filtros
+                limpiarFiltrosBtn.addEventListener('click', function() {
+                    // Restablecer todos los cursos
+                    const cursosSeleccionados = new Set(cursos);
+                    
+                    // Actualizar apariencia de botones
+                    document.querySelectorAll('.curso-btn').forEach(btn => {
+                        btn.classList.remove('btn-outline-primary');
+                        btn.classList.add('btn-primary');
+                    });
+                    
+                    actualizarGraficos(Array.from(cursosSeleccionados));
+                    actualizarBotonLimpiarFiltros(cursosSeleccionados);
+                });
+                
+                // Agregar el botón después del botón de generar reporte
+                const generarReporteBtn = document.getElementById('generar-reporte');
+                generarReporteBtn.parentNode.insertBefore(limpiarFiltrosBtn, generarReporteBtn.nextSibling);
+            } else {
+                // Si el botón ya existe, mostrarlo
+                limpiarFiltrosBtn.style.display = 'block';
+            }
+        }
+        
+        // Botón para resetear filtros
+        document.getElementById('reset-filtro').addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Restablecer todos los cursos
+            const cursosSeleccionados = new Set(cursos);
+            
+            // Actualizar apariencia de botones
+            document.querySelectorAll('.curso-btn').forEach(btn => {
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-primary');
+            });
+            
+            actualizarGraficos(Array.from(cursosSeleccionados));
+            actualizarBotonLimpiarFiltros(cursosSeleccionados);
+        });
+        
         
         
         
@@ -225,7 +410,6 @@
             cursosPorNivel[nivel] = ordenarCursos(cursosPorNivel[nivel]);
         });
         
-        // Generar botones de filtro para cada nivel
         function generarBotonesFiltro() {
             const filtroPrebasica = document.getElementById('filtro-prebasica');
             const filtroBasica = document.getElementById('filtro-basica');
@@ -235,6 +419,24 @@
             filtroPrebasica.innerHTML = '';
             filtroBasica.innerHTML = '';
             filtroMedia.innerHTML = '';
+            
+            // Clasificar los cursos por nivel
+            cursosPorNivel['Pre-Básica'] = [];
+            cursosPorNivel['Básica'] = [];
+            cursosPorNivel['Media'] = [];
+            
+            // Reclasificar todos los cursos
+            cursos.forEach(curso => {
+                const nivel = clasificarCurso(curso);
+                cursosPorNivel[nivel].push(curso);
+            });
+            
+            // Ordenar los cursos en cada nivel
+            Object.keys(cursosPorNivel).forEach(nivel => {
+                cursosPorNivel[nivel] = ordenarCursos(cursosPorNivel[nivel]);
+            });
+            
+            console.log('Cursos clasificados por nivel:', cursosPorNivel);
             
             // Conjunto para almacenar los cursos seleccionados
             const cursosSeleccionados = new Set(cursos);
@@ -300,7 +502,6 @@
                 btn.classList.remove('btn-outline-primary');
                 btn.classList.add('btn-primary');
             });
-            
             actualizarGraficos(Array.from(cursosSeleccionados));
         });
         
@@ -344,12 +545,14 @@
                 
                 // Solo contar los cursos que están seleccionados
                 cursosSeleccionados.forEach(curso => {
-                    const cantidadRetiros = datosRetiros.por_curso[curso] || 0;
-                    const nivel = clasificarCurso(curso);
-                    
-                    console.log(`Curso: ${curso}, Nivel: ${nivel}, Retiros: ${cantidadRetiros}`);
-                    
-                    niveles[nivel] += cantidadRetiros;
+                    // Buscar coincidencias parciales en los nombres de curso
+                    Object.keys(datosRetiros.por_curso).forEach(cursoCompleto => {
+                        if (cursoCompleto.includes(curso)) {
+                            const nivel = clasificarCurso(curso);
+                            niveles[nivel] += datosRetiros.por_curso[cursoCompleto];
+                            console.log(`Coincidencia: Curso seleccionado "${curso}" con curso completo "${cursoCompleto}", Nivel: ${nivel}, Retiros: ${datosRetiros.por_curso[cursoCompleto]}`);
+                        }
+                    });
                 });
                 
                 console.log('Niveles calculados:', niveles);
@@ -357,20 +560,102 @@
             }
             
             // Si no hay datos, devolver valores por defecto
-            return {
-                'Pre-Básica': 0,
-                'Básica': 0,
-                'Media': 0
-            };
+            return niveles;
         }
+        
+        // Función para contar retiros por curso
+        function contarRetirosPorCurso(cursosSeleccionados) {
+            // Inicializar objeto para almacenar los conteos
+            const resultado = {};
+            
+            // Si tenemos datos del backend
+            if (datosRetiros && datosRetiros.por_curso) {
+                console.log('Procesando datos por curso:', datosRetiros.por_curso);
+                
+                // Inicializar todos los cursos seleccionados con 0
+                cursosSeleccionados.forEach(curso => {
+                    resultado[curso] = 0;
+                });
+                
+                // Buscar coincidencias parciales para cada curso seleccionado
+                cursosSeleccionados.forEach(curso => {
+                    Object.keys(datosRetiros.por_curso).forEach(cursoCompleto => {
+                        if (cursoCompleto.includes(curso)) {
+                            resultado[curso] += datosRetiros.por_curso[cursoCompleto];
+                            console.log(`Coincidencia: Curso seleccionado "${curso}" con curso completo "${cursoCompleto}", Retiros: ${datosRetiros.por_curso[cursoCompleto]}`);
+                        }
+                    });
+                });
+                
+                console.log('Resultado procesado:', resultado);
+                return resultado;
+            }
+            
+            // Si no hay datos, devolver un objeto con todos los cursos en 0
+            cursosSeleccionados.forEach(curso => {
+                resultado[curso] = 0;
+            });
+            
+            return resultado;
+        }
+        
+        // Función para actualizar todos los gráficos
+        function actualizarGraficos(cursosSeleccionados) {
+            console.log('Actualizando gráficos con cursos seleccionados:', cursosSeleccionados);
+            
+            try {
+                // Obtener datos filtrados
+                const datosPorNivel = contarRetirosPorNivel(cursosSeleccionados);
+                console.log('Datos por nivel después de filtrar:', datosPorNivel);
+                
+                const datosPorCurso = contarRetirosPorCurso(cursosSeleccionados);
+                const datosPorMotivo = contarRetirosPorMotivo(cursosSeleccionados);
+                
+                // Actualizar gráfico por nivel
+                actualizarGraficoNivel(datosPorNivel);
+                
+                // Actualizar gráfico por curso
+                actualizarGraficoCurso(datosPorCurso);
+                
+                // Actualizar gráfico por motivo
+                actualizarGraficoMotivos(datosPorMotivo);
+                
+                // Actualizar título según filtros
+                let titulo = 'Retiros de Estudiantes';
+                if (cursosSeleccionados.length < cursos.length) {
+                    titulo += ' - Cursos seleccionados: ' + cursosSeleccionados.length;
+                }
+                // Obtener fechas de los parámetros de URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const fechaInicio = urlParams.get('fecha_inicio');
+                const fechaFin = urlParams.get('fecha_fin');
+                
+                if (fechaInicio && fechaFin) {
+                    titulo += ` (${fechaInicio} al ${fechaFin})`;
+                }
+                
+                // Actualizar títulos de los gráficos
+                if (chartNivel) {
+                    chartNivel.setTitle({ text: `Retiros por Nivel Educativo - ${titulo}` });
+                }
+                if (chartCurso) {
+                    chartCurso.setTitle({ text: `Retiros por Curso - ${titulo}` });
+                }
+                if (chartMotivos) {
+                    chartMotivos.setTitle({ text: `Motivos de Retiro - ${titulo}` });
+                }
+            } catch (error) {
+                console.error('Error al actualizar los gráficos:', error);
+            }
+        }
+            
 
         
         // Función para contar retiros por motivo
         function contarRetirosPorMotivo(cursosSeleccionados) {
             // Si tenemos datos del backend, los usamos
             if (datosRetiros && datosRetiros.por_motivo) {
-                // Si hay filtro de cursos, necesitaríamos datos más detallados del backend
-                // Por ahora, simplemente devolvemos los datos completos
+                
                 return datosRetiros.por_motivo;
             }
             
@@ -383,19 +668,38 @@
             };
         }
 
-        // Función para contar retiros por curso
         function contarRetirosPorCurso(cursosSeleccionados) {
             // Inicializar objeto para almacenar los conteos
             const resultado = {};
             
             // Si tenemos datos del backend
             if (datosRetiros && datosRetiros.por_curso) {
-                // Solo incluir los cursos que están seleccionados
-                cursosSeleccionados.forEach(curso => {
-                    // Asignar el valor del backend o 0 si no existe
-                    resultado[curso] = datosRetiros.por_curso[curso] || 0;
+                console.log('Procesando datos por curso:', datosRetiros.por_curso);
+                
+                // Iterar sobre todos los cursos en datosRetiros.por_curso
+                Object.keys(datosRetiros.por_curso).forEach(cursoCompleto => {
+                    // Extraer el nombre del curso sin el sufijo "- Básica" o "- Media"
+                    let cursoNombre = cursoCompleto;
+                    if (cursoCompleto.includes(' - ')) {
+                        cursoNombre = cursoCompleto.split(' - ')[0];
+                    }
+                    
+                    console.log(`Curso completo: ${cursoCompleto}, Curso nombre: ${cursoNombre}, Retiros: ${datosRetiros.por_curso[cursoCompleto]}`);
+                    
+                    // Verificar si este curso está en los seleccionados
+                    if (cursosSeleccionados.includes(cursoNombre)) {
+                        resultado[cursoNombre] = datosRetiros.por_curso[cursoCompleto];
+                    }
                 });
                 
+                // Para los cursos seleccionados que no tienen retiros, asignar 0
+                cursosSeleccionados.forEach(curso => {
+                    if (resultado[curso] === undefined) {
+                        resultado[curso] = 0;
+                    }
+                });
+                
+                console.log('Resultado procesado:', resultado);
                 return resultado;
             }
             
@@ -406,7 +710,7 @@
             
             return resultado;
         }
-        
+
         // Función para actualizar todos los gráficos
         function actualizarGraficos(cursosSeleccionados) {
             console.log('Actualizando gráficos con cursos seleccionados:', cursosSeleccionados);
