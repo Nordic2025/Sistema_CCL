@@ -446,32 +446,37 @@
         // Script para el filtro de niveles
         document.addEventListener('DOMContentLoaded', function() {
           const filtroNivel = document.getElementById('filtroNivel');
-          const filasCursos = document.querySelectorAll('.fila-curso');
+          const filasInspectores = document.querySelectorAll('.tbody_custom tr:not(#mensajeVacio):not(#mensajeFiltroVacio)');
           const mensajeFiltroVacio = document.getElementById('mensajeFiltroVacio');
           const mensajeVacio = document.getElementById('mensajeVacio');
           
           filtroNivel.addEventListener('change', function() {
             const nivelSeleccionado = this.value;
             let filasVisibles = 0;
-    
-            //Oculta el mensaje del filtro inicialmente
-            mensajeFiltroVacio.style.display = 'none';
-    
-            //Si no hay cursos en general, no hacer nada
-            if (filasCursos.length === 0) {
+
+            // Oculta el mensaje del filtro inicialmente
+            if (mensajeFiltroVacio) {
+              mensajeFiltroVacio.style.display = 'none';
+            }
+
+            // Si no hay inspectores en general, no hacer nada
+            if (filasInspectores.length === 0) {
               return;
             }
-    
-            //Si hay cursos, ocultar el mensaje de cursos vacios
-            if (mensajeVacio){
+
+            // Si hay inspectores, ocultar el mensaje de inspectores vacíos
+            if (mensajeVacio) {
               mensajeVacio.style.display = 'none';
             }
-    
             
-            filasCursos.forEach(fila => {
-              const nivelCurso = fila.getAttribute('data-nivel');
+            filasInspectores.forEach(fila => {
+              // Obtener el texto de la celda de niveles asignados (cuarta columna)
+              const nivelesTexto = fila.cells[3].textContent.trim();
               
-              if (nivelSeleccionado === 'todos' || nivelSeleccionado === nivelCurso) {
+              if (nivelSeleccionado === 'todos' || 
+                  (nivelSeleccionado === 'Pre-basica' && nivelesTexto.includes('Pre-básica')) ||
+                  (nivelSeleccionado === 'Basica' && nivelesTexto.includes('Básica')) ||
+                  (nivelSeleccionado === 'Media' && nivelesTexto.includes('Media'))) {
                 fila.style.display = '';
                 filasVisibles++;
               } else {
@@ -479,8 +484,8 @@
               }
             });
             
-            // Mostrar mensaje si no hay cursos visibles para el filtro seleccionado
-            if (filasVisibles === 0) {
+            // Mostrar mensaje si no hay inspectores visibles para el filtro seleccionado
+            if (filasVisibles === 0 && mensajeFiltroVacio) {
               mensajeFiltroVacio.style.display = '';
             }
           });

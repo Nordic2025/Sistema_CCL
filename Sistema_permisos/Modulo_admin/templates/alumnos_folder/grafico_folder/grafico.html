@@ -15,23 +15,46 @@
                 <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-filter me-1"></i> Filtrar por curso
                 </button>
-                <div class="dropdown-menu p-2" aria-labelledby="dropdownMenuButton" style="min-width: 300px;">
-                    <div class="mb-2">
-                        <h6 class="dropdown-header">Pre-Básica</h6>
-                        <div id="filtro-prebasica" class="d-flex flex-wrap gap-1 mb-2">
-                            <!-- Los botones de cursos de Pre-Básica se generarán dinámicamente aquí -->
+                <div class="dropdown-menu p-3" aria-labelledby="dropdownMenuButton" style="min-width: 500px; max-width: 90vw;">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="dropdown-header px-0">Pre-Básica</h6>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div id="filtro-prebasica" class="d-flex flex-wrap gap-1 mb-2" style="width: 85%;">
+                                    <!-- Botones de cursos de Pre-Básica -->
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deseleccionarNivel('prebasica')" style="white-space: nowrap;">
+                                    <i class="fas fa-times-circle me-1"></i> Deseleccionar
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <h6 class="dropdown-header">Básica</h6>
-                        <div id="filtro-basica" class="d-flex flex-wrap gap-1 mb-2">
-                            <!-- Los botones de cursos de Básica se generarán dinámicamente aquí -->
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="dropdown-header px-0">Básica</h6>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div id="filtro-basica" class="d-flex flex-wrap gap-1 mb-2" style="width: 85%;">
+                                    <!-- Botones de cursos de Básica -->
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deseleccionarNivel('basica')" style="white-space: nowrap;">
+                                    <i class="fas fa-times-circle me-1"></i> Deseleccionar
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <h6 class="dropdown-header">Media</h6>
-                        <div id="filtro-media" class="d-flex flex-wrap gap-1 mb-2">
-                            <!-- Los botones de cursos de Media se generarán dinámicamente aquí -->
+                    
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="dropdown-header px-0">Media</h6>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div id="filtro-media" class="d-flex flex-wrap gap-1 mb-2" style="width: 85%;">
+                                    <!-- Botones de cursos de Media -->
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deseleccionarNivel('media')" style="white-space: nowrap;">
+                                    <i class="fas fa-times-circle me-1"></i> Deseleccionar
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
@@ -112,7 +135,11 @@
 {% comment %}
     Script para generar gráficos
 {% endcomment %}
+
 <script>
+
+    let actualizarGraficosGlobal;
+
     document.addEventListener('DOMContentLoaded', function() {
         // Datos de retiros desde el backend
         const datosRetiros = {{ datos_retiros|default:"{}"|safe }};
@@ -132,6 +159,38 @@
             'Media': []
         };
         
+        window.deseleccionarNivel = function(nivel) {
+            // Obtener el contenedor del nivel
+            const contenedor = document.getElementById(`filtro-${nivel}`);
+            if (!contenedor) return;
+            
+            // Obtener todos los botones de curso en este nivel
+            const botones = contenedor.querySelectorAll('.curso-btn');
+            
+            // Deseleccionar todos los botones de este nivel
+            botones.forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // Recopilar todos los cursos que siguen seleccionados después de la deselección
+            const cursosSeleccionados = Array.from(
+                document.querySelectorAll('.curso-btn.btn-primary')
+            ).map(btn => btn.dataset.curso);
+            
+            console.log('Cursos que siguen seleccionados:', cursosSeleccionados);
+            
+            // Actualizar los gráficos con los cursos que quedan seleccionados
+            actualizarGraficos(cursosSeleccionados);
+            
+            // Actualizar el estado del botón de limpiar filtros si existe
+            if (typeof actualizarBotonLimpiarFiltros === 'function') {
+                // Convertir el array a Set para mantener la compatibilidad con la función original
+                const cursosSet = new Set(cursosSeleccionados);
+                actualizarBotonLimpiarFiltros(cursosSet);
+            }
+        };
+
         // Función para clasificar un curso en su nivel educativo
         function clasificarCurso(curso) {
             // Normalizar el texto (quitar acentos, convertir a minúsculas)
@@ -1179,4 +1238,5 @@
         aplicarFiltrosURL();
     });
 </script>
+
 {% endblock %}

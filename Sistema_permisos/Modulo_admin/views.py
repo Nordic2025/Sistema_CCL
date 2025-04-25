@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.urls import reverse
 from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm, AlumnoForm, FamiliarForm, InspectorForm
 from .models import Administrador, Areas, Curso, Alumno, Inspector, AlumnoEgresado
 from Modulo_funcionarios.models import RegistroSalida
@@ -722,6 +723,24 @@ def editar_alumno(request, id):
     alumno = get_object_or_404(Alumno, id=id)
     
     if request.method == 'POST':
+        current_page = request.POST.get('current_page', '1')
+        busqueda = request.POST.get('busqueda', '')
+        curso_filtro = request.POST.get('curso_filtro', '')
+
+        # Construir la URL de redirección con todos los parámetros
+        redirect_url = reverse("Modulo_admin:alumnos")
+        params = []
+        
+        if current_page:
+            params.append(f'page={current_page}')
+        if busqueda:
+            params.append(f'busqueda={busqueda}')
+        if curso_filtro:
+            params.append(f'curso={curso_filtro}')
+        
+        if params:
+            redirect_url += '?' + '&'.join(params)
+
         form = AlumnoForm(request.POST, instance=alumno)
         if form.is_valid():
             # Verificar si el RUT ya existe para otro alumno
@@ -731,7 +750,7 @@ def editar_alumno(request, id):
                 return redirect('Modulo_admin:alumnos')
             alumno_actualizado = form.save(commit=False)
 
-             # Actualizar información de familiares si se proporcionó
+            # Actualizar información de familiares si se proporcionó
             # Familiar 1
             familiar1_nombre = request.POST.get('familiar_1', '')
             familiar1_rut = request.POST.get('rut_familiar_1', '')
@@ -755,16 +774,25 @@ def editar_alumno(request, id):
                 alumno_actualizado.rut_familiar_2 = familiar2_rut
                 alumno_actualizado.familiar_2_relacion = familiar2_relacion
                 alumno_actualizado.familiar_2_telefono = familiar2_telefono
-            
+
             # Guardar los cambios
             alumno_actualizado.save()
             messages.success(request, f'Alumno {alumno.nombre} actualizado correctamente')
+            
+            return redirect(redirect_url)
+              
         else:
             # Si el formulario no es válido, mostrar errores
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Error en el campo {field}: {error}')
+            
+            # También redirigir a la misma página en caso de error
+            return redirect(redirect_url)
+    
+    # Si la solicitud no es POST, redirigir a la lista de alumnos
     return redirect('Modulo_admin:alumnos')
+
 
 
 

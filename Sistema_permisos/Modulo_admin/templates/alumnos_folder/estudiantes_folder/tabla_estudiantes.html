@@ -185,7 +185,9 @@
                     <div class="modal-body">
                       <form method="POST" action="{% url 'Modulo_admin:editar_alumno' alumno.id %}" class="alumnoForm">
                         {% csrf_token %}
-                        
+                        <input type="hidden" name= "current_page" value="{{page_obj.number}}">
+                        <input type="hidden" name= "busqueda" value="{{curso_filtro}}">
+                        <input type="hidden" name="curso_filtro" value="{{curso_filtro}}">
                         <!-- Información del Alumno -->
                         <div class="card mb-4">
                           <div class="card-header bg-light">
