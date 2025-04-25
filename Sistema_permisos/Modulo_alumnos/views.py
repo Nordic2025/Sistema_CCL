@@ -436,7 +436,7 @@ def verificar_estado_retiro(request):
             
             # Verificar si ha pasado demasiado tiempo (timeout después de 2 minutos)
             tiempo_espera = timezone.now() - registro.hora_retiro
-            if tiempo_espera.total_seconds() > 120 and registro.estado == 'waiting':
+            if tiempo_espera.total_seconds() > 240 and registro.estado == 'waiting':
                 registro.estado = 'timeout'
                 registro.save()
                 
