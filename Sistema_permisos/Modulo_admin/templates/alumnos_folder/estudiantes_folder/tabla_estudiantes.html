@@ -1151,121 +1151,121 @@
       </script>
 
       <!-- Modificar el script que maneja la promoción anual -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Botón para abrir el modal de promoción
-    const btnPromocionAnual = document.getElementById('btnPromocionAnual');
-    if (btnPromocionAnual) {
-      btnPromocionAnual.addEventListener('click', function() {
-        // Primero verificar si todos los cursos necesarios existen
-        verificarCursosNecesarios();
-      });
-    }
-    
-    // Checkbox de confirmación
-    const confirmarPromocion = document.getElementById('confirmarPromocion');
-    const btnConfirmarPromocion = document.getElementById('btnConfirmarPromocion');
-    
-    if (confirmarPromocion && btnConfirmarPromocion) {
-      confirmarPromocion.addEventListener('change', function() {
-        btnConfirmarPromocion.disabled = !this.checked;
-      });
-    }
-    
-    // Formulario de promoción
-    const formPromocionAnual = document.getElementById('formPromocionAnual');
-    if (formPromocionAnual) {
-      formPromocionAnual.addEventListener('submit', function(e) {
-        if (!confirmarPromocion.checked) {
-          e.preventDefault();
-          Swal.fire({
-            icon: 'error',
-            title: 'Confirmación requerida',
-            text: 'Debe confirmar que entiende que esta acción es irreversible',
-            confirmButtonText: 'Entendido'
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            // Botón para abrir el modal de promoción
+            const btnPromocionAnual = document.getElementById('btnPromocionAnual');
+            if (btnPromocionAnual) {
+              btnPromocionAnual.addEventListener('click', function() {
+                // Primero verificar si todos los cursos necesarios existen
+                verificarCursosNecesarios();
+              });
+            }
+            
+            // Checkbox de confirmación
+            const confirmarPromocion = document.getElementById('confirmarPromocion');
+            const btnConfirmarPromocion = document.getElementById('btnConfirmarPromocion');
+            
+            if (confirmarPromocion && btnConfirmarPromocion) {
+              confirmarPromocion.addEventListener('change', function() {
+                btnConfirmarPromocion.disabled = !this.checked;
+              });
+            }
+            
+            // Formulario de promoción
+            const formPromocionAnual = document.getElementById('formPromocionAnual');
+            if (formPromocionAnual) {
+              formPromocionAnual.addEventListener('submit', function(e) {
+                if (!confirmarPromocion.checked) {
+                  e.preventDefault();
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Confirmación requerida',
+                    text: 'Debe confirmar que entiende que esta acción es irreversible',
+                    confirmButtonText: 'Entendido'
+                  });
+                } else {
+                  // Mostrar indicador de carga
+                  btnConfirmarPromocion.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+                  btnConfirmarPromocion.disabled = true;
+                }
+              });
+            }
+            // Función para verificar los cursos necesarios
+            function verificarCursosNecesarios() {
+              // Mostrar indicador de carga
+              Swal.fire({
+                title: 'Verificando cursos...',
+                text: 'Comprobando si existen todos los cursos necesarios para la promoción',
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                }
+              });
+              
+              // Crear un formulario para enviar la solicitud de validación
+              const formData = new FormData();
+              formData.append('validation_only', 'true');
+              formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+              
+              // Enviar solicitud para verificar cursos
+              fetch('{% url "Modulo_admin:promocion_anual" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-Requested-With': 'XMLHttpRequest'
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+          if (data.success) {
+            // Si todos los cursos existen, mostrar el modal de confirmación
+            Swal.close();
+            // Reemplazar esta línea:
+            // $('#promocionAnualModal').modal('show');
+            // Por esta:
+            const promocionModal = new bootstrap.Modal(document.getElementById('promocionAnualModal'));
+            promocionModal.show();
+          } else {
+            // Si faltan cursos, mostrar alerta con la lista de cursos necesarios
+            let cursosHTML = '<ul class="text-start">';
+            data.cursos_necesarios.forEach(curso => {
+              cursosHTML += `<li><strong>${curso.nombre}</strong> (${curso.nivel})</li>`;
+            });
+            cursosHTML += '</ul>';
+            
+            Swal.fire({
+              icon: 'warning',
+              title: 'Cursos necesarios no encontrados',
+              html: `
+                <div>
+                  <p>Para realizar la promoción anual, primero debe crear los siguientes cursos:</p>
+                  ${cursosHTML}
+                  <p class="mt-3">Por favor, cree estos cursos en la sección de <a href="{% url 'Modulo_admin:cursos' %}" class="alert-link">Gestión de Cursos</a> antes de continuar.</p>
+                </div>
+              `,
+              confirmButtonText: 'Entendido',
+              showCancelButton: true,
+              cancelButtonText: 'Ir a Gestión de Cursos',
+            }).then((result) => {
+              if (result.dismiss === Swal.DismissReason.cancel) {
+                window.location.href = "{% url 'Modulo_admin:cursos' %}";
+              }
+            });
+          }
+        })
+              .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Ocurrió un error al verificar los cursos. Por favor, inténtelo de nuevo.',
+                  confirmButtonText: 'Aceptar'
+                });
+              });
+            }
           });
-        } else {
-          // Mostrar indicador de carga
-          btnConfirmarPromocion.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
-          btnConfirmarPromocion.disabled = true;
-        }
-      });
-    }
-    // Función para verificar los cursos necesarios
-    function verificarCursosNecesarios() {
-      // Mostrar indicador de carga
-      Swal.fire({
-        title: 'Verificando cursos...',
-        text: 'Comprobando si existen todos los cursos necesarios para la promoción',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-      
-      // Crear un formulario para enviar la solicitud de validación
-      const formData = new FormData();
-      formData.append('validation_only', 'true');
-      formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
-      
-      // Enviar solicitud para verificar cursos
-      fetch('{% url "Modulo_admin:promocion_anual" %}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-  if (data.success) {
-    // Si todos los cursos existen, mostrar el modal de confirmación
-    Swal.close();
-    // Reemplazar esta línea:
-    // $('#promocionAnualModal').modal('show');
-    // Por esta:
-    const promocionModal = new bootstrap.Modal(document.getElementById('promocionAnualModal'));
-    promocionModal.show();
-  } else {
-    // Si faltan cursos, mostrar alerta con la lista de cursos necesarios
-    let cursosHTML = '<ul class="text-start">';
-    data.cursos_necesarios.forEach(curso => {
-      cursosHTML += `<li><strong>${curso.nombre}</strong> (${curso.nivel})</li>`;
-    });
-    cursosHTML += '</ul>';
-    
-    Swal.fire({
-      icon: 'warning',
-      title: 'Cursos necesarios no encontrados',
-      html: `
-        <div>
-          <p>Para realizar la promoción anual, primero debe crear los siguientes cursos:</p>
-          ${cursosHTML}
-          <p class="mt-3">Por favor, cree estos cursos en la sección de <a href="{% url 'Modulo_admin:cursos' %}" class="alert-link">Gestión de Cursos</a> antes de continuar.</p>
-        </div>
-      `,
-      confirmButtonText: 'Entendido',
-      showCancelButton: true,
-      cancelButtonText: 'Ir a Gestión de Cursos',
-    }).then((result) => {
-      if (result.dismiss === Swal.DismissReason.cancel) {
-        window.location.href = "{% url 'Modulo_admin:cursos' %}";
-      }
-    });
-  }
-})
-      .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Ocurrió un error al verificar los cursos. Por favor, inténtelo de nuevo.',
-          confirmButtonText: 'Aceptar'
-        });
-      });
-    }
-  });
-</script>
+        </script>
 
       
     

@@ -190,9 +190,13 @@ def graficoview(request):
 # Vista tabla_general
 @login_required(login_url='Modulo_admin:login_admin')
 def tabla_generalview(request):
+    
+    queryset = RegistroSalida.objects.filter(hora_regreso__isnull=False).order_by('-hora_salida')
+
     # Iniciar con todos los permisos completados
     permisos = RegistroSalida.objects.filter(hora_regreso__isnull=False)
     
+
     # Obtener parámetros de filtrado
     busqueda = request.GET.get('busqueda', '')
     fecha_inicio = request.GET.get('fecha_inicio', '')
@@ -228,13 +232,23 @@ def tabla_generalview(request):
     # Ordenar por fecha de salida (más reciente primero)
     permisos = permisos.order_by('-hora_salida')
     
+
+    paginator = Paginator(permisos, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    print("Permisos en la página actual:", len(page_obj))
+    print("Número de página:", page_obj.number)
+    print("Total de páginas:", page_obj.paginator.num_pages)
+    
     # Pasar todos los parámetros al contexto
     context = {
-        'permisos': permisos,
+        'permisos': page_obj,
         'busqueda': busqueda,
         'fecha_inicio': fecha_inicio,
         'fecha_fin': fecha_fin,
-        'total_registros': permisos.count()
+        'total_registros': permisos.count(),
+        'page_obj': page_obj
     }
     
     return render(request, "funcionarios_folder/tablas_folder/tabla_general.html", context)
@@ -248,6 +262,8 @@ def tabla_salidasview(request):
     # Obtener todas las salidas activas (sin hora de regreso)
     salidas = RegistroSalida.objects.filter(hora_regreso__isnull=True)
     
+    queryset = RegistroSalida.objects.filter(hora_regreso__isnull=True).order_by('-hora_salida')
+
     # Obtener parámetros de filtrado
     busqueda = request.GET.get('busqueda', '')
     fecha_inicio = request.GET.get('fecha_inicio', '')
@@ -296,13 +312,17 @@ def tabla_salidasview(request):
     # Ordenar por hora de salida (más reciente primero)
     salidas = sorted(salidas, key=lambda x: x.hora_salida, reverse=True)
     
+    paginator = Paginator(salidas, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     # Pasar todos los parámetros al contexto
     context = {
-        'salidas': salidas,
+        'salidas': page_obj,
         'busqueda': busqueda,
         'fecha_inicio': fecha_inicio,
         'fecha_fin': fecha_fin,
-        'total_registros': len(salidas)
+        'total_registros': len(salidas),
+        'page_obj': page_obj
     }
     
     return render(request, "funcionarios_folder/tablas_folder/tabla_salidas.html", context)
@@ -856,6 +876,8 @@ def retiros_view(request):
     retiros = RegistroRetiro.objects.all().order_by('-hora_retiro')
     cursos = Curso.objects.all()
 
+    queryset = RegistroRetiro.objects.all().order_by('-hora_retiro')
+
     # Obtener parámetros de filtrado
     busqueda = request.GET.get('busqueda', '')
     curso_filtro = request.GET.get('curso', '')
@@ -896,14 +918,20 @@ def retiros_view(request):
                     retiros = retiros.filter(curso__icontains = curso_obj.nombre)
         except Curso.DoesNotExist:
             pass
+
+
+    paginator = Paginator(retiros, 35)
+    page_number = request.GET.get('page')
+    page_obj =  paginator.get_page(page_number)
     
     context = {
-        'retiros': retiros,
+        'retiros': page_obj,
         'busqueda': busqueda,
         'curso_filtro': curso_filtro,
         'cursos': cursos,
         'curso_nombre': curso_nombre,
-        'total_registros': retiros.count()
+        'total_registros': retiros.count(),
+        'page_obj':page_obj
     }
     
     return render(request, 'alumnos_folder/retiros_folder/tabla_retiros.html', context)

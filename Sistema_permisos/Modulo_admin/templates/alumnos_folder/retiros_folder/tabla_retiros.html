@@ -124,18 +124,77 @@
               {% endfor %}
             </tbody>
           </table>
+          <div class="pagination-container my-4">
+            <nav aria-label="Navegación de páginas">
+              <ul class="pagination pagination-md justify-content-center">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Primera">
+                      <span aria-hidden="true">&laquo;&laquo;</span>
+                      <span class="d-none d-sm-inline">Primera</span>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Anterior">
+                      <span aria-hidden="true">&laquo;</span>
+                      <span class="d-none d-sm-inline">Anterior</span>
+                    </a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled">
+                    <span class="page-link">
+                      <span aria-hidden="true">&laquo;&laquo;</span>
+                      <span class="d-none d-sm-inline">Primera</span>
+                    </span>
+                  </li>
+                  <li class="page-item disabled">
+                    <span class="page-link">
+                      <span aria-hidden="true">&laquo;</span>
+                      <span class="d-none d-sm-inline">Anterior</span>
+                    </span>
+                  </li>
+                {% endif %}
+    
+                <!-- Indicador de página actual -->
+                <li class="page-item active">
+                  <span class="page-link">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                  </span>
+                </li>
+    
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Siguiente">
+                      <span class="d-none d-sm-inline">Siguiente</span>
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Última">
+                      <span class="d-none d-sm-inline">Última</span>
+                      <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled">
+                    <span class="page-link">
+                      <span class="d-none d-sm-inline">Siguiente</span>
+                      <span aria-hidden="true">&raquo;</span>
+                    </span>
+                  </li>
+                  <li class="page-item disabled">
+                    <span class="page-link">
+                      <span class="d-none d-sm-inline">Última</span>
+                      <span aria-hidden="true">&raquo;&raquo;</span>
+                    </span>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
         </div>
       </div>
     </div>
-    <!-- Contador de resultados -->
-    <div class="row mt-3 mb-3">
-      <div class="col-md-12">
-        <div class="alert alert-secondary">
-          <strong>Total de registros:</strong> <span id="totalRegistros">{{ total_registros }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+
   
     
 
