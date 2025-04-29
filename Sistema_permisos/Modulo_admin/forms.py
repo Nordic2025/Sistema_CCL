@@ -1,5 +1,5 @@
 from django import forms
-from .models import Administrador, Areas, Curso, Alumno, Inspector
+from .models import Administrador, Areas, Curso, Alumno, Inspector, AlumnoEgresado
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 import re
@@ -143,7 +143,15 @@ class AlumnoForm(forms.ModelForm):
         # Formatear RUT para guardar
         rut_formateado = f"{cuerpo[:-6]}.{cuerpo[-6:-3]}.{cuerpo[-3:]}-{dv}" if len(cuerpo) > 6 else f"{cuerpo}-{dv}"
         
+        if AlumnoEgresado.objects.filter(rut=rut).exists():
+            egresado = AlumnoEgresado.objects.get(rut=rut)
+            raise forms.ValidationError(f"Este RUT pertenece a un alumno egresado ({egresado.nombre}) que finalizó sus estudios en {egresado.año_egreso}. "
+                f"No puede ser registrado nuevamente como alumno activo.")
+        
+        # Devolver solo el RUT formateado
         return rut_formateado
+
+
 
 class FamiliarForm(forms.Form):
     familiar_nombre = forms.CharField(

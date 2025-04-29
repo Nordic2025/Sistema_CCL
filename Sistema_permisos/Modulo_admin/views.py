@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User
 from functools import wraps
-from django.db import transaction
+from django.db import IntegrityError, transaction
 import re
 from django.core.paginator import Paginator
 
@@ -734,7 +734,8 @@ def alumnos_view(request):
         busqueda_rut = busqueda.replace('.', '').replace('-', '')
         alumnos = alumnos.filter(
             Q(nombre__icontains=busqueda) | 
-            Q(rut__icontains=busqueda_rut)
+            Q(rut__icontains=busqueda_rut)|
+            Q(rut__icontains=busqueda)
         )
     
     # Filtrar por curso si se proporciona
@@ -796,14 +797,23 @@ def registrar_alumno(request):
                 return redirect('Modulo_admin:alumnos')
             
             # Guardar el nuevo alumno
-            alumno = form.save()
-            messages.success(request, f'Alumno {alumno.nombre} registrado correctamente')
+            try:
+                alumno = form.save()
+                messages.success(request, f'Alumno {alumno.nombre} registrado correctamente')
+            except IntegrityError:
+                # Manejar error de integridad (ID duplicado)
+                max_id = Alumno.objects.aggregate(max('id'))['id__max'] or 0
+                alumno = form.save(commit=False)
+                alumno.id = max_id + 1
+                alumno.save()
+                messages.success(request, f'Alumno {alumno.nombre} registrado correctamente')
         else:
             # Si el formulario no es válido, mostrar errores
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Error en el campo {field}: {error}')
     return redirect('Modulo_admin:alumnos')
+
 
 
 
@@ -884,18 +894,21 @@ def editar_alumno(request, id):
     return redirect('Modulo_admin:alumnos')
 
 
-
-
 @login_required(login_url='Modulo_admin:login_admin')
-def eliminar_alumno(request, id):
-    """Vista para eliminar un alumno."""
-    alumno = get_object_or_404(Alumno, id=id)
-    nombre = alumno.nombre
+def verificar_rut_egresado(request):
+    """Vista para verificar si un RUT pertenece a un alumno egresado."""
+    rut = request.GET.get('rut', '')
     
-    alumno.delete()
+    try:
+        egresado = AlumnoEgresado.objects.get(rut=rut)
+        return JsonResponse({
+            'es_egresado': True,
+            'nombre': egresado.nombre,
+            'año_egreso': egresado.año_egreso
+        })
+    except AlumnoEgresado.DoesNotExist:
+        return JsonResponse({'es_egresado': False})
 
-    messages.success(request, f'Alumno {nombre} eliminado correctamente')
-    return redirect('Modulo_admin:alumnos')
 
 
 
