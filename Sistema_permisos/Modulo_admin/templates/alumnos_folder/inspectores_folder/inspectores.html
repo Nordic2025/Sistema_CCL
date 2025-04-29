@@ -14,15 +14,26 @@
           Registrar nuevo inspector
         </button>
 
-          <!-- Filtro por nivel educativo -->
-          <div class="filtro-nivel">
-            <label for="filtroNivel" class="me-2">Filtrar por nivel:</label>
-            <select id="filtroNivel" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-              <option value="todos">Todos los niveles</option>
-              <option value="Pre-basica">Pre-básica</option>
-              <option value="Basica">Básica</option>
-              <option value="Media">Media</option>
-            </select>
+          <!-- Filtros combinados (nivel y estado) -->
+          <div class="d-flex">
+            <div class="filtro-nivel me-3">
+              <label for="filtroNivel" class="me-2">Filtrar por nivel:</label>
+              <select id="filtroNivel" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                <option value="todos">Todos los niveles</option>
+                <option value="Pre-basica">Pre-básica</option>
+                <option value="Basica">Básica</option>
+                <option value="Media">Media</option>
+              </select>
+            </div>
+            <!-- Nuevo filtro por estado -->
+            <div class="filtro-estado">
+              <label for="filtroEstado" class="me-2">Filtrar por estado:</label>
+              <select id="filtroEstado" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                <option value="todos">Todos los estados</option>
+                <option value="activo">Activos</option>
+                <option value="inactivo">Inactivos</option>
+              </select>
+            </div>
           </div>
       </div>
 
@@ -33,6 +44,8 @@
                 <th>Nombre</th>
                 <th>RUT</th>
                 <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Tipo</th>
                 <th>Niveles Asignados</th>
                 <th>Cursos a cargo</th>
                 <th>Acciones</th>
@@ -40,10 +53,24 @@
             </thead>
             <tbody class="tbody_custom">
               {% for inspector in inspectores %}
-              <tr>
+              <tr class="fila-inspector {% if not inspector.is_active %}table-secondary{% endif %}" 
+                  data-estado="{% if inspector.is_active %}activo{% else %}inactivo{% endif %}"
+                  data-niveles="{{ inspector.get_niveles_asignados }}">
                 <td>{{ inspector.nombre }}</td>
                 <td>{{ inspector.rut }}</td>
                 <td>{{ inspector.telefono }}</td>
+                <td>
+                  <span class="badge {% if inspector.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                    {% if inspector.is_active %}Activo{% else %}Inactivo{% endif %}
+                  </span>
+                </td>
+                <td>
+                  {% if inspector.is_salida %}
+                    <span class="badge bg-primary">Inspector de Salida</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Inspector Regular</span>
+                  {% endif %}
+                </td>
                 <td>{{ inspector.get_niveles_asignados }}</td>
                 <td>
                   {% for curso in inspector.cursos.all %}
@@ -57,6 +84,11 @@
                           data-bs-toggle="modal" 
                           data-bs-target="#editarInspectorModal{{ inspector.id }}">
                     Editar
+                  </button>
+                  <!-- Nuevo botón para cambiar estado -->
+                  <button type="button" class="btn {% if inspector.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" 
+                          onclick="confirmarCambioEstado('{{ inspector.id }}', '{{ inspector.nombre }}', {% if inspector.is_active %}false{% else %}true{% endif %})">
+                    {% if inspector.is_active %}Desactivar{% else %}Activar{% endif %}
                   </button>
                   <button type="button" class="btn btn_eliminar btn-outline-danger" 
                           onclick="confirmarEliminacion('{{ inspector.id }}', '{{ inspector.nombre }}')">
@@ -95,12 +127,42 @@
                           </div>
                           <small class="form-text text-muted">Ingrese solo los 9 dígitos, sin el prefijo +56</small>
                         </div>
+                        
+                        <!-- Nuevos campos para estado y tipo de inspector -->
+                        <div class="mb-3">
+                          <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_active{{ inspector.id }}" name="is_active" {% if inspector.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active{{ inspector.id }}">
+                              Inspector Activo
+                            </label>
+                          </div>
+                          <small class="form-text text-muted">Desactive esta opción si el inspector está de licencia o no disponible temporalmente</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                          <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="is_salida{{ inspector.id }}" name="is_salida" 
+                                  {% if inspector.is_salida %}checked{% endif %}
+                                  {% if not inspector.is_salida and inspector_salida_exists %}disabled{% endif %}>
+                            <label class="form-check-label" for="is_salida{{ inspector.id }}">
+                              Inspector de Salida
+                            </label>
+                          </div>
+                          <small class="form-text text-muted">
+                            El Inspector de Salida tiene acceso a todos los cursos automáticamente
+                            {% if not inspector.is_salida and inspector_salida_exists %}
+                              <br><span class="text-danger">Ya existe un Inspector de Salida en el sistema</span>
+                            {% endif %}
+                          </small>
+                        </div>
+                        
                         <div class="mb-3">
                           <label class="form-label">Niveles Asignados</label>
                           <input type="text" class="form-control" value="{{ inspector.get_niveles_asignados }}" disabled>
                           <small class="form-text text-muted">Este campo se actualiza automáticamente según los cursos seleccionados</small>
                         </div>
-                        <div class="mb-3">
+                        
+                        <div class="mb-3 cursos-container" id="cursos-container{{ inspector.id }}" {% if inspector.is_general %}style="display:none"{% endif %}>
                           <label class="form-label">Cursos a cargo</label>
                           <div class="row">
                             {% for curso in cursos %}
@@ -127,7 +189,7 @@
               </div>
               {% empty %}
               <tr id="mensajeVacio">
-                <td colspan="7" class="text-center py-3">
+                <td colspan="8" class="text-center py-3">
                   <div class="alert alert-info mb-0">
                     No hay inspectores registrados.
                   </div>
@@ -135,7 +197,7 @@
               </tr>
               {% endfor %}
               <tr id="mensajeFiltroVacio" style="display: none;">
-                <td colspan="7" class="text-center py-3">
+                <td colspan="8" class="text-center py-3">
                   <div class="alert alert-info mb-0">
                     No hay inspectores registrados para los criterios seleccionados.
                   </div>
@@ -179,12 +241,40 @@
               </div>
               <small class="form-text text-muted">Ingrese solo los 9 dígitos, sin el prefijo +56</small>
             </div>
+            
+            <!-- Nuevos campos para estado y tipo de inspector -->
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                <label class="form-check-label" for="is_active">
+                  Inspector Activo
+                </label>
+              </div>
+              <small class="form-text text-muted">Desactive esta opción si el inspector está de licencia o no disponible temporalmente</small>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="is_salida" name="is_salida" 
+                      {% if inspector_salida_exists %}disabled{% endif %}>
+                <label class="form-check-label" for="is_salida">
+                  Inspector de Salida
+                </label>
+              </div>
+              <small class="form-text text-muted">
+                El Inspector de Salida tiene acceso a todos los cursos automáticamente
+                {% if inspector_salida_exists %}
+                  <br><span class="text-danger">Ya existe un Inspector de Salida en el sistema</span>
+                {% endif %}
+              </small>
+            </div>
             <div class="mb-3">
               <label class="form-label">Niveles Asignados</label>
               <input type="text" class="form-control" id="niveles_asignados" value="Sin niveles asignados" disabled>
               <small class="form-text text-muted">Este campo se actualiza automáticamente según los cursos seleccionados</small>
             </div>
-            <div class="mb-3">
+            
+            <div class="mb-3" id="cursos-container-nuevo">
               <label class="form-label">Cursos a cargo</label>
               <div class="row">
                 {% for curso in cursos %}
@@ -281,6 +371,36 @@
         return rutRegex.test(rut);
       }
       
+      // Función para validar el dígito verificador del RUT
+      function validarRut(rut) {
+        // Eliminar puntos y guiones
+        rut = rut.replace(/\./g, '').replace(/-/g, '');
+        
+        // Verificar longitud mínima
+        if (rut.length < 2) return false;
+        
+        // Separar cuerpo y dígito verificador
+        const cuerpo = rut.slice(0, -1);
+        const dv = rut.slice(-1).toUpperCase();
+        
+        // Calcular dígito verificador
+        let suma = 0;
+        let multiplicador = 2;
+        
+        // Recorrer el cuerpo de derecha a izquierda
+        for (let i = cuerpo.length - 1; i >= 0; i--) {
+          suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+          multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+        }
+        
+        // Calcular dígito esperado
+        const resto = suma % 11;
+        const dvEsperado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+        
+        // Comparar dígito verificador
+        return dv === dvEsperado;
+      }
+      
       // Función para formatear número de teléfono chileno
       function formatearTelefono(telefono) {
         // Eliminar cualquier carácter que no sea dígito
@@ -313,7 +433,6 @@
         if (niveles.size === 0) {
           nivelesInput.value = "Sin niveles asignados";
         } else {
-          nivelesInput
           nivelesInput.value = Array.from(niveles).sort().join(" - ");
         }
       }
@@ -361,6 +480,52 @@
         actualizarNivelesEdicion(modalId);
       });
       
+      // Manejar el cambio en el checkbox de Inspector de Salida (nuevo)
+      const isSalidaCheckbox = document.getElementById('is_general');
+      if (isSalidaCheckbox) {
+        isSalidaCheckbox.addEventListener('change', function() {
+          const cursosContainer = document.getElementById('cursos-container-nuevo');
+          if (this.checked) {
+            cursosContainer.style.display = 'none';
+            // Marcar todos los cursos como seleccionados
+            document.querySelectorAll('.curso-checkbox-nuevo').forEach(function(checkbox) {
+              checkbox.checked = true;
+            });
+          } else {
+            cursosContainer.style.display = 'block';
+            // Desmarcar todos los cursos
+            document.querySelectorAll('.curso-checkbox-nuevo').forEach(function(checkbox) {
+              checkbox.checked = false;
+            });
+          }
+          // Actualizar niveles
+          actualizarNivelesNuevoInspector();
+        });
+      }
+      
+      // Manejar el cambio en los checkboxes de Inspector de Salida (edición)
+      document.querySelectorAll('[id^="is_general"]').forEach(function(checkbox) {
+        if (checkbox.id === 'is_general') return; // Excluir el checkbox del formulario de nuevo inspector
+        
+        checkbox.addEventListener('change', function() {
+          const inspectorId = this.id.replace('is_general', '');
+          const cursosContainer = document.getElementById('cursos-container' + inspectorId);
+          
+          if (this.checked) {
+            cursosContainer.style.display = 'none';
+            // Marcar todos los cursos como seleccionados
+            document.querySelectorAll(`#cursos-container${inspectorId} .curso-checkbox`).forEach(function(checkbox) {
+              checkbox.checked = true;
+            });
+          } else {
+            cursosContainer.style.display = 'block';
+            // Mantener los cursos seleccionados
+          }
+          // Actualizar niveles
+          actualizarNivelesEdicion('editarInspectorModal' + inspectorId);
+        });
+      });
+      
       // Validar formulario de agregar inspector
       const formAgregarInspector = document.getElementById('formAgregarInspector');
       if (formAgregarInspector) {
@@ -374,6 +539,19 @@
             Swal.fire({
               title: 'Formato de RUT incorrecto',
               text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+              icon: 'error',
+              confirmButtonText: 'Entendido'
+            });
+            rutInput.focus();
+            return;
+          }
+          
+          // Validar dígito verificador
+          if (!validarRut(rutValue)) {
+            event.preventDefault();
+            Swal.fire({
+              title: 'RUT inválido',
+              text: 'El dígito verificador del RUT no es correcto',
               icon: 'error',
               confirmButtonText: 'Entendido'
             });
@@ -422,6 +600,19 @@
               return;
             }
             
+            // Validar dígito verificador
+            if (!validarRut(rutValue)) {
+              event.preventDefault();
+              Swal.fire({
+                title: 'RUT inválido',
+                text: 'El dígito verificador del RUT no es correcto',
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+              });
+              rutInput.focus();
+              return;
+            }
+            
             // Validar que el teléfono tenga 9 dígitos
             const telefonoValue = telefonoInput.value.replace(/\D/g, '');
             if (telefonoValue.length !== 9) {
@@ -441,57 +632,76 @@
           });
         }
       });
+      
+      // Script para el filtro de niveles y estado
+      const filtroNivel = document.getElementById('filtroNivel');
+      const filtroEstado = document.getElementById('filtroEstado');
+      const filasInspectores = document.querySelectorAll('.fila-inspector');
+      const mensajeFiltroVacio = document.getElementById('mensajeFiltroVacio');
+      const mensajeVacio = document.getElementById('mensajeVacio');
+      
+      // Función para aplicar ambos filtros
+      function aplicarFiltros() {
+        const nivelSeleccionado = filtroNivel.value;
+        const estadoSeleccionado = filtroEstado.value;
+        let filasVisibles = 0;
+
+        // Oculta el mensaje del filtro inicialmente
+        if (mensajeFiltroVacio) {
+          mensajeFiltroVacio.style.display = 'none';
+        }
+
+        // Si no hay inspectores en general, no hacer nada
+        if (filasInspectores.length === 0) {
+          return;
+        }
+
+        // Si hay inspectores, ocultar el mensaje de inspectores vacíos
+        if (mensajeVacio) {
+          mensajeVacio.style.display = 'none';
+        }
+        
+        filasInspectores.forEach(fila => {
+          // Obtener datos para filtrar
+          const nivelesTexto = fila.dataset.niveles;
+          const estado = fila.dataset.estado;
+          
+          // Aplicar filtros combinados
+          const pasaFiltroNivel = nivelSeleccionado === 'todos' || 
+                                 (nivelSeleccionado === 'Pre-basica' && nivelesTexto.includes('Pre-básica')) ||
+                                 (nivelSeleccionado === 'Basica' && nivelesTexto.includes('Básica')) ||
+                                 (nivelSeleccionado === 'Media' && nivelesTexto.includes('Media'));
+                                 
+          const pasaFiltroEstado = estadoSeleccionado === 'todos' || 
+                                  (estadoSeleccionado === 'activo' && estado === 'activo') ||
+                                  (estadoSeleccionado === 'inactivo' && estado === 'inactivo');
+          
+          // Mostrar u ocultar según los filtros
+          if (pasaFiltroNivel && pasaFiltroEstado) {
+            fila.style.display = '';
+            filasVisibles++;
+          } else {
+            fila.style.display = 'none';
+          }
+        });
+        
+        // Mostrar mensaje si no hay inspectores visibles para los filtros seleccionados
+        if (filasVisibles === 0 && mensajeFiltroVacio) {
+          mensajeFiltroVacio.style.display = '';
+        }
+      }
+      
+      // Agregar eventos a los filtros
+      if (filtroNivel) {
+        filtroNivel.addEventListener('change', aplicarFiltros);
+      }
+      
+      if (filtroEstado) {
+        filtroEstado.addEventListener('change', aplicarFiltros);
+      }
     });
 
-        // Script para el filtro de niveles
-        document.addEventListener('DOMContentLoaded', function() {
-          const filtroNivel = document.getElementById('filtroNivel');
-          const filasInspectores = document.querySelectorAll('.tbody_custom tr:not(#mensajeVacio):not(#mensajeFiltroVacio)');
-          const mensajeFiltroVacio = document.getElementById('mensajeFiltroVacio');
-          const mensajeVacio = document.getElementById('mensajeVacio');
-          
-          filtroNivel.addEventListener('change', function() {
-            const nivelSeleccionado = this.value;
-            let filasVisibles = 0;
-
-            // Oculta el mensaje del filtro inicialmente
-            if (mensajeFiltroVacio) {
-              mensajeFiltroVacio.style.display = 'none';
-            }
-
-            // Si no hay inspectores en general, no hacer nada
-            if (filasInspectores.length === 0) {
-              return;
-            }
-
-            // Si hay inspectores, ocultar el mensaje de inspectores vacíos
-            if (mensajeVacio) {
-              mensajeVacio.style.display = 'none';
-            }
-            
-            filasInspectores.forEach(fila => {
-              // Obtener el texto de la celda de niveles asignados (cuarta columna)
-              const nivelesTexto = fila.cells[3].textContent.trim();
-              
-              if (nivelSeleccionado === 'todos' || 
-                  (nivelSeleccionado === 'Pre-basica' && nivelesTexto.includes('Pre-básica')) ||
-                  (nivelSeleccionado === 'Basica' && nivelesTexto.includes('Básica')) ||
-                  (nivelSeleccionado === 'Media' && nivelesTexto.includes('Media'))) {
-                fila.style.display = '';
-                filasVisibles++;
-              } else {
-                fila.style.display = 'none';
-              }
-            });
-            
-            // Mostrar mensaje si no hay inspectores visibles para el filtro seleccionado
-            if (filasVisibles === 0 && mensajeFiltroVacio) {
-              mensajeFiltroVacio.style.display = '';
-            }
-          });
-        });
-
-    // Función para confirmar eliminación 
+    // Función para confirmar eliminación (manteniendo la funcionalidad original)
     function confirmarEliminacion(id, nombre) {
       Swal.fire({
         title: '¿Está seguro?',
@@ -509,6 +719,30 @@
         }
       });
     }
+    
+    // Nueva función para confirmar cambio de estado
+    function confirmarCambioEstado(id, nombre, activar) {
+      const accion = activar ? 'activar' : 'desactivar';
+      const mensaje = activar ? 
+        `¿Desea activar al inspector ${nombre}?` : 
+        `¿Desea desactivar al inspector ${nombre}?`;
+      
+      Swal.fire({
+        title: '¿Está seguro?',
+        text: mensaje,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: activar ? '#28a745' : '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: `Sí, ${accion}`,
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirigir a la URL de cambio de estado con el ID correcto
+          window.location.href = "{% url 'Modulo_admin:cambiar_estado_inspector' 0 %}".replace('/0/', '/' + id + '/');
+        }
+      });
+    }
   </script>
     
   {% if messages %}
@@ -520,4 +754,3 @@
   {% endif %}
 
 {% endblock %}
-

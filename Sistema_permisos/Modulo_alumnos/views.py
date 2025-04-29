@@ -126,94 +126,8 @@ def obtener_datos_alumno(request):
             alumno = Alumno.objects.get(rut=rut_estudiante)
             
             # Verificar si el apoderado está autorizado para este alumno
-            # Intentar diferentes campos posibles
-            autorizado = False
-            tipo_persona = None
-            
-            # Verificar apoderado titular
-            for campo in ['apoderado_titular', 'rut_apoderadoT', 'rut_apoderado_titular']:
-                try:
-                    if getattr(alumno, campo) == rut_apoderado:
-                        autorizado = True
-                        tipo_persona = "Apoderado"
-                        break
-                except:
-                    continue
-            
-            # Verificar apoderado suplente
-            if not autorizado:
-                for campo in ['apoderado_suplente', 'rut_apoderadoS', 'rut_apoderado_suplente']:
-                    try:
-                        if getattr(alumno, campo) == rut_apoderado:
-                            autorizado = True
-                            tipo_persona = "Apoderado Suplente"
-                            break
-                    except:
-                        continue
-            
-            # Verificar familiar 1
-            if not autorizado:
-                for campo in ['familiar_1', 'rut_familiar_1']:
-                    try:
-                        if getattr(alumno, campo) == rut_apoderado:
-                            autorizado = True
-                            tipo_persona = "Otro"
-                            break
-                    except:
-                        continue
-            
-            # Verificar familiar 2
-            if not autorizado:
-                for campo in ['familiar_2', 'rut_familiar_2']:
-                    try:
-                        if getattr(alumno, campo) == rut_apoderado:
-                            autorizado = True
-                            tipo_persona = "Otro"
-                            break
-                    except:
-                        continue
-            
-            # Buscar el inspector a cargo del curso
-            inspector = None
-            try:
-                inspectores = Inspector.objects.filter(cursos=alumno.curso)
-                if inspectores.exists():
-                    inspector = inspectores.first().nombre
-            except Exception:
-                inspector = "No asignado"
-            
-            # Devolver los datos del alumno
-            return JsonResponse({
-                'encontrado': True,
-                'autorizado': autorizado,
-                'tipo_persona': tipo_persona,
-                'nombre': alumno.nombre,
-                'curso': str(alumno.curso),
-                'inspector': inspector or "No asignado",
-                'mensaje': 'Datos del alumno obtenidos correctamente'
-            })
-        
-        except Alumno.DoesNotExist:
-            return JsonResponse({
-                'encontrado': False,
-                'mensaje': 'No se encontró ningún alumno con ese RUT'
-            })
-    
-    return JsonResponse({'error': 'Método no permitido'}, status=405)
-
-def obtener_datos_alumno(request):
-    """Vista AJAX para obtener los datos de un alumno por su RUT"""
-    if request.method == "GET" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        rut_estudiante = request.GET.get('rut_estudiante')
-        rut_apoderado = request.GET.get('rut_apoderado')
-        
-        try:
-            # Buscar el alumno por RUT
-            alumno = Alumno.objects.get(rut=rut_estudiante)
-            
-            # Verificar si el apoderado está autorizado para este alumno
-            es_apoderado_titular = alumno.apoderado_titular == rut_apoderado
-            es_apoderado_suplente = alumno.apoderado_suplente == rut_apoderado
+            es_apoderado_titular = alumno.rut_apoderadoT == rut_apoderado
+            es_apoderado_suplente = alumno.rut_apoderadoS == rut_apoderado
             es_familiar_1 = alumno.rut_familiar_1 == rut_apoderado
             es_familiar_2 = alumno.rut_familiar_2 == rut_apoderado
             
@@ -230,12 +144,33 @@ def obtener_datos_alumno(request):
             
             # Buscar el inspector a cargo del curso
             inspector = None
+            inspector_nombre = "No asignado"
+            
             try:
-                inspectores = Inspector.objects.filter(cursos=alumno.curso)
-                if inspectores.exists():
-                    inspector = inspectores.first().nombre
-            except Exception:
-                inspector = "No asignado"
+                # Primero buscar inspectores de nivel activos para este curso
+                inspectores_nivel = Inspector.objects.filter(
+                    cursos=alumno.curso,
+                    is_active=True,
+                    is_salida=False  # No es inspector de salida
+                )
+                
+                if inspectores_nivel.exists():
+                    # Si hay inspectores de nivel activos, usar el primero
+                    inspector = inspectores_nivel.first()
+                    inspector_nombre = inspector.nombre
+                else:
+                    # Si no hay inspectores de nivel activos, buscar el inspector de salida
+                    inspector_salida = Inspector.objects.filter(
+                        is_active=True,
+                        is_salida=True  # Es inspector de salida
+                    ).first()
+                    
+                    if inspector_salida:
+                        inspector = inspector_salida
+                        inspector_nombre = f"{inspector_salida.nombre} (Inspector de Salida)"
+            except Exception as e:
+                print(f"Error al buscar inspector: {str(e)}")
+                inspector_nombre = "No asignado"
             
             # Devolver los datos del alumno
             return JsonResponse({
@@ -244,7 +179,7 @@ def obtener_datos_alumno(request):
                 'tipo_persona': tipo_persona,
                 'nombre': alumno.nombre,
                 'curso': str(alumno.curso),
-                'inspector': inspector or "No asignado",
+                'inspector': inspector_nombre,
                 'mensaje': 'Datos del alumno obtenidos correctamente'
             })
         
@@ -263,8 +198,13 @@ def obtener_telefono_inspector(inspector_nombre):
     Obtiene el número de teléfono del inspector basado en su nombre
     """
     try:
-        # Aquí deberías implementar la lógica para obtener el teléfono del inspector
-        inspector = Inspector.objects.get(nombre=inspector_nombre)
+        # Si el nombre contiene "(Inspector de Salida)", extraer solo el nombre real
+        if "(Inspector de Salida)" in inspector_nombre:
+            nombre_real = inspector_nombre.split(" (Inspector de Salida)")[0]
+            inspector = Inspector.objects.get(nombre=nombre_real, is_salida=True)
+        else:
+            inspector = Inspector.objects.get(nombre=inspector_nombre)
+        
         return inspector.telefono
 
     except Exception as e:

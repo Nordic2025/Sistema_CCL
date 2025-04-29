@@ -591,9 +591,12 @@ def inspectores_view(request):
     # objects ya filtra los inspectores eliminados gracias al manager personalizado
     inspectores = Inspector.objects.all().prefetch_related('cursos')
     cursos = Curso.objects.all()
+
+    inspector_salida_exists = Inspector.objects.filter(is_salida=True).exists()
     return render(request, 'alumnos_folder/inspectores_folder/inspectores.html', {
         'inspectores': inspectores,
-        'cursos': cursos
+        'cursos': cursos,
+        'inspector_salida_exists': inspector_salida_exists
     })
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -601,7 +604,30 @@ def registrar_inspector_view(request):
     if request.method == 'POST':
         form = InspectorForm(request.POST)
         if form.is_valid():
-            form.save()
+            is_salida = request.POST.get('is_salida') == 'on'
+            if is_salida and Inspector.objects.filter(is_salida=True).exists():
+                messages.error(request, 'Ya existe un Inspector General en el sistema')
+                return redirect('Modulo_admin:inspectores')
+            
+            # Primero, guarda el inspector sin asignar cursos
+            inspector = form.save(commit=False)
+            inspector.is_salida = is_salida
+            
+            # Agregar campos de estado activo
+            inspector.is_active = request.POST.get('is_active') == 'on'
+            
+            # Guardar el inspector para obtener un ID
+            inspector.save()
+            
+            # Ahora que el inspector tiene un ID, podemos asignar cursos
+            if is_salida:
+                # Si el inspector es el de salida, asignarle todos los cursos
+                todos_cursos = Curso.objects.all()
+                inspector.cursos.set(todos_cursos)
+            else:
+                cursos_ids = request.POST.getlist('cursos')
+                inspector.cursos.set(cursos_ids)
+                
             messages.success(request, 'Inspector registrado correctamente')
             return redirect('Modulo_admin:inspectores')
         else:
@@ -610,19 +636,54 @@ def registrar_inspector_view(request):
                     messages.error(request, f'Error en {field}: {error}')
     return redirect('Modulo_admin:inspectores')
 
+
+
+
 @login_required(login_url='Modulo_admin:login_admin')
 def editar_inspector_view(request, id):
     inspector = get_object_or_404(Inspector, id=id)
     if request.method == 'POST':
         form = InspectorForm(request.POST, instance=inspector)
         if form.is_valid():
-            form.save()
+            is_salida = request.POST.get('is_salida') == 'on'
+            if is_salida and not inspector.is_salida and Inspector.objects.filter(is_salida=True).exists():
+                messages.error(request, 'Ya existe un Inspector de Salida en el sistema')
+                return redirect('Modulo_admin:inspectores')
+            
+            # Actualizar campos
+            inspector = form.save(commit=False)
+            inspector.is_salida = is_salida
+            inspector.is_active = request.POST.get('is_active') == 'on'
+            inspector.save()
+
+            if is_salida:
+                todos_cursos = Curso.objects.all()
+                inspector.cursos.set(todos_cursos)
+            else:
+                cursos_ids = request.POST.getlist('cursos')
+                inspector.cursos.set(cursos_ids)
+                
             messages.success(request, 'Inspector editado correctamente')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Error en {field}: {error}')
     return redirect('Modulo_admin:inspectores')
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def cambiar_estado_inspector_view(request, id):
+    inspector = get_object_or_404(Inspector, id=id)
+    
+    # Cambiar el estado del inspector
+    inspector.is_active = not inspector.is_active
+    inspector.save()
+    
+    estado = "activado" if inspector.is_active else "desactivado"
+    messages.success(request, f'Inspector {inspector.nombre} {estado} correctamente')
+    return redirect('Modulo_admin:inspectores')
+
+
 
 @login_required(login_url='Modulo_admin:login_admin')
 def eliminar_inspector_view(request, id):

@@ -44,6 +44,7 @@ urlpatterns = [
     path('agregar_inspector/', views.registrar_inspector_view, name='agregar_inspector'),
     path('editar_inspector/<int:id>/', views.editar_inspector_view, name='editar_inspector'),
     path('eliminar_inspector/<int:id>/', views.eliminar_inspector_view, name='eliminar_inspector'),
+    path('inspectores/cambiar-estado/<int:id>/', views.cambiar_estado_inspector_view, name='cambiar_estado_inspector'),
 
     path('alumnos/', views.alumnos_view, name='alumnos'),
     path('agregar_alumno/',views.registrar_alumno, name='agregar_alumno'),

@@ -126,6 +126,8 @@ class Inspector(models.Model):
     cursos = models.ManyToManyField(Curso, related_name='inspectores', verbose_name='Cursos a cargo')
     is_deleted = models.BooleanField(default=False, verbose_name='Eliminado')
     deleted_at = models.DateTimeField(null=True, blank=True, verbose_name='Fecha de eliminación')
+    is_active = models.BooleanField(default=True, verbose_name='Activo')
+    is_salida = models.BooleanField(default=False, verbose_name='Inspector de Salida')
     
     # Managers
     objects = InspectorManager()  # Manager predeterminado que filtra inspectores eliminados

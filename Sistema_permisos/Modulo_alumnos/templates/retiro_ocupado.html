@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-5">
+                {% if registro.estado == 'confirmed_busy' %}
+                    <div class="card-header bg-info text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Alumno Ocupado
+                        </h3>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div>
+                            <h2 class="mb-4">Retiro Autorizado - Alumno Ocupado</h2>
+                            <div class="alert alert-info p-3 mb-4">
+                                <p class="mb-1">El inspector ha confirmado que el alumno está actualmente en una actividad (prueba, reunión, etc).</p>
+                                <strong>Por favor espere en la salida. El alumno será notificado al terminar su actividad.</strong>
+                            </div>
+                        </div>
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Esperando Respuesta
+                        </h3>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div>
+                            <h2 class="mb-4">Procesando Solicitud</h2>
+                            <div class="alert alert-primary p-3 mb-4">
+                                <p class="mb-1">Estamos esperando la respuesta del inspector.</p>
+                                <strong>Por favor, espere un momento...</strong>
+                            </div>
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                {% endif %}
+                <div class="alert alert-light border mt-4">
+                    <h5 class="border-bottom pb-2">Detalles del retiro</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Alumno:</span> 
+                            <span>{{ registro.nombre_estudiante }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Curso:</span> 
+                            <span>{{ registro.curso }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Retirado por:</span> 
+                            <span>{{ registro.nombre_persona_retira }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Motivo:</span> 
+                            <span>{{ registro.get_motivo_retiro_display }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Hora:</span> 
+                            <span>{{ registro.hora_retiro|date:"d/m/Y H:i" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Estado:</span> 
+                            <span>
+                                {% if registro.estado == 'waiting' %}
+                                    <span class="badge bg-primary">Esperando respuesta</span>
+                                {% elif registro.estado == 'confirmed' %}
+                                    <span class="badge bg-success">Confirmado</span>
+                                {% elif registro.estado == 'confirmed_busy' %}
+                                    <span class="badge bg-info">Alumno ocupado</span>
+                                {% elif registro.estado == 'rejected' %}
+                                    <span class="badge bg-danger">Rechazado</span>
+                                {% elif registro.estado == 'timeout' %}
+                                    <span class="badge bg-warning text-dark">Tiempo agotado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ registro.estado }}</span>
+                                {% endif %}
+                            </span>
+                        </li>
+                        {% if registro.mensaje_respuesta %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Mensaje:</span> 
+                            <span>{{ registro.mensaje_respuesta }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div class="text-center mt-4 mb-4">
+                    <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-primary">Volver al inicio</a>
+                    
+                    {% if registro.estado == 'waiting' %}
+                    <button id="checkStatusBtn" class="btn btn-info">
+                        <i class="fas fa-sync-alt me-2"></i>Verificar estado
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Script para verificar el estado automáticamente si está en espera -->
+<script>
+    const retiroId = {{ registro.id }};
+    
+    function checkStatus() {
+        console.log("Verificando estado del retiro:", retiroId);
+        
+        fetch(`/Modulo_alumnos/verificar-estado-retiro/?retiro_id=${retiroId}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Respuesta del servidor:", data);
+            
+            // Si el estado ha cambiado, redirigir a la URL proporcionada por el servidor
+            if (data.status && data.status !== 'waiting' && data.redirect_url) {
+                console.log("Estado cambiado a:", data.status);
+                console.log("Redirigiendo a:", data.redirect_url);
+                window.location.href = data.redirect_url;
+            } else {
+                // Seguir verificando cada 3 segundos
+                setTimeout(checkStatus, 3000);
+            }
+        })
+        .catch(error => {
+            console.error("Error al verificar estado:", error);
+            // Seguir verificando a pesar del error
+            setTimeout(checkStatus, 5000);
+        });
+    }
+</script>
+{% endblock %}
