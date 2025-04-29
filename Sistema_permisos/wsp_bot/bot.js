@@ -127,10 +127,10 @@ async function processResponse(from, response) {
     }
     if (response === '1' || response === '2') {
         status = 'confirmed';
-        message = response === '1' ? 'Retiro confirmado por el inspector' : 'El alumno ya se retiró según el inspector';
+        message = response === '1' ? 'Retiro confirmado por el inspector' : 'El alumno se encuentra ocupado en una actividad';
     } else if (response === '3') {
         status = 'rejected';
-        message = 'Retiro rechazado por el inspector';
+        message = 'El inspector a indicado que el alumno no se encuentra en el establecimiento. Por favor dirijase con la inspectora de salida. ';
     } else {
         return 'Respuesta no reconocida. Por favor, responde con 1, 2 o 3.';
     }
@@ -161,8 +161,8 @@ async function processResponse(from, response) {
                 console.log('Estado actualizado correctamente:', responseData);
                 const responses = {
                     '1': 'Has confirmado el retiro del alumno. Gracias!',
-                    '2': 'Has indicado que el alumno ya se retiró. Gracias!',
-                    '3': 'Has rechazado el retiro. Gracias por tu respuesta.'
+                    '2': 'Has indicado que el alumno se encuentra ocupado en una actividad. Gracias!',
+                    '3': 'Has indicado que el alumno ya no se encuentra en el establecimiento. Gracias por tu respuesta.'
                 };
                 return responses[response];
             } else {

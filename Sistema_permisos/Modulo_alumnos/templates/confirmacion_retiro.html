@@ -1,78 +1,134 @@
-{% extends 'base.html' %}
-{% load static %}
 
-{% block title %}
-    Confirmación de Retiro - Colegio Concepción Linares
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-success text-white text-center py-4">
-                    <h3 class="mb-0">
-                        <i class="fas fa-check-circle me-2"></i>Retiro Confirmado
-                    </h3>
-                </div>
-                <div class="card-body p-5 text-center">
-                    <div>
-                        <h2 class="mb-4">¡Retiro Autorizado!</h2>
-                        <div class="alert alert-success p-3 mb-4">
-                            <p class="mb-1">¡El retiro ha sido autorizado por el inspector a cargo!</p>
-                        </div>
-                        
-                        <div class="card mb-4 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">Detalles del retiro</h5>
-                                <ul class="list-group list-group-flush text-start">
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Alumno:</span> 
-                                        <span>{{ registro.nombre_estudiante }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Curso:</span> 
-                                        <span>{{ registro.curso }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Retirado por:</span> 
-                                        <span>{{ registro.nombre_persona_retira  }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Motivo:</span> 
-                                        <span>{{ registro.get_motivo_retiro_display }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Hora:</span> 
-                                        <span>{{ registro.hora_retiro|date:"d/m/Y H:i" }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="fw-bold">Estado:</span> 
-                                        <span class="text-success fw-bold">
-                                            {% if registro.estado == 'confirmed' %}
-                                                Confirmado
-                                            {% elif registro.estado == 'rejected' %}
-                                                Rechazado
-                                            {% elif registro.estado == 'timeout' %}
-                                                Pendiente de verificación
-                                            {% else %}
-                                                {{ registro.estado }}
-                                            {% endif %}
-                                        </span>
-                                    </li>
-                                </ul>
+        <div class="col-md-8">
+            <div class="card mt-5">
+                {% if registro.estado == 'confirmed' %}
+                    <div class="card-header bg-success text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-check-circle me-2"></i>Retiro Confirmado
+                        </h3>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div>
+                            <h2 class="mb-4">¡Retiro Autorizado!</h2>
+                            <div class="alert alert-success p-3 mb-4">
+                                <p class="mb-1">¡El retiro ha sido autorizado por el inspector a cargo!</p>
+                                {% if registro.mensaje_respuesta %}
+                                    <div class="justify-content-center" style="font-size:1.5rem;">
+                                        <strong>{{ registro.mensaje_respuesta }}</strong>
+                                    </div>
+                                {% endif %}
+                                <strong>Por favor espere en la salida.</strong>
                             </div>
                         </div>
+                {% elif registro.estado == 'rejected' %}
+                    <div class="card-header bg-danger text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-times-circle me-2"></i>Retiro Rechazado
+                        </h3>
                     </div>
+                    <div class="card-body p-5 text-center">
+                        <div>
+                            <h2 class="mb-4">Retiro No Autorizado</h2>
+                            <div class="alert alert-danger p-3 mb-4">
+                                <p class="mb-1">El inspector ha indicado que el alumno no se encuentra en el colegio.</p>
+                                <strong>Por favor, verifique la situación con el establecimiento.</strong>
+                            </div>
+                        </div>
+                {% elif registro.estado == 'timeout' %}
+                    <div class="card-header bg-warning text-dark text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-clock me-2"></i>Tiempo de Espera Agotado
+                        </h3>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div>
+                            <h2 class="mb-4">Retiro en Proceso</h2>
+                            <div class="alert alert-warning p-3 mb-4">
+                                <p class="mb-1">No se ha recibido respuesta del inspector a cargo.</p>
+                                <strong>Por favor, diríjase a inspectoría para autorizar el retiro.</strong>
+                            </div>
+                        </div>
+                {% else %}
+                    <div class="card-header bg-primary text-white text-center py-4">
+                        <h3 class="mb-0">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Esperando Respuesta
+                        </h3>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div>
+                            <h2 class="mb-4">Procesando Solicitud</h2>
+                            <div class="alert alert-primary p-3 mb-4">
+                                <p class="mb-1">Estamos esperando la respuesta del inspector.</p>
+                                <strong>Por favor, espere un momento...</strong>
+                            </div>
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                {% endif %}
+                
+                <div class="alert alert-light border mt-4">
+                    <h5 class="border-bottom pb-2">Detalles del retiro</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Alumno:</span> 
+                            <span>{{ registro.nombre_estudiante }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Curso:</span> 
+                            <span>{{ registro.curso }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Retirado por:</span> 
+                            <span>{{ registro.nombre_persona_retira }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Motivo:</span> 
+                            <span>{{ registro.get_motivo_retiro_display }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Hora:</span> 
+                            <span>{{ registro.hora_retiro|date:"d/m/Y H:i" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="fw-bold">Estado:</span> 
+                            <span>
+                                {% if registro.estado == 'waiting' %}
+                                    <span class="badge bg-primary">Esperando respuesta</span>
+                                {% elif registro.estado == 'confirmed' %}
+                                    <span class="badge bg-success">Confirmado</span>
+                                {% elif registro.estado == 'confirmed_busy' %}
+                                    <span class="badge bg-info">Alumno ocupado</span>
+                                {% elif registro.estado == 'rejected' %}
+                                    <span class="badge bg-danger">Rechazado</span>
+                                {% elif registro.estado == 'timeout' %}
+                                    <span class="badge bg-warning text-dark">Tiempo agotado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ registro.estado }}</span>
+                                {% endif %}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="text-center mt-4 mb-4">
+                    <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-primary">Volver al inicio</a>
                     
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-primary btn-lg">
-                            <i class="fas fa-home me-2"></i>Volver al menú principal
-                        </a>
-                    </div>
+                    {% if registro.estado == 'waiting' %}
+                    <button id="checkStatusBtn" class="btn btn-info">
+                        <i class="fas fa-sync-alt me-2"></i>Verificar estado
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+
 {% endblock %}

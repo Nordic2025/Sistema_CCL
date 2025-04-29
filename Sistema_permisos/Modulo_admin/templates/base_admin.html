@@ -45,14 +45,12 @@
             height: 1.25rem !important;
         }
 
+        
+
     </style>
 </head>
 
 <body>
-    <!-- Botón móvil para abrir sidebar -->
-    <button class="mobile-toggle" id="mobileToggle" onclick="cerrarMenu()">
-        <i class='bx bx-menu'></i>
-    </button>
 
     <!-- Sidebar -->
     <aside class="sidebar collapsed" id="sidebar" onclick="cerrarMenu()">
@@ -178,13 +176,12 @@
         </div>
     </aside>
 
-    <!-- Contenido principal - Estructura corregida -->
     <div class="main-wrapper">
         <header class="main-header">
             <h1 class="page-title">Ingresos Colegio Concepcion</h1>
         </header>
 
-        <main class="main-body">
+        <main class="main-body ">
             {% block content %}{% endblock %}
         </main>
 

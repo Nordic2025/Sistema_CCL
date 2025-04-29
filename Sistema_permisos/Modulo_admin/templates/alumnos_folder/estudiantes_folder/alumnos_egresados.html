@@ -163,4 +163,83 @@
       </div>
     </div>
   </div>
+
+
+
+
+        <!-- Navegación de paginación con estilos mejorados -->
+        <div class="pagination-container my-4">
+          <nav aria-label="Navegación de páginas">
+            <ul class="pagination pagination-md justify-content-center">
+              {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Primera">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                    <span class="d-none d-sm-inline">Primera</span>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="d-none d-sm-inline">Anterior</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                    <span class="d-none d-sm-inline">Primera</span>
+                  </span>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="d-none d-sm-inline">Anterior</span>
+                  </span>
+                </li>
+              {% endif %}
+  
+              <!-- Indicador de página actual -->
+              <li class="page-item active">
+                <span class="page-link">
+                  Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+              </li>
+  
+              {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Siguiente">
+                    <span class="d-none d-sm-inline">Siguiente</span>
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Última">
+                    <span class="d-none d-sm-inline">Última</span>
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">
+                    <span class="d-none d-sm-inline">Siguiente</span>
+                    <span aria-hidden="true">&raquo;</span>
+                  </span>
+                </li>
+                <li class="page-item disabled">
+                  <span class="page-link">
+                    <span class="d-none d-sm-inline">Última</span>
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </span>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+          
+          <!-- Información adicional sobre registros -->
+          <div class="text-center text-muted mt-2">
+            <small>Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index }} de {{ total_registros }} en total</small>
+          </div>
+        </div>
+      
 {% endblock %}

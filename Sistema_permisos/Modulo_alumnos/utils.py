@@ -20,8 +20,8 @@ def enviar_notificacion_retiro(inspector_telefono, alumno_nombre, curso, apodera
 
 Responda con:
 1️⃣ - Confirmar retiro
-2️⃣ - Alumno ya se retiró
-3️⃣ - Rechazar (indicar motivo)
+2️⃣ - Alumno ocupado en actividad (Prueba, reunion, etc.)
+3️⃣ - Alumno no se encuentra en el establecimiento
 *Porfavor, solo indicar el numero de opcion*
 
 """

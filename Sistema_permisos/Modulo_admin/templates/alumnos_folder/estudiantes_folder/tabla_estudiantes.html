@@ -153,19 +153,19 @@
                 <td>{{ alumno.rut_apoderadoT }}</td>
                 <td>
                   {% if user.is_superuser %}
-                  <button type="button" class="btn btn_editar btn-outline-warning" 
+                  <button type="button" class="btn btn_editar btn-outline-warning m-1" 
                           data-bs-toggle="modal" 
                           data-bs-target="#editarAlumnoModal{{ alumno.id }}">
                     Editar
                   </button>
                   {% endif %}
-                  <button type="button" class="btn btn_primary btn-outline-primary" 
+                  <button type="button" class="btn btn_primary btn-outline-primary m-1" 
                           data-bs-toggle="modal" 
                           data-bs-target="#verDetalleModal{{ alumno.id }}">
                     Ver Detalle
                   </button>
                   {% if user.is_superuser %}
-                  <button type="button" class="btn btn_eliminar btn-outline-danger" 
+                  <button type="button" class="btn btn_eliminar btn-outline-danger m-1 " 
                     onclick="confirmarEliminacion('{{ alumno.id }}', '{{ alumno.nombre }}')">
                       Eliminar
                   </button>

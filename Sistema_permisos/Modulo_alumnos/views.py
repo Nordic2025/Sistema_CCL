@@ -1,5 +1,5 @@
 import json
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
@@ -8,7 +8,6 @@ from .models import RegistroRetiro
 from .forms import RegistroRetiroForm
 from Modulo_admin.models import Alumno, Inspector, Curso
 from .utils import enviar_notificacion_retiro
-import time
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models.functions import Upper
 
@@ -365,55 +364,28 @@ def procesar_retiro(request):
     print("--- FIN procesar_retiro ---\n")
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-# Nueva vista para verificar el estado del retiro
+
+
 def verificar_estado_retiro(request):
-    if request.method == "GET" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         retiro_id = request.GET.get('retiro_id')
-        print(f"Verificando estado del retiro {retiro_id}")
-        
-        try:
-            registro = RegistroRetiro.objects.get(id=retiro_id)
-            
-            # Verificar si ha pasado demasiado tiempo (timeout después de 2 minutos)
-            tiempo_espera = timezone.now() - registro.hora_retiro
-            if tiempo_espera.total_seconds() > 240 and registro.estado == 'waiting':
-                registro.estado = 'timeout'
-                registro.save()
-                
-                redirect_url = reverse('Modulo_alumnos:confirmacion_retiro', args=[registro.id])
-                print(f"Timeout para retiro {retiro_id}, redirigiendo a: {redirect_url}")
-                
-                return JsonResponse({
-                    'status': 'timeout',
-                    'message': 'Tiempo de espera agotado',
-                    'redirect_url': redirect_url
-                })
-            
-            # Devolver el estado actual
-            redirect_url = reverse('Modulo_alumnos:confirmacion_retiro', args=[registro.id])
-            print(f"Estado actual del retiro {retiro_id}: {registro.estado}, redirigiendo a: {redirect_url}")
-            
+        if not retiro_id:
+            return JsonResponse({'error': 'No se proporcionó retiro_id'}, status=400)
+
+        registro = get_object_or_404(RegistroRetiro, id=retiro_id)
+
+        print("Vista verificar_estado_retiro fue llamada con:", retiro_id, "estado:", registro.estado)
+
+        if registro.estado in ['confirmed', 'confirmed_busy']:
             return JsonResponse({
                 'status': registro.estado,
-                'message': registro.mensaje_respuesta or '',
-                'redirect_url': redirect_url
+                'redirect_url': f"/Modulo_alumnos/confirmacion_retiro/{registro.id}/"
             })
-            
-        except RegistroRetiro.DoesNotExist:
-            print(f"No se encontró el retiro {retiro_id}")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Registro de retiro no encontrado'
-            })
-        except Exception as e:
-            print(f"Error al verificar estado del retiro {retiro_id}: {str(e)}")
-            return JsonResponse({
-                'status': 'error',
-                'message': f'Error al verificar estado: {str(e)}'
-            })
+        else:
+            return JsonResponse({'status': registro.estado})
+    else:
+        return JsonResponse({'error': 'Acceso no permitido'}, status=403)
     
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
-
 
 @csrf_exempt
 def actualizar_estado_retiro(request):
@@ -487,6 +459,5 @@ def actualizar_estado_retiro(request):
         'success': False,
         'message': 'Método no permitido'
     }, status=405)
-
 
 

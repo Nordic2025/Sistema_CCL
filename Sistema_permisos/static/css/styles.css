@@ -232,32 +232,6 @@ body {
     );
 }
 
-/* Estilos para "Próximamente" */
-.a_principal {
-    text-align: center;
-    font-size: 18px;
-    color: #6c757d;
-    font-weight: bold;
-    text-align: center;
-    width: 100%;
-    margin-top: 12px;
-    letter-spacing: 0.5px;
-    position: relative;
-}
-
-.a_principal::after {
-    content: '';
-    display: block;
-    width: 50px;
-    height: 2px;
-    background-color: #6c757d;
-    margin: 5px auto 0;
-    transition: width 0.3s ease;
-}
-
-.btn_container:hover .a_principal::after {
-    width: 80px;
-}
 
 html {
     min-height: 100%;
@@ -308,7 +282,7 @@ body {
 }
 
 body {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Arial', sans-serif;
     background-color: var(--bg-light);
     color: var(--text-dark);
     display: flex;
@@ -674,29 +648,6 @@ body {
     width: 100%;
 }
 
-/* Mobile Toggle */
-.mobile-toggle {
-    display: none;
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1001;
-    background-color: var(--primary);
-    color: var(--text-light);
-    border: none;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    align-items: center;
-    justify-content: center;
-}
-
-.mobile-toggle i {
-    font-size: 1.25rem !important;
-
-}
 
 /* Tooltip para sidebar colapsado */
 .sidebar.collapsed .menu-item {
@@ -719,30 +670,6 @@ body {
     z-index: 1000;
     box-shadow: var(--shadow);
     pointer-events: none;
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-        box-shadow: var(--shadow);
-    }
-
-    .main-wrapper {
-        margin-left: 0 !important;
-    }
-
-    .mobile-toggle {
-        display: flex;
-    }
-
-    .main-header {
-        padding-left: 4rem;
-    }
 }
 
 /* Animaciones */

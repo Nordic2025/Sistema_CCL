@@ -592,11 +592,20 @@ def inspectores_view(request):
     inspectores = Inspector.objects.all().prefetch_related('cursos')
     cursos = Curso.objects.all()
 
+    queryset = Inspector.objects.all().prefetch_related('cursos')
+
     inspector_salida_exists = Inspector.objects.filter(is_salida=True).exists()
+
+    paginator = Paginator(inspectores, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+
     return render(request, 'alumnos_folder/inspectores_folder/inspectores.html', {
-        'inspectores': inspectores,
+        'inspectores': page_obj,
         'cursos': cursos,
-        'inspector_salida_exists': inspector_salida_exists
+        'inspector_salida_exists': inspector_salida_exists,
+        'page_obj': page_obj
     })
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -997,6 +1006,34 @@ def retiros_view(request):
     
     return render(request, 'alumnos_folder/retiros_folder/tabla_retiros.html', context)
 
+
+@login_required(login_url='Modulo_admin:login_admin')
+def confirmar_retiro(request, retiro_id):
+    """Vista para confirmar un retiro desde el panel de administrador."""
+    if request.method == 'POST':
+        try:
+            retiro = RegistroRetiro.objects.get(id=retiro_id)
+            
+            # Solo permitir confirmar si no está ya confirmado
+            if retiro.estado != 'confirmed':
+                mensaje = request.POST.get('mensaje', 'Retiro confirmado por administrador')
+                
+                # Actualizar el estado del retiro
+                retiro.estado = 'confirmed'
+                retiro.mensaje_respuesta = mensaje
+                retiro.save()
+                
+                messages.success(request, f'Retiro de {retiro.nombre_estudiante} confirmado correctamente')
+            else:
+                messages.warning(request, 'Este retiro ya estaba confirmado')
+                
+        except RegistroRetiro.DoesNotExist:
+            messages.error(request, 'No se encontró el retiro especificado')
+        except Exception as e:
+            messages.error(request, f'Error al confirmar el retiro: {str(e)}')
+    
+    # Redirigir de vuelta a la página de retiros
+    return redirect('Modulo_admin:retiros')
 
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -1443,6 +1480,11 @@ def alumnos_egresados_view(request):
     """Vista para mostrar la lista de alumnos egresados."""
     # Obtener el año de filtro si existe
     año_filtro = request.GET.get('año')
+
+
+    queryset = AlumnoEgresado.objects.filter(año_egreso=año_filtro)
+
+
     
     # Filtrar los egresados según el año seleccionado
     if año_filtro:
@@ -1456,13 +1498,19 @@ def alumnos_egresados_view(request):
         # Si no hay filtro, mostrar todos
         egresados = AlumnoEgresado.objects.all()
     
+
+
+    paginator = Paginator(egresados, 35)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     # Obtener todos los años de egreso disponibles para el filtro
     años_egreso = AlumnoEgresado.objects.values_list('año_egreso', flat=True).distinct().order_by('-año_egreso')
     
     context = {
-        'egresados': egresados,
+        'egresados': page_obj,
         'años_egreso': años_egreso,
-        'año_filtro': año_filtro
+        'año_filtro': año_filtro,
+        'page_obj': page_obj
     }
     
     return render(request, 'alumnos_folder/estudiantes_folder/alumnos_egresados.html', context)

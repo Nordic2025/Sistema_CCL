@@ -57,6 +57,8 @@ urlpatterns = [
     
     
     path('retiros/', views.retiros_view, name='retiros'),
+    path('confirmar-retiro/<int:retiro_id>/', views.confirmar_retiro, name='confirmar_retiro'),
+
     path('justificaciones/', views.justificativos_view, name='justificaciones'),
     path('grafico_alumnos/', views.grafico_alumnos_view, name='grafico_alumnos'),
 

@@ -5,8 +5,7 @@
 {% block title %}Retiros{% endblock %}
 
 {% block content %}
-<div class="container main-content">
-    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Retiros</h1>  
+<div class="container main-content" style="padding-left: 10px; margin-left: 10px; max-width: 93%;">    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Retiros</h1>  
     
     <!-- Filtros combinados (buscador, curso y nivel) -->
     <div class="row mb-4 mt-4">
@@ -45,12 +44,9 @@
                     <i class="fas fa-times"></i> Limpiar filtros
                   </a>
                   {% endif %}
-
-                  <div class="d-flex justify-content-end mb-3 w-100">
                     <button type="button" id="exportarPDF" class="btn btn-danger">
                       <i class="fas fa-file-pdf"></i> Exportar a PDF
                     </button>
-                  </div>
                 </div>
               </div>
             </form>
@@ -92,6 +88,7 @@
                 <th>Curso del Alumno</th>
                 <th>Fecha y hora de retiro</th>
                 <th>Motivo</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -105,21 +102,36 @@
                   <td>{{ retiro.curso }}</td>
                   <td>{{ retiro.hora_retiro }}</td>
                   <td>{{ retiro.motivo_retiro }}</td>
-                {% comment %} <td>
-                  {% if user.is_superuser %}
-                  <button type="button" class="btn btn_editar btn-outline-warning" 
-                          data-bs-toggle="modal" 
-                          data-bs-target="#editarAlumnoModal{{ alumno.id }}">
-                    Editar
-                  </button>
-                  {% endif %}
-                </td> {% endcomment %}
+                  <td>
+                    {% if retiro.estado == 'waiting' %}
+                      <span class="badge bg-warning text-dark">Esperando</span>
+                    {% elif retiro.estado == 'confirmed' %}
+                      <span class="badge bg-success">Confirmado</span>
+                    {% elif retiro.estado == 'confirmed_busy' %}
+                      <span class="badge bg-info">Alumno Ocupado</span>
+                    {% elif retiro.estado == 'rejected' %}
+                      <span class="badge bg-danger">Rechazado</span>
+                    {% elif retiro.estado == 'timeout' %}
+                      <span class="badge bg-secondary">Tiempo agotado</span>
+                    {% else %}
+                      <span class="badge bg-dark">{{ retiro.estado }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if retiro.estado != 'confirmed' %}
+                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#confirmarRetiroModal{{ retiro.id }}">
+                      <i class="fas fa-check"></i> Confirmar
+                    </button>
+                    {% else %}
+                      <span class="text-muted">Ya confirmado</span>
+                    {% endif %}
+                  </td>
+
               </tr>
-              
 
               {% empty %}
               <tr>
-                <td colspan="5">No hay retiros registrados.</td>
+                <td colspan="9">No hay retiros registrados.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -196,86 +208,113 @@
     </div>
 
   
+  <!-- Modales fuera de la tabla pero dentro del bucle -->
+  {% for retiro in retiros %}
+      {% if retiro.estado != 'confirmed' %}
+      <div class="modal fade" id="confirmarRetiroModal{{ retiro.id }}" tabindex="-1" aria-labelledby="confirmarRetiroModalLabel{{ retiro.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="confirmarRetiroModalLabel{{ retiro.id }}">Confirmar Retiro</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <form method="post" action="{% url 'Modulo_admin:confirmar_retiro' retiro.id %}">
+                      {% csrf_token %}
+                      <div class="modal-body">
+                          <p>¿Está seguro que desea confirmar el retiro de <strong>{{ retiro.nombre_estudiante }}</strong>?</p>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="submit" class="btn btn-success">Confirmar Retiro</button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      </div>
+      {% endif %}
+  {% endfor %}
+  
+  
     
 
-    <!-- Script para SweetAlert -->
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Script para SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       
-      <script>
-        document.addEventListener('DOMContentLoaded', function () {
-          // Botón para exportar a PDF
-          document.getElementById('exportarPDF').addEventListener('click', function() {
-            // Mostrar mensaje de carga
-            const loadingMessage = document.createElement('div');
-            loadingMessage.style.position = 'fixed';
-            loadingMessage.style.top = '0';
-            loadingMessage.style.left = '0';
-            loadingMessage.style.width = '100%';
-            loadingMessage.style.height = '100%';
-            loadingMessage.style.backgroundColor = 'rgba(0,0,0,0.5)';
-            loadingMessage.style.display = 'flex';
-            loadingMessage.style.justifyContent = 'center';
-            loadingMessage.style.alignItems = 'center';
-            loadingMessage.style.zIndex = '9999';
-            loadingMessage.innerHTML = '<div style="background-color: white; padding: 20px; border-radius: 5px;"><h3>Generando PDF, por favor espere...</h3></div>';
-            document.body.appendChild(loadingMessage);
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Botón para exportar a PDF
+    document.getElementById('exportarPDF').addEventListener('click', function() {
+      // Mostrar mensaje de carga
+      const loadingMessage = document.createElement('div');
+      loadingMessage.style.position = 'fixed';
+      loadingMessage.style.top = '0';
+      loadingMessage.style.left = '0';
+      loadingMessage.style.width = '100%';
+      loadingMessage.style.height = '100%';
+      loadingMessage.style.backgroundColor = 'rgba(0,0,0,0.5)';
+      loadingMessage.style.display = 'flex';
+      loadingMessage.style.justifyContent = 'center';
+      loadingMessage.style.alignItems = 'center';
+      loadingMessage.style.zIndex = '9999';
+      loadingMessage.innerHTML = '<div style="background-color: white; padding: 20px; border-radius: 5px;"><h3>Generando PDF, por favor espere...</h3></div>';
+      document.body.appendChild(loadingMessage);
+  
+      // Obtener el contenido a convertir
+      const content = document.querySelector('.tabla_global');
+      
+      // Configurar opciones para html2canvas
+      const options = {
+        scale: 2, // Mayor escala para mejor calidad
+        useCORS: true, // Permitir imágenes de otros dominios
+        logging: false, // Desactivar logs
+        letterRendering: true, // Mejor renderizado de texto
+        allowTaint: true, // Permitir elementos tainted
+      };
+  
+      // Convertir el contenido a imagen
+      html2canvas(content, options).then(canvas => {
+        // Crear PDF con jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal para más espacio
         
-            // Obtener el contenido a convertir
-            const content = document.querySelector('.tabla_global');
+        // Calcular dimensiones para ajustar al PDF
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        
+        // Usar todo el ancho de la página menos márgenes
+        const imgWidth = pageWidth - 20; // 10mm de margen a cada lado
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        
+        // Convertir canvas a imagen
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Cargar imagen del logo
+        const logo = new Image();
+        logo.src = "{% static 'images/logo_ccl.png' %}";
+        logo.onload = function() {
+          // Función para añadir encabezado y pie de página a cada página
+          const addHeaderFooter = function(pageNumber) {
+            // === Encabezado ===
+            // Logo (ahora a la izquierda)
+            pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
             
-            // Configurar opciones para html2canvas
-            const options = {
-              scale: 2, // Mayor escala para mejor calidad
-              useCORS: true, // Permitir imágenes de otros dominios
-              logging: false, // Desactivar logs
-              letterRendering: true, // Mejor renderizado de texto
-              allowTaint: true, // Permitir elementos tainted
-            };
-        
-            // Convertir el contenido a imagen
-            html2canvas(content, options).then(canvas => {
-              // Crear PDF con jsPDF
-              const { jsPDF } = window.jspdf;
-              const pdf = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal para más espacio
-              
-              // Calcular dimensiones para ajustar al PDF
-              const pageWidth = pdf.internal.pageSize.getWidth();
-              const pageHeight = pdf.internal.pageSize.getHeight();
-              
-              // Usar todo el ancho de la página menos márgenes
-              const imgWidth = pageWidth - 20; // 10mm de margen a cada lado
-              const imgHeight = canvas.height * imgWidth / canvas.width;
-              
-              // Convertir canvas a imagen
-              const imgData = canvas.toDataURL('image/png');
-              
-              // Cargar imagen del logo
-              const logo = new Image();
-              logo.src = "{% static 'images/logo_ccl.png' %}";
-              logo.onload = function() {
-                // Función para añadir encabezado y pie de página a cada página
-                const addHeaderFooter = function(pageNumber) {
-                  // === Encabezado ===
-                  // Logo (ahora a la izquierda)
-                  pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
-                  
-                  // Título principal (ahora a la derecha)
-                  pdf.setFontSize(16);
-                  pdf.setTextColor(40, 40, 40);
-                  pdf.text('Colegio Concepción Linares', 35, 15);
-                  
-                  // Subtítulo (también a la derecha)
-                  pdf.setFontSize(12);
-                  pdf.text('Reporte de Retiros', 35, 22);
-                  
-                  // Fecha y hora (alineada a la izquierda, debajo del logo)
-                  const now = new Date();
-                  const fecha = now.toLocaleDateString();
-                  const hora = now.toLocaleTimeString();
-                  pdf.setFontSize(10);
-                  pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });  
-                  pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
-                  // === Pie de página ===
+            // Título principal (ahora a la derecha)
+            pdf.setFontSize(16);
+            pdf.setTextColor(40, 40, 40);
+            pdf.text('Colegio Concepción Linares', 35, 15);
+            
+            // Subtítulo (también a la derecha)
+            pdf.setFontSize(12);
+            pdf.text('Reporte de Retiros', 35, 22);
+            
+            // Fecha y hora (alineada a la izquierda, debajo del logo)
+            const now = new Date();
+            const fecha = now.toLocaleDateString();
+            const hora = now.toLocaleTimeString();
+            pdf.setFontSize(10);
+            pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });  
+            pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
+            // === Pie de página ===
             pdf.setFontSize(10);
             pdf.setTextColor(100);
             pdf.text("Sistema de Control de Permisos - Colegio Concepción Linares", 10, pageHeight - 10);
@@ -362,21 +401,18 @@
   });
 </script>
 
-
-
-
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          // Función para aplicar el formateo de RUT a un elemento
-          function aplicarFormateoRut(elemento) {
-            elemento.addEventListener('input', function() {
-              let valor = this.value.replace(/\./g, '').replace(/-/g, '');
-              if (valor.length > 1) {
-                // Obtener dígito verificador
-                let dv = valor.slice(-1);
-                // Obtener cuerpo del RUT
-                let rutCuerpo = valor.slice(0, -1);
-                // Formatear RUT
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Función para aplicar el formateo de RUT a un elemento
+  function aplicarFormateoRut(elemento) {
+    elemento.addEventListener('input', function() {
+      let valor = this.value.replace(/\./g, '').replace(/-/g, '');
+        if (valor.length > 1) {
+          // Obtener dígito verificador
+          let dv = valor.slice(-1);
+          // Obtener cuerpo del RUT
+          let rutCuerpo = valor.slice(0, -1);
+            // Formatear RUT
                 let rutFormateado = '';
                 for (let i = rutCuerpo.length; i > 0; i -= 3) {
                   const inicio = Math.max(0, i - 3);
@@ -498,17 +534,56 @@
               }
             });
           });
-          
-      </script>
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Depuración de modales
+    const modales = document.querySelectorAll('.modal');
+    console.log('Modales encontrados:', modales.length);
+    
+    // Registrar eventos para cada modal
+    modales.forEach(function(modal, index) {
+      console.log(`Modal #${index} ID:`, modal.id);
       
+      modal.addEventListener('show.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento show.bs.modal disparado`);
+      });
       
-        
-      {% if messages %}
-          {% for message in messages %}
-        <script>
-          mensaje('{{ message.tags }}', '{{ message }}');
-        </script>
-          {% endfor %}
-      {% endif %}
+      modal.addEventListener('shown.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento shown.bs.modal disparado`);
+      });
+      
+      modal.addEventListener('hide.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento hide.bs.modal disparado`);
+      });
+      
+      modal.addEventListener('hidden.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento hidden.bs.modal disparado`);
+      });
+      
+      // Verificar botones que abren este modal
+      const botones = document.querySelectorAll(`[data-bs-target="#${modal.id}"]`);
+      console.log(`Botones para modal ${modal.id}:`, botones.length);
+    });
+    
+    // Verificar si Bootstrap está disponible
+    if (typeof bootstrap !== 'undefined') {
+      console.log('Bootstrap JS está disponible');
+    } else {
+      console.error('Bootstrap JS NO está disponible - Los modales no funcionarán');
+    }
+  });
+</script>
+
+<script>
+  {% if messages %}
+  {% for message in messages %}
+  mensaje('{{ message.tags }}', '{{ message }}');
+  {% endfor %}
+  {% endif %}
+</script>
+
     
 {% endblock %}
