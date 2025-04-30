@@ -51,7 +51,7 @@ urlpatterns = [
     path('editar_alumno/<int:id>/', views.editar_alumno, name='editar_alumno'),
     path('verificar_rut_egresado/', views.verificar_rut_egresado, name='verificar_rut_egresado'),    
     path('agregar_familiares/<int:id>/<int:familiar_num>/', views.agregar_familiar, name='agregar_familiar'),
-    
+    path('alumnos/eliminar-familiar/<int:id>/<int:familiar_num>/', views.eliminar_familiar, name='eliminar_familiar'),
     
     
     

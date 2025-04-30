@@ -51,10 +51,12 @@
                     Cambiar Contraseña
                   </button>
                   {% endif %}
+                  {% if administrador.rut != "21.861.169-9" and administrador.rut != "21.450.235-6"%}
                   <button type="button" class="btn btn_eliminar btn-outline-danger" 
                           onclick="confirmarEliminacion('{{ administrador.id }}', '{{ administrador.nombre }}')">
                     Eliminar
                   </button>
+                  {% endif %}
                 </td>
                 {% endif %}
               </tr>

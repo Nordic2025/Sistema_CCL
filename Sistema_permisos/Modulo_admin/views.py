@@ -460,6 +460,14 @@ def cambiar_password_view(request, id):
 def eliminar_administrador_view(request, id):
     administrador = get_object_or_404(Administrador, id=id)
     
+    # Lista de RUTs protegidos
+    ruts_protegidos = ["21.861.169-9", "21.450.235-6"]
+    
+    # Verificar si el administrador está protegido
+    if administrador.rut in ruts_protegidos:
+        messages.error(request, 'Este administrador no puede ser eliminado')
+        return redirect('Modulo_admin:administradores')
+
     # Si tiene un usuario asociado, eliminarlo también
     if administrador.user:
         administrador.user.delete()
@@ -951,6 +959,49 @@ def agregar_familiar(request, id, familiar_num):
     
     return redirect('Modulo_admin:alumnos')
 
+@login_required(login_url='Modulo_admin:login_admin')
+def eliminar_familiar(request, id, familiar_num):
+    """Vista para eliminar un familiar de un alumno."""
+    alumno = get_object_or_404(Alumno, id=id)
+
+        # Verificar si el usuario es superusuario
+    if not request.user.is_superuser:
+        messages.error(request, 'No tienes permisos para realizar esta acción')
+        return redirect('Modulo_admin:alumnos')
+    
+    if request.method == 'POST':
+        # Determinar qué familiar eliminar
+        if familiar_num == 1:
+            # Guardar el nombre para el mensaje
+            nombre_familiar = alumno.familiar_1
+            
+            # Limpiar los campos del familiar 1
+            alumno.familiar_1 = ''
+            alumno.familiar_1_relacion = ''
+            alumno.familiar_1_telefono = ''
+            alumno.rut_familiar_1 = ''
+            
+            mensaje = f'Familiar {nombre_familiar} eliminado correctamente'
+        elif familiar_num == 2:
+            # Guardar el nombre para el mensaje
+            nombre_familiar = alumno.familiar_2
+            
+            # Limpiar los campos del familiar 2
+            alumno.familiar_2 = ''
+            alumno.familiar_2_relacion = ''
+            alumno.familiar_2_telefono = ''
+            alumno.rut_familiar_2 = ''
+            
+            mensaje = f'Familiar {nombre_familiar} eliminado correctamente'
+        else:
+            messages.error(request, 'Número de familiar no válido')
+            return redirect('Modulo_admin:alumnos')
+        
+        # Guardar los cambios
+        alumno.save()
+        messages.success(request, mensaje)
+    
+    return redirect('Modulo_admin:alumnos')
 
 
 @login_required(login_url='Modulo_admin:login_admin')
