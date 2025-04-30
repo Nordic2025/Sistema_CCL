@@ -971,11 +971,16 @@ def retiros_view(request):
         # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
         busqueda_rut = busqueda.replace('.', '').replace('-', '')
         retiros = retiros.filter(
-            Q(nombre_estudiante__icontains=busqueda) | 
-            Q(rut_estudiante__icontains=busqueda_rut) |
-            Q(nombre_persona_retira__icontains=busqueda) |
-            Q(rut_persona_retira__icontains=busqueda_rut)
+        Q(nombre_estudiante__icontains=busqueda) | 
+        Q(rut_estudiante__icontains=busqueda_rut) |
+        Q(rut_estudiante__icontains=busqueda) |
+        Q(nombre_persona_retira__icontains=busqueda) |
+        Q(rut_persona_retira__icontains=busqueda_rut) |
+        Q(rut_persona_retira__icontains=busqueda)
         )
+
+
+
     
     # Filtrar por curso si se proporciona
     if curso_filtro:

@@ -159,7 +159,7 @@
                           <small class="form-text text-muted">Este campo se actualiza automáticamente según los cursos seleccionados</small>
                         </div>
                         
-                        <div class="mb-3 cursos-container" id="cursos-container{{ inspector.id }}" {% if inspector.is_general %}style="display:none"{% endif %}>
+                        <div class="mb-3 cursos-container" id="cursos-container{{ inspector.id }}" {% if inspector.is_salida %}style="display:none"{% endif %}>
                           <label class="form-label">Cursos a cargo</label>
                           <div class="row">
                             {% for curso in cursos %}
@@ -556,7 +556,7 @@
       });
       
       // Manejar el cambio en el checkbox de Inspector de Salida (nuevo)
-      const isSalidaCheckbox = document.getElementById('is_general');
+      const isSalidaCheckbox = document.getElementById('is_salida');
       if (isSalidaCheckbox) {
         isSalidaCheckbox.addEventListener('change', function() {
           const cursosContainer = document.getElementById('cursos-container-nuevo');
@@ -579,11 +579,11 @@
       }
       
       // Manejar el cambio en los checkboxes de Inspector de Salida (edición)
-      document.querySelectorAll('[id^="is_general"]').forEach(function(checkbox) {
-        if (checkbox.id === 'is_general') return; // Excluir el checkbox del formulario de nuevo inspector
+      document.querySelectorAll('[id^="is_salida"]').forEach(function(checkbox) {
+        if (checkbox.id === 'is_salida') return; // Excluir el checkbox del formulario de nuevo inspector
         
         checkbox.addEventListener('change', function() {
-          const inspectorId = this.id.replace('is_general', '');
+          const inspectorId = this.id.replace('is_salida', '');
           const cursosContainer = document.getElementById('cursos-container' + inspectorId);
           
           if (this.checked) {

@@ -577,13 +577,95 @@
   });
 </script>
 
+{% comment %} Validacion para el buscador de Nombre o rut {% endcomment %}
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const busquedaInput = document.getElementById('busqueda');
+    const filtroForm = document.getElementById('filtroForm');
+    
+    // Función para formatear RUT
+    function formatearRut(rut) {
+      // Eliminar puntos y guiones
+      let valor = rut.replace(/\./g, '').replace(/-/g, '');
+  
+      // Obtener dígito verificador
+      let dv = valor.slice(-1);
+  
+      // Obtener cuerpo del RUT
+      let rutCuerpo = valor.slice(0, -1);
+  
+      // Formatear RUT con puntos y guión
+      let rutFormateado = '';
+  
+      // Agregar puntos de miles
+      for (let i = rutCuerpo.length; i > 0; i -= 3) {
+        const inicio = Math.max(0, i - 3);
+        rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+      }
+  
+      // Eliminar el primer punto
+      rutFormateado = rutFormateado.substring(1);
+  
+      // Agregar guión y dígito verificador
+      return rutFormateado + '-' + dv;
+    }
+  
+    // Evento para formatear el RUT mientras se escribe
+    if (busquedaInput) {
+      busquedaInput.addEventListener('input', function(e) {
+        const valor = this.value.trim();
+  
+        // Si parece ser un RUT (contiene números y posiblemente K/k)
+        if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
+          // Guardar la posición del cursor
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          const valorOriginal = this.value;
+  
+          // Eliminar caracteres no numéricos excepto K/k
+          let valorLimpio = this.value.replace(/[^\dkK]/g, '');
+  
+          // Si hay suficientes caracteres para formatear como RUT
+          if (valorLimpio.length > 1) {
+            // Formatear el valor
+            this.value = formatearRut(valorLimpio);
+  
+            // Calcular nueva posición del cursor
+            const diff = this.value.length - valorOriginal.length;
+  
+            // Restaurar la posición del cursor
+            this.setSelectionRange(start + diff, end + diff);
+          }
+        }
+      });
+      
+      // Asegurarse de que el RUT esté correctamente formateado al enviar el formulario
+      if (filtroForm) {
+        filtroForm.addEventListener('submit', function(e) {
+          const busquedaValor = busquedaInput.value.trim();
+          
+          // Si parece ser un RUT, asegurarse de que esté bien formateado
+          if (/^[0-9kK.-]+$/.test(busquedaValor) && busquedaValor.length > 1) {
+            // Limpiar y reformatear
+            const valorLimpio = busquedaValor.replace(/[^\dkK]/g, '');
+            if (valorLimpio.length > 1) {
+              busquedaInput.value = formatearRut(valorLimpio);
+            }
+          }
+        });
+      }
+    }
+  });
+</script>
+
+
+
   {% if messages %}
   {% for message in messages %}
   mensaje('{{ message.tags }}', '{{ message }}');
   {% endfor %}
   {% endif %}
-</script>
+
 
     
 {% endblock %}

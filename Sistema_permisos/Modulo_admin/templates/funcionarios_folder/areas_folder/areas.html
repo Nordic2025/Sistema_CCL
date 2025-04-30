@@ -7,9 +7,11 @@
 {% block content %}
   <div class="container main-content">
     <h1 style="margin-top: 30px;  font-size: 2rem;">Panel de Administrador | Áreas</h1>  
+    {% if user.is_superuser %}
     <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarAreaModal">
       Registrar nueva área
     </button>
+    {% endif %}
     <div class="row">
       <div class="col-md-12">
         <div class="tabla_global">
@@ -19,7 +21,9 @@
               <tr>
                 <th>Nombre del Área</th>
                 <th>Encargado</th>
+                {% if user.is_superuser %}
                 <th>Acciones</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody class="tbody_custom">
@@ -27,6 +31,7 @@
               <tr>
                 <td>{{ area.nombre }}</td>
                 <td>{{ area.encargado }}</td>
+                {% if user.is_superuser %}
                 <td>
                   <button type="button" class="btn btn_editar btn-outline-warning" 
                           data-bs-toggle="modal" 
@@ -38,6 +43,7 @@
                     Eliminar
                   </button>
                 </td>
+                {% endif %}
               </tr>
               
               <!-- Modal para Editar Area -->
