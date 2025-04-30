@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.utils import timezone
 from django.http import JsonResponse
-from .models import RegistroRetiro
+from .models import RegistroRetiro, RegistroJustificativo
 from .forms import RegistroRetiroForm
 from Modulo_admin.models import Alumno, Inspector, Curso
 from .utils import enviar_notificacion_retiro
