@@ -13,10 +13,16 @@
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    <script src="{% static 'js/highcharts.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>    
+    <script src="{% static 'js/highcharts.js' %}"></script>
     <script src="{% static 'js/exporting.js' %}"></script>
     <script src="{% static 'js/html2canvas.min.js' %}"></script>
     <script src="{% static 'js/jspdf.umd.min.js' %}"></script>
+    <!-- Incluir Toastr CSS -->
+    <link rel="stylesheet" href="{% static 'css/toastr.min.css' %}">
+    
+    <!-- Incluir Toastr JS -->
+    <script src="{% static 'js/toastr.min.js' %}"></script>
 
     <title>{% block title %} {% endblock %}</title>
 
