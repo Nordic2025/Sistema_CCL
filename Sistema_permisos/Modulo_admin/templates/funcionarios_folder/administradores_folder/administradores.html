@@ -62,7 +62,7 @@
               </tr>
               
               {% if user.is_superuser %}
-              <!-- Modal para Editar Administrador - solo visible para staff -->
+              <!-- Modal para Editar Administrador -->
               <div class="modal fade" id="editarAdministradorModal{{ administrador.id }}" tabindex="-1" aria-labelledby="editarAdministradorModalLabel{{ administrador.id }}" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
@@ -107,7 +107,7 @@
               </div>
               {% endif %}
 
-              <!-- Modal para Cambiar Contraseña - solo visible para staff -->
+              <!-- Modal para Cambiar Contraseña -->
               {% if user.is_staff %}
               <div class="modal fade" id="cambiarContraseñaModal{{ administrador.id }}" tabindex="-1" aria-labelledby="cambiarContraseñaModal{{ administrador.id }}" aria-hidden="true">
                 <div class="modal-dialog">

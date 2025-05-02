@@ -34,12 +34,25 @@
                 </select>
               </div>
 
+
+              <!-- Filtro por estado -->
+              <div class="col-md-3">
+                <label for="estado" class="form-label">Estado:</label>
+                <select class="form-select" id="estado" name="estado">
+                  <option value="">Todos los estados</option>
+                  <option value="waiting" {% if estado_filtro == 'waiting' %}selected{% endif %}>Esperando</option>
+                  <option value="confirmed" {% if estado_filtro == 'confirmed' %}selected{% endif %}>Confirmado</option>
+                  <option value="rejected" {% if estado_filtro == 'rejected' %}selected{% endif %}>Rechazado</option>
+                  <option value="timeout" {% if estado_filtro == 'timeout' %}selected{% endif %}>Tiempo agotado</option>
+                </select>
+              </div>
+
               <div class="col-md-2 d-flex align-items-end">
                 <div class="d-grid gap-2 w-100">
                   <button type="submit" class="btn btn-primary">
                     <i class="fas fa-search"></i> Buscar
                   </button>
-                  {% if busqueda or curso_filtro %}
+                  {% if busqueda or curso_filtro or estado_filtro %}
                   <a href="{% url 'Modulo_admin:retiros' %}" class="btn btn-outline-secondary">
                     <i class="fas fa-times"></i> Limpiar filtros
                   </a>
@@ -57,7 +70,7 @@
 
 
     <!-- Indicadores de filtros activos -->
-    {% if busqueda or curso_filtro or nivel_filtro %}
+    {% if busqueda or curso_filtro or nivel_filtro or estado_filtro %}
     <div class="row mb-4">
       <div class="col-md-12">
         <div class="alert alert-info">
@@ -68,6 +81,17 @@
             {% endif %}
             {% if curso_filtro %}
             <li>Curso: <strong>{{ curso_nombre }}</strong></li>
+            {% endif %}
+            {% if estado_filtro %}
+            <li>Estado: <strong>
+              {% if estado_filtro == 'waiting' %}Esperando
+              {% elif estado_filtro == 'confirmed' %}Confirmado
+              {% elif estado_filtro == 'confirmed_busy' %}Alumno Ocupado
+              {% elif estado_filtro == 'rejected' %}Rechazado
+              {% elif estado_filtro == 'timeout' %}Tiempo agotado
+              {% else %}{{ estado_filtro }}
+              {% endif %}
+            </strong></li>
             {% endif %}
             </ul>
         </div>
@@ -107,8 +131,6 @@
                       <span class="badge bg-warning text-dark">Esperando</span>
                     {% elif retiro.estado == 'confirmed' %}
                       <span class="badge bg-success">Confirmado</span>
-                    {% elif retiro.estado == 'confirmed_busy' %}
-                      <span class="badge bg-info">Alumno Ocupado</span>
                     {% elif retiro.estado == 'rejected' %}
                       <span class="badge bg-danger">Rechazado</span>
                     {% elif retiro.estado == 'timeout' %}
@@ -141,13 +163,13 @@
               <ul class="pagination pagination-md justify-content-center">
                 {% if page_obj.has_previous %}
                   <li class="page-item">
-                    <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Primera">
+                    <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}{% if estado_filtro %}&estado={{estado_filtro}}{%endif%}" aria-label="Primera">
                       <span aria-hidden="true">&laquo;&laquo;</span>
                       <span class="d-none d-sm-inline">Primera</span>
                     </a>
                   </li>
                   <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Anterior">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}{% if estado_filtro %}&estado={{estado_filtro}}{%endif%}" aria-label="Anterior">
                       <span aria-hidden="true">&laquo;</span>
                       <span class="d-none d-sm-inline">Anterior</span>
                     </a>
@@ -176,13 +198,13 @@
     
                 {% if page_obj.has_next %}
                   <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Siguiente">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}{% if estado_filtro %}&estado={{estado_filtro}}{%endif%}" aria-label="Siguiente">
                       <span class="d-none d-sm-inline">Siguiente</span>
                       <span aria-hidden="true">&raquo;</span>
                     </a>
                   </li>
                   <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Última">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}{% if estado_filtro %}&estado={{estado_filtro}}{%endif%}" aria-label="Última">
                       <span class="d-none d-sm-inline">Última</span>
                       <span aria-hidden="true">&raquo;&raquo;</span>
                     </a>
@@ -658,13 +680,6 @@
   });
 </script>
 
-
-
-  {% if messages %}
-  {% for message in messages %}
-  mensaje('{{ message.tags }}', '{{ message }}');
-  {% endfor %}
-  {% endif %}
 
 
     

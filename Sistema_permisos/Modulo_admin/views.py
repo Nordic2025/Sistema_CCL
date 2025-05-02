@@ -1016,8 +1016,9 @@ def retiros_view(request):
     busqueda = request.GET.get('busqueda', '')
     curso_filtro = request.GET.get('curso', '')
     curso_nombre = ""
+    estado_filtro = request.GET.get('estado', '')    
     
-    # Aplicar búsqueda por nombre o RUT si se proporciona
+    # Aplicar búsqueda por nombre o RUT 
     if busqueda:
         # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
         busqueda_rut = busqueda.replace('.', '').replace('-', '')
@@ -1030,10 +1031,7 @@ def retiros_view(request):
         Q(rut_persona_retira__icontains=busqueda)
         )
 
-
-
-    
-    # Filtrar por curso si se proporciona
+    # Filtrar por curso 
     if curso_filtro:
         try:
             # Obtener el objeto curso para mostrar su nombre en los filtros activos
@@ -1059,6 +1057,11 @@ def retiros_view(request):
             pass
 
 
+    # Filtrar por estado
+    if estado_filtro: 
+        retiros = retiros.filter(estado=estado_filtro)
+
+
     paginator = Paginator(retiros, 35)
     page_number = request.GET.get('page')
     page_obj =  paginator.get_page(page_number)
@@ -1067,6 +1070,7 @@ def retiros_view(request):
         'retiros': page_obj,
         'busqueda': busqueda,
         'curso_filtro': curso_filtro,
+        'estado_filtro': estado_filtro,
         'cursos': cursos,
         'curso_nombre': curso_nombre,
         'total_registros': retiros.count(),
