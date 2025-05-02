@@ -336,7 +336,18 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        /* Estilos para la notificación de Toastr */
+        .toast-bottom-right {
+            bottom: 15px;
+            right: 15px;
+        }
     </style>
+
+    <!-- Incluir Toastr CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    
+    <!-- Incluir Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -405,6 +416,36 @@
                 },
             });
         });
+
+        // Configuración de Toastr para notificaciones
+                toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": true,
+                "positionClass": "toast-bottom-right",
+                "preventDuplicates": false,
+                "onclick": function() { window.location.href = "{% url 'Modulo_admin:retiros' %}"; },
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "10000",
+                "extendedTimeOut": "5000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+            
+            // Mostrar notificación 
+            {% if user.is_superuser and retiros_pendientes > 0 %}
+                toastr.warning(
+                    '<span style="font-weight: bold; ">Hay {{ retiros_pendientes }} retiros ESPERANDO confirmación o con TIEMPO AGOTADO. Haga clic para ver.</span>',
+                    '<span style="font-size: 16px;">Retiros pendientes</span>',
+                    {
+                        enableHtml: true
+                    }
+                );
+            {% endif %}
    
     </script>
 

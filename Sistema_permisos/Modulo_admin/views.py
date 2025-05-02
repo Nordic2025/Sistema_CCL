@@ -65,6 +65,7 @@ def logout_admin(request):
 
 
 #Vista de Inicio en el modulo admin
+#Vista de Inicio en el modulo admin
 @login_required(login_url='Modulo_admin:login_admin')
 def inicio_view(request):
 
@@ -110,6 +111,9 @@ def inicio_view(request):
 
     #Obtener estadistica de los retiros
     retiros_hoy = RegistroRetiro.objects.filter(hora_retiro__gte = dia).count()
+    
+    # Obtener cantidad de retiros pendientes (estado 'waiting')
+    retiros_pendientes = RegistroRetiro.objects.filter(Q(estado = 'waiting' ) | Q(estado = 'timeout')).count()
 
     #Obtener todos los alumnos
     total_alumnos = Alumno.objects.all().count()
@@ -129,6 +133,7 @@ def inicio_view(request):
         'permisos_recientes': permisos_recientes,
         'retiros_hoy': retiros_hoy,
         'total_alumnos': total_alumnos,
+        'retiros_pendientes': retiros_pendientes,  # Añadido para la notificación
     }
 
     return render(request, 'inicio.html', context)
@@ -1015,6 +1020,7 @@ def retiros_view(request):
     # Obtener parámetros de filtrado
     busqueda = request.GET.get('busqueda', '')
     curso_filtro = request.GET.get('curso', '')
+    estado_filtro = request.GET.get('estado', '')
     curso_nombre = ""
     
     # Aplicar búsqueda por nombre o RUT si se proporciona
@@ -1058,6 +1064,8 @@ def retiros_view(request):
         except Curso.DoesNotExist:
             pass
 
+    if estado_filtro:
+        retiros = retiros.filter(estado=estado_filtro)
 
     paginator = Paginator(retiros, 35)
     page_number = request.GET.get('page')
@@ -1067,6 +1075,7 @@ def retiros_view(request):
         'retiros': page_obj,
         'busqueda': busqueda,
         'curso_filtro': curso_filtro,
+        'estado_filtro': estado_filtro,
         'cursos': cursos,
         'curso_nombre': curso_nombre,
         'total_registros': retiros.count(),
