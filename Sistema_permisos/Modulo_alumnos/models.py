@@ -74,7 +74,7 @@ class RegistroJustificativo(models.Model):
     curso = models.CharField(max_length=20, verbose_name='Curso')
     hora_llegada = models.DateTimeField(default=now, verbose_name='Fecha y hora de llegada')
     tipo_justificacion = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name='Tipo de justificación' )
-    motivo_justificacion = models.CharField(max_length=20, choices=MOTIVO_CHOICES, verbose_name='Motivo de la justificación', null=True, blank=True),
+    motivo_justificacion = models.CharField(max_length=20, choices=MOTIVO_CHOICES, verbose_name='Motivo de la justificación', null=True, blank=True)
     codigo_verificacion = models.CharField(max_length=5, blank=True, null=True, verbose_name='Codigo de verificación')
 
 

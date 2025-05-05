@@ -101,7 +101,7 @@ def verificar_apoderado(request):
             else:
                 return JsonResponse({
                     'valido': False,
-                    'mensaje': 'El RUT ingresado no corresponde a ninguna persona autorizada para retirar estudiantes'
+                    'mensaje': 'El RUT ingresado no corresponde a ninguna persona autorizada para retirar y/o justificar estudiantes'
                 })
         except Exception as e:
             print(f"Error en verificar_apoderado: {str(e)}")
@@ -211,8 +211,7 @@ def obtener_telefono_inspector(inspector_nombre):
         return None
 
 
-def retiro_justificacion_view(request):
-    return render(request, 'retiro_justificacion.html')
+
 
 def formulario_retiro_view(request):
     if request.method == "POST":
@@ -459,5 +458,128 @@ def actualizar_estado_retiro(request):
         'success': False,
         'message': 'Método no permitido'
     }, status=405)
+
+
+
+#Justificación
+@csrf_exempt
+def retiro_justificacion_view(request):
+    return render(request, 'retiro_justificacion.html')
+
+@csrf_exempt
+def procesar_justificacion(request):
+    if request.method == 'POST' :
+        try: 
+            # Se obtienen los datos del formualario
+            rut_persona_justifica = request.POST.get('rut_persona_justifica')
+            nombre_persona_justifica = request.POST.get('nombre_persona_justifica')
+            rut_estudiante = request.POST.get('rut_estudiante')
+            nombre_estudiante = request.POST.get('nombre_estudiante')
+            curso = request.POST.get ('curso')
+            tipo_justificacion = request.POST.get('tipo_justificacion')
+            motivo_justificacion = request.POST.get('motivo_justificacion')
+
+            #Se hace un print de todos los datos para ver que se obtuvieron de manera correcta
+            print(f"Datos recibidos: rut_persona_justifica={rut_persona_justifica}, nombre_persona_justifica={nombre_persona_justifica}, "
+                  f"rut_estudiante={rut_estudiante}, nombre_estudiante={nombre_estudiante}, curso={curso}, "
+                  f"tipo_justificacion={tipo_justificacion}, motivo_justificacion={motivo_justificacion}")
+            
+            #Validar datos
+            if not all ([rut_persona_justifica, nombre_persona_justifica, rut_estudiante,
+                         nombre_estudiante,curso, tipo_justificacion]):
+                error_msg = "Todos los campos son obligatorios"
+                return JsonResponse({'success': False, 'mensaje': error_msg}, status=400)
+            
+            #Validar si es sin certificado la justificación tenga un motivo
+            if tipo_justificacion == 'sin_certificado' and not motivo_justificacion:
+                error_msg = "Debe especificar un motifo para justificar sin certificado"
+                return JsonResponse({'success': False, 'mensaje': error_msg}, status=400)
+            
+            #Creación de registro justificación
+            justificacion = RegistroJustificativo.objects.create(
+                rut_persona_justifica = rut_persona_justifica,
+                nombre_persona_justifica = nombre_persona_justifica,
+                rut_estudiante = rut_estudiante,
+                nombre_estudiante = nombre_estudiante,
+                curso = curso,
+                tipo_justificacion = tipo_justificacion,
+                motivo_justificacion = motivo_justificacion,
+                hora_llegada = timezone.now()
+            )
+
+            justificacion.save()
+            print(f"Justificación creada con el ID:{justificacion.id}")
+
+            response_data = {
+                'success': True,
+                'message': 'Justificación registrada correctamente',
+                'justificacion_id': justificacion.id,
+                'codigo_verificacion': justificacion.codigo_verificacion
+            }
+
+            return JsonResponse(response_data)
+        
+        except Exception as e:
+            error_msg = f"Error al procesar la justificación: {str(e)}"
+            return JsonResponse({'success': False, 'mensaje': error_msg}, status=500)
+        
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+#Confirmar la justifciación recien registrada
+def confirmacion_justificacion_view(request, justificacion_id):
+    try:
+        justificacion = RegistroJustificativo.objects.get(id = justificacion_id)
+        print(f"Mostrando confirmación para justificación {justificacion_id}")
+        return render(request, 'confirmacion_justificacion.html', {'justificacion': justificacion})
+    
+    except RegistroJustificativo.DoesNotExist:
+        print(f"No se encontró la justificación {justificacion_id} para la confirmación")
+        messages.error(request, "No se encontró el registro de justificación solicitado.")
+        return redirect('Modulo_alumnos:retiro_justificacion')
+    
+
+#Registrar justificación
+def registrar_justificacion(request):
+    if request.method == "POST":
+        try:
+            # Obtener datos del formulario
+            rut_persona_justifica = request.POST.get('rut_persona_justifica')
+            nombre_persona_justifica = request.POST.get('nombre_persona_justifica')
+            rut_estudiante = request.POST.get('rut_estudiante')
+            nombre_estudiante = request.POST.get('nombre_estudiante')
+            curso = request.POST.get('curso')
+            tipo_justificacion = request.POST.get('tipo_justificacion')
+            motivo_justificacion = request.POST.get('motivo_justificacion', '')
+
+            #Validación de los datos
+            if not all ([rut_persona_justifica, nombre_persona_justifica, rut_estudiante, nombre_estudiante,
+                         curso, tipo_justificacion]):
+                messages.error(request, "Todos los campos son obligatorios")
+                return redirect ('Modulo_alumnos:formulario_justificacion')
+            
+            #Validar si es sin certificado que tenga motivo
+            if tipo_justificacion == 'sin_certificado' and not motivo_justificacion:
+                messages.error(request, "Debe especificar un motivo para una justificación sin certificado")
+                return redirect ('Modulo_alumnos: formulario_justificacion')
+            
+            #Crear el registro de una justificación
+            justificacion = RegistroJustificativo.objects.create(
+                rut_persona_justifica = rut_persona_justifica,
+                nombre_persona_justifica = nombre_persona_justifica,
+                rut_estudiante = rut_estudiante,
+                nombre_estudiante = nombre_estudiante,
+                curso = curso,
+                tipo_justificacion = tipo_justificacion,
+                motivo_justificacion = motivo_justificacion,
+                hora_llegada = timezone.now()
+            )
+
+            return redirect ('Modulo_alumnos: confirmacion_justificacion', justificacion_id = justificacion.id)
+        except Exception as e:
+            messages.error(request, f"Error al procesar la justificación: {str(e)}")
+
+    #Si no es POST, se redirige al formulario
+    return redirect ('Modulo_alumnos:formulario_justificacion')
 
 

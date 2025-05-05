@@ -13,4 +13,9 @@ urlpatterns = [
     path('procesar-retiro/', views.procesar_retiro, name='procesar_retiro'),
     path('verificar-estado-retiro/', views.verificar_estado_retiro, name='verificar_estado_retiro'),
     path('actualizar-estado-retiro/', views.actualizar_estado_retiro, name='actualizar_estado_retiro'),
+
+    #Justificaciones
+    path('registrar-justificacion/', views.registrar_justificacion, name='registrar_justificacion'),
+    path('procesar-justificacion/', views.procesar_justificacion, name='procesar_justificacion'),
+    path('confirmacion_justificacion/<int:justificacion_id>/', views.confirmacion_justificacion_view, name='confirmacion_justificacion'),
 ]

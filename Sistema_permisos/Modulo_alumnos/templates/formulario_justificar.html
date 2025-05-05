@@ -33,13 +33,13 @@
                     <!-- Paso 2: Selección de Alumno y Registro de la justificacón -->
                     <div id="paso2" style="display: none;">
                         <h4 class="mb-3">Paso 2: Registro de Justificación</h4>
-                        <form method="post" class="mb-3" id="formularioJustificacion">
+                        <form method="post" class="mb-3" id="formularioJustificacion" action="{% url 'Modulo_alumnos:procesar_justificacion' %}">
                             {% csrf_token %}
                             
                             <input type="hidden" id="rut_persona_justifica" name="rut_persona_justifica">
                             
                             <div class="form-group mb-3">
-                                <label for="id_nombre_persona_justifica" class="form-label">Nombre de quien retira:</label>
+                                <label for="id_nombre_persona_justifica" class="form-label">Nombre de quien justifica:</label>
                                 <input type="text" class="form-control" id="id_nombre_persona_justifica" name="nombre_persona_justifica" readonly>
                             </div>
                             
@@ -237,9 +237,9 @@
 
         sinCertificadoRadio.addEventListener('change', function(){
             if (this.checked){
-                motivo_container.style.display = 'none';
+                motivo_container.style.display = 'block';
                 motivoJustificacionSelect.value= '';
-                motivoJustificacionSelect.required = false;
+                motivoJustificacionSelect.required = true;
             }
         });
         
@@ -324,7 +324,7 @@
 
                     //Establecer la hora de actual (llegada)
                     const ahora = new Date();
-                    const formatoHora = ahroa.toLocaleString('es-CL',{
+                    const formatoHora = ahora.toLocaleString('es-CL',{
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
@@ -405,10 +405,10 @@
                 
                 return;
             }
-            
             // Si no tenemos los datos en el select, realizar la petición AJAX completa
-            fetch(`{% url 'Modulo_alumnos:obtener_datos_alumno' %}?rut_estudiante=${rutEstudiante}&rut_apoderado=${rutApoderado}`, {
-                method: 'GET',
+            fetch('{% url "Modulo_alumnos:procesar_justificacion" %}', {
+                method: 'POST',
+                body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -463,8 +463,7 @@
             if (!rutPersonaJustificaInput.value || 
             !rutEstudianteSelect.value ||
             !nombreEstudianteInput.value ||
-            !cursoInput.value ||
-            !document.querySelector('select[name="motivo_justificacion"]').value) {
+            !cursoInput.value) {
         
                 event.preventDefault();
                 
@@ -481,59 +480,70 @@
         });
 
         //Manejo del envio del formulario
-        formularioJustificacion.addEventListener('submit', function(e){
-            e.preventDefault();
-            //Validar que se haya seleccionado un estudiante
-            if (!rutEstudianteSelect.value) {
-                alert('Por favor, debe seleccionar un estudiante.');
-                rutEstudiante.focus();
-                return;
-            }
-
-            // Validar que se haya seleccionado un tipo de justificación
-            if (!conCertificadoRadio.checked && !sinCertificadoRadio.checked) {
-                alert('Por favor, seleccione un tipo de justificación.');
-                return;
+        formularioJustificacion.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            console.log('Formulario enviado');
+            
+            const formData = new FormData(this);
+            
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
             }
             
-            // Validar que se haya seleccionado un motivo si es sin certificado
-            if (sinCertificadoRadio.checked && !motivoJustificacionSelect.value) {
-                alert('Por favor, seleccione un motivo de justificación.');
-                motivoJustificacionSelect.focus();
-                return;
-            }
-
-
-
-            // Mostrar pantalla de carga
+            // Modal de carga
             const loadingModal = new bootstrap.Modal(document.getElementById('loadingScreen'));
             loadingModal.show();
             
-            // Enviar el formulario
-            const formData = new FormData(this);
-            
-            fetch('/alumnos/registrar-justificacion/', {
+            fetch('{% url "Modulo_alumnos:procesar_justificacion" %}', {
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                loadingModal.hide();
-                
-                if (data.success) {
-                    // Redirigir a la página de confirmación
-                    window.location.href = `/modulo_alumnos/confirmacion_justificacion/${data.justificacion_id}/`;
-                } else {
-                    alert(data.mensaje || 'Ocurrió un error al registrar la justificación.');
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.text();
+            })
+            .then(text => {
+                console.log('Response text:', text);
+                try {
+                    const data = JSON.parse(text);
+                    console.log('Parsed JSON:', data);
+                    
+                    loadingModal.hide();
+                    
+                    if (data.success) {
+                        window.location.href = `/Modulo_alumnos/confirmacion_justificacion/${data.justificacion_id}/`;
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.mensaje || 'Ocurrió un error al registrar la justificación.',
+                            icon: 'error',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing JSON:', e);
+                    loadingModal.hide();
+                    Swal.fire({
+                        title: 'Error de respuesta',
+                        text: 'El servidor no devolvió una respuesta válida. Por favor, intente nuevamente.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Fetch error:', error);
                 loadingModal.hide();
-                alert('Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.');
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
             });
         });
     });
