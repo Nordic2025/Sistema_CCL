@@ -87,7 +87,7 @@ DATABASES = {
         'PORT': '5432',
         'NAME': 'db_sistema_permisos',
         'USER': 'postgres',
-        'PASSWORD': 'password',
+        'PASSWORD': 'colegioconce2025',
 
     }
 }
