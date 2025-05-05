@@ -95,7 +95,7 @@ def verificar_apoderado(request):
                 return JsonResponse({
                     'valido': True,
                     'alumnos': alumnos_apoderado,
-                    'nombre_apoderado': nombre_apoderado,  # Devolver el nombre del apoderado
+                    'nombre_apoderado': nombre_apoderado,  
                     'mensaje': 'Persona autorizada verificada correctamente'
                 })
             else:
