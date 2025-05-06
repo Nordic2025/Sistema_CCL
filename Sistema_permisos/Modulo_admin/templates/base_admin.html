@@ -177,15 +177,15 @@
     </aside>
 
     <div class="main-wrapper">
-        <header class="main-header">
-            <h1 class="page-title">Ingresos Colegio Concepción</h1>
+        <header class="main-header" id="header">
+            <h1 class="page-title">Conecta - Colegio Concepción Linares</h1>
         </header>
 
         <main class="main-body ">
             {% block content %}{% endblock %}
         </main>
 
-        <footer class="main-footer">
+        <footer class="main-footer" id="footer">
             Copyright © Colegio Concepción - Linares 2025
         </footer>
     </div>
@@ -317,15 +317,15 @@
             const forms = document.querySelectorAll('form');
             
             forms.forEach(form => {
-                // Almacenar el estado original de los botones para cada formulario
+                // Almacenar el estado original de los botones
                 const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
                 
-                // Guardar el estado original de cada botón como atributos de datos
+                // Guardar el estado original de cada botón
                 submitButtons.forEach(button => {
                     if (button.tagName === 'BUTTON') {
-                        button.setAttribute('data-original-html', button.innerHTML);
+                        button.dataset.originalHtml = button.innerHTML;
                     } else {
-                        button.setAttribute('data-original-value', button.value);
+                        button.dataset.originalValue = button.value;
                     }
                 });
                 
@@ -333,9 +333,9 @@
                 function restoreButtons() {
                     submitButtons.forEach(button => {
                         if (button.tagName === 'BUTTON') {
-                            button.innerHTML = button.getAttribute('data-original-html');
+                            button.innerHTML = button.dataset.originalHtml;
                         } else {
-                            button.value = button.getAttribute('data-original-value');
+                            button.value = button.dataset.originalValue;
                         }
                         button.disabled = false;
                     });
@@ -353,74 +353,34 @@
                     });
                 }
                 
-                // Agregar evento para cuando el formulario se envía
+                // Manejar el envío del formulario
                 form.addEventListener('submit', function(e) {
-                    // Verificar si el formulario es válido
+                    // Solo deshabilitar si el formulario es válido
                     if (this.checkValidity()) {
                         disableButtons();
-                    } else {
-                        // Si no es válido, asegurarse de que los botones estén habilitados
-                        restoreButtons();
                         
-                        // Programar una restauración adicional después de un breve retraso
-                        // para manejar casos donde la validación ocurre después del evento submit
-                        setTimeout(restoreButtons, 100);
-                    }
-                });
-                
-                // Agregar evento para cuando hay errores de validación en cualquier campo
-                form.querySelectorAll('input, select, textarea').forEach(field => {
-                    field.addEventListener('invalid', function() {
-                        // Restaurar botones cuando hay error de validación
-                        setTimeout(restoreButtons, 10);
-                    });
-                });
-                
-                // Agregar evento para detectar cambios en los campos después de un error
-                form.addEventListener('input', function() {
-                    // Si hay algún campo con clase de error, restaurar los botones
-                    if (form.querySelector('.is-invalid, .invalid-feedback, .errorlist')) {
-                        restoreButtons();
-                    }
-                });
-            });
-            
-            // Verificar si hay errores de validación del servidor (Django) al cargar la página
-            function checkServerErrors() {
-                document.querySelectorAll('form').forEach(form => {
-                    if (form.querySelector('.is-invalid, .invalid-feedback, .errorlist, .error')) {
-                        // Restaurar los botones del formulario que contiene errores
-                        const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
-                        submitButtons.forEach(button => {
-                            button.disabled = false;
-                            if (button.tagName === 'BUTTON') {
-                                // Intentar restaurar desde el atributo data
-                                if (button.hasAttribute('data-original-html')) {
-                                    button.innerHTML = button.getAttribute('data-original-html');
-                                } 
-                                // Si no hay atributo data, usar un valor predeterminado
-                                else if (button.innerHTML.includes('Procesando')) {
-                                    button.innerHTML = 'Enviar';
-                                }
-                            } else if (button.tagName === 'INPUT') {
-                                if (button.hasAttribute('data-original-value')) {
-                                    button.value = button.getAttribute('data-original-value');
-                                } else if (button.value === 'Procesando...') {
-                                    button.value = 'Enviar';
-                                }
+                        // Restaurar botones si el envío tarda demasiado (timeout de seguridad)
+                        setTimeout(() => {
+                            if (submitButtons[0].disabled) {
+                                restoreButtons();
                             }
-                        });
+                        }, 10000); // 10 segundos de timeout
                     }
                 });
-            }
-            
-            // Ejecutar la verificación de errores del servidor al cargar la página
-            checkServerErrors();
-            
-            // También ejecutar después de un breve retraso para asegurar que todos los elementos estén procesados
-            setTimeout(checkServerErrors, 500);
+                
+                // Restaurar botones cuando se detecta un error de validación
+                form.addEventListener('invalid', function(e) {
+                    restoreButtons();
+                }, true); // Usar captura para detectar eventos de elementos hijos
+                
+                // Verificar si hay errores del servidor al cargar
+                if (form.querySelector('.is-invalid, .invalid-feedback, .errorlist, .error')) {
+                    restoreButtons();
+                }
+            });
         });
     </script>
+    
     
 </body>
 </html>

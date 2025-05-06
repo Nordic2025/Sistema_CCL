@@ -114,7 +114,7 @@
                           </div>
                           <div class="col-md-6">
                             <label for="rut{{ inspector.id }}" class="form-label">RUT</label>
-                            <input type="text" class="form-control rut-input" id="rut{{ inspector.id }}" name="rut" value="{{ inspector.rut }}" required>
+                            <input type="text" class="form-control rut-input" id="rut{{ inspector.id }}" name="rut" value="{{ inspector.rut }}" required maxlength="12">
                             <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
                           </div>
                         </div>
@@ -226,7 +226,7 @@
               </div>
               <div class="col-md-6">
                 <label for="rut" class="form-label">RUT</label>
-                <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required>
+                <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required maxlength="12">
                 <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
               </div>
             </div>

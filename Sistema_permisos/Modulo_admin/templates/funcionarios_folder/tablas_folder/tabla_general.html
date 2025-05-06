@@ -6,6 +6,150 @@
 {% block title %}Historial de Permisos{% endblock %}
 
 {% block content %}
+
+<style>
+  @media print {
+    /* Ocultar elementos que no quieres que salgan en el PDF */
+    #sidebar,
+    #busqueda,
+    #curso,
+    #estado,
+    #btn_limpiar,
+    #btn_buscar,
+    #filtros,
+    #browserPrint,
+    #footer,
+    #header,
+    .card,
+    .card-header,
+    .card-body,
+    .row.mb-4,
+    .alert,
+    .pagination-container,
+    h1,
+    .form-label,
+    nav,
+    form,
+    .modal,
+    .col-md-2,
+    .col-md-3,
+    .col-md-4 { 
+      display: none !important;
+    }
+    
+    /* Ocultar todos los elementos del formulario y filtros */
+    #filtroForm, 
+    #filtroForm * {
+      display: none !important;
+    }
+    
+    /* Eliminar cualquier padding o margen que pueda estar causando el espacio en la izquierda */
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    /* Asegurar que el contenedor principal ocupe todo el ancho y no tenga márgenes ni padding */
+    .container, 
+    .main-content, 
+    .tabla_global,
+    .row,
+    .col-md-12 {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      left: 0 !important;
+    }
+    
+    /* Resetear cualquier posicionamiento que pueda estar afectando */
+    .main-content {
+      position: absolute !important;
+      left: 0 !important;
+      padding-left: 0 !important;
+      margin-left: 0 !important;
+    }
+
+    /* Agrandar la tabla al máximo */
+    .tabla_ancha {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-collapse: collapse;
+      margin: 0 !important;
+      padding: 0 !important;
+      table-layout: fixed !important; 
+    }
+
+    .thead_custom th, 
+    .tbody_custom td {
+      padding: 8px;
+      border: 1px solid #000;
+      text-align: left;
+      font-size: 11pt;
+      word-wrap: break-word; 
+    }
+    
+    /* Ajustar el tamaño de las columnas para optimizar espacio */
+    .tabla_ancha th:nth-child(1),
+    .tabla_ancha td:nth-child(1) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(2),
+    .tabla_ancha td:nth-child(2) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(3), 
+    .tabla_ancha td:nth-child(3) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(4),
+    .tabla_ancha td:nth-child(4) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(5), 
+    .tabla_ancha td:nth-child(5) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(6), 
+    .tabla_ancha td:nth-child(6) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(7), 
+    .tabla_ancha td:nth-child(7) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(8), 
+    .tabla_ancha td:nth-child(8) {
+      width: 10%;
+    }
+    
+    /* Ocultar la columna de acciones */
+    .tabla_ancha th:last-child,
+    .tabla_ancha td:last-child {
+      display: none !important;
+    }
+    
+    /* Agregar un título para el PDF */
+    .tabla_global::before {
+      content: "Registro de Permisos completados";
+      display: block;
+      text-align: center;
+      font-size: 18pt;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  }
+</style>
+
 <div class="container main-content">
   <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Permisos completados</h1>
 
@@ -45,7 +189,7 @@
                 </a>
                 {% endif %}
                 <!-- EXPORTAR A PDF -->
-                  <button type="button" id="exportarPDF" class="btn btn-danger">
+                  <button type="button" id="browserPrint" class="btn btn-danger">
                     <i class="fas fa-file-pdf"></i> Exportar a PDF
                   </button>
               </div>
@@ -195,235 +339,15 @@
     </div>
   </div>
 
-  <!-- Incluir las bibliotecas html2canvas y jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Botón para exportar a PDF
-      document.getElementById('exportarPDF').addEventListener('click', function() {
-        // Mostrar mensaje de carga
-        const loadingMessage = document.createElement('div');
-        loadingMessage.style.position = 'fixed';
-        loadingMessage.style.top = '0';
-        loadingMessage.style.left = '0';
-        loadingMessage.style.width = '100%';
-        loadingMessage.style.height = '100%';
-        loadingMessage.style.backgroundColor = 'rgba(0,0,0,0.5)';
-        loadingMessage.style.display = 'flex';
-        loadingMessage.style.justifyContent = 'center';
-        loadingMessage.style.alignItems = 'center';
-        loadingMessage.style.zIndex = '9999';
-        loadingMessage.innerHTML = '<div style="background-color: white; padding: 20px; border-radius: 5px;"><h3>Generando PDF, por favor espere...</h3></div>';
-        document.body.appendChild(loadingMessage);
+    function downloadPDFWithBrowserPrint() {
+      window.print();
+    }
     
-        // Obtener el contenido a convertir
-        const content = document.getElementById('contenido-pdf');
-        
-        // Configurar opciones para html2canvas
-        const options = {
-          scale: 2, // Mayor escala para mejor calidad
-          useCORS: true, // Permitir imágenes de otros dominios
-          logging: false, // Desactivar logs
-          letterRendering: true, // Mejor renderizado de texto
-          allowTaint: true, // Permitir elementos tainted
-        };
-    
-        // Convertir el contenido a imagen
-        html2canvas(content, options).then(canvas => {
-          // Crear PDF con jsPDF
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal para más espacio
-          
-          // Calcular dimensiones para ajustar al PDF
-          const pageWidth = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-          
-          // Usar todo el ancho de la página menos márgenes
-          const imgWidth = pageWidth - 20; // 10mm de margen a cada lado
-          const imgHeight = canvas.height * imgWidth / canvas.width;
-          
-          // Convertir canvas a imagen
-          const imgData = canvas.toDataURL('image/png');
-          
-          // Cargar imagen del logo
-          const logo = new Image();
-          logo.src = "{% static 'images/logo_ccl.png' %}";
-          logo.onload = function() {
-            // Función para añadir encabezado y pie de página a cada página
-            const addHeaderFooter = function(pageNumber) {
-              // === Encabezado ===
-              // Logo (ahora a la izquierda)
-              pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
-              
-              // Título principal (ahora a la derecha)
-              pdf.setFontSize(16);
-              pdf.setTextColor(40, 40, 40);
-              pdf.text('Colegio Concepción Linares', 35, 15);
-              
-              // Subtítulo (también a la derecha)
-              pdf.setFontSize(12);
-              pdf.text('Reporte de Permisos Completados', 35, 22);
-              
-              // Fecha y hora (alineada a la izquierda, debajo del logo)
-              const now = new Date();
-              const fecha = now.toLocaleDateString();
-              const hora = now.toLocaleTimeString();
-              pdf.setFontSize(10);
-              pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });  
-              pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
-              
-              // === Pie de página ===
-              pdf.setFontSize(10);
-              pdf.setTextColor(100);
-              pdf.text("Sistema de Permisos - Colegio Concepción Linares", 10, pageHeight - 10);
-              pdf.text(`Página ${pageNumber}`, pageWidth - 25, pageHeight - 10);
-            };
-            
-            // Calcular cuántas páginas necesitaremos
-            const totalPages = Math.ceil(imgHeight / (pageHeight - 55)); // 55mm para encabezado y pie de página
-            
-            // Para cada página
-            for (let i = 0; i < totalPages; i++) {
-              // Si no es la primera página, añadir una nueva
-              if (i > 0) {
-                pdf.addPage();
-              }
-              
-              // Añadir encabezado y pie de página
-              addHeaderFooter(i + 1);
-              
-              // Calcular qué parte de la imagen mostrar en esta página
-              const srcY = i * (pageHeight - 55) * canvas.height / imgHeight;
-              const srcHeight = Math.min(canvas.height - srcY, (pageHeight - 55) * canvas.height / imgHeight);
-              
-              // Añadir la parte correspondiente de la imagen (ahora con más espacio para el encabezado)
-              pdf.addImage(
-                imgData, 
-                'PNG', 
-                10, // x
-                45, // y (aumentado para dejar más espacio al encabezado)
-                imgWidth, // ancho (ahora usa todo el ancho disponible)
-                srcHeight * imgWidth / canvas.width, // alto proporcional
-                '', // alias
-                'FAST', // compresión
-                0, // rotación
-                srcY, // srcY - desde dónde empezar a recortar verticalmente
-                canvas.width, // srcWidth - ancho completo
-                srcHeight // srcHeight - altura a recortar
-              );
-            }
-            
-            // Generar nombre de archivo con fecha y hora
-            const now = new Date();
-            const filename = `permisos_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.pdf`;
-            
-            // Descargar el PDF
-            pdf.save(filename);
-            
-            // Quitar mensaje de carga
-            document.body.removeChild(loadingMessage);
-          };
-          
-          // Si hay error al cargar el logo
-          logo.onerror = function() {
-            console.error('Error al cargar el logo');
-            
-            // Crear PDF sin logo
-            pdf.setFontSize(16);
-            pdf.text('Colegio Concepción Linares', 10, 15);
-            pdf.setFontSize(12);
-            pdf.text('Reporte de Permisos Completados', 10, 22);
-            
-            // Fecha y hora actual
-            const now = new Date();
-            const fecha = now.toLocaleDateString();
-            const hora = now.toLocaleTimeString();
-            pdf.setFontSize(10);
-            pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });
-            pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
-            
-            // Añadir la imagen del contenido (con espacio para el encabezado)
-            pdf.addImage(imgData, 'PNG', 10, 45, imgWidth, imgHeight);
-            
-            // Generar nombre de archivo con fecha y hora
-            const filename = `permisos_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.pdf`;
-            
-            // Descargar el PDF
-            pdf.save(filename);
-            
-            // Quitar mensaje de carga
-            document.body.removeChild(loadingMessage);
-          };
-        });
-      });
-    
-      const busquedaInput = document.getElementById('busqueda');
-      const fechaInicioInput = document.getElementById('fecha_inicio');
-      const fechaFinInput = document.getElementById('fecha_fin');
-    
-      // Función para formatear RUT (igual que en formulario_permisos.html)
-      function formatearRut(rut) {
-        // Eliminar puntos y guiones
-        let valor = rut.replace(/\./g, '').replace(/-/g, '');
-    
-        // Obtener dígito verificador
-        let dv = valor.slice(-1);
-    
-        // Obtener cuerpo del RUT
-        let rutCuerpo = valor.slice(0, -1);
-    
-        // Formatear RUT con puntos y guión
-        let rutFormateado = '';
-    
-        // Agregar puntos de miles
-        for (let i = rutCuerpo.length; i > 0; i -= 3) {
-          const inicio = Math.max(0, i - 3);
-          rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
-        }
-    
-        // Eliminar el primer punto
-        rutFormateado = rutFormateado.substring(1);
-    
-        // Agregar guión y dígito verificador
-        return rutFormateado + '-' + dv;
-      }
-    
-      // Evento para formatear el RUT mientras se escribe
-      busquedaInput.addEventListener('input', function (e) {
-        const valor = this.value.trim();
-    
-        // Si parece ser un RUT (contiene números y posiblemente K/k)
-        if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
-          // Guardar la posición del cursor
-          const start = this.selectionStart;
-          const end = this.selectionEnd;
-          const valorOriginal = this.value;
-    
-          // Eliminar caracteres no numéricos excepto K/k
-          let valorLimpio = this.value.replace(/[^\dkK]/g, '');
-    
-          // Si hay suficientes caracteres para formatear como RUT
-          if (valorLimpio.length > 1) {
-            // Formatear el valor
-            this.value = formatearRut(valorLimpio);
-    
-            // Calcular nueva posición del cursor
-            const diff = this.value.length - valorOriginal.length;
-    
-            // Restaurar la posición del cursor
-            this.setSelectionRange(start + diff, end + diff);
-          }
-        }
-      });
-    });
+    document.querySelector('#browserPrint').addEventListener('click', downloadPDFWithBrowserPrint);
   </script>
   
-  
-  
-
-
 
   <!-- Estilos adicionales para centrar el contenido de la tabla -->
   <style>
