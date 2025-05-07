@@ -69,6 +69,7 @@ def logout_admin(request):
 def inicio_view(request):
 
     dias_semana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+    limite_24h = timezone.now() - timedelta(hours=24)
     
 
     # Obtener la fecha actual y la fecha de hace 7 dias
@@ -103,7 +104,7 @@ def inicio_view(request):
         datos_retiros.append(retiros_dia)
 
     # Obtener estadistica de los permisos
-    permisos_activos = RegistroSalida.objects.filter(hora_regreso__isnull=True).count()
+    permisos_activos = RegistroSalida.objects.filter(hora_regreso__isnull=True, hora_salida__gte = limite_24h).count()
 
     # Obtener los ultimos 5 permisos
     permisos_recientes = RegistroSalida.objects.order_by('-hora_salida')[:5]

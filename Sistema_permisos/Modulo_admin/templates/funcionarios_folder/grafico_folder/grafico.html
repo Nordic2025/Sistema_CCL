@@ -7,7 +7,7 @@
 {% block content %}
 <div class="container main-content" style="margin-bottom: 30px;">
     <div class="d-flex justify-content-between align-items-center flex-wrap" style="margin-top: 30px; margin-bottom: 20px;">
-        <h1 style="font-size: 2rem;">Panel de Administrador | Permisos</h1>
+        <h1 style="font-size: 2rem;">Panel de Administrador | Permisos de Funcionarios</h1>
         
         <div class="d-flex align-items-center gap-3">
             <!-- Filtros de meses en línea -->
@@ -225,7 +225,17 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('generar-reporte').addEventListener('click', function() {
+
             const graficoContainer = document.getElementById('grafico');
+
+            Swal.fire({
+                title: 'Generando PDF',
+                html: 'Por favor espere mientras se genera el reporte...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
             html2canvas(graficoContainer).then(function(canvas) {
                 const imgData = canvas.toDataURL('image/png');
@@ -269,11 +279,14 @@
                     const pageHeight = pdf.internal.pageSize.getHeight();
                     pdf.setFontSize(10);
                     pdf.setTextColor(100);
-                    pdf.text("Sistema de Permisos - Colegio Concepcion Linares", 10, pageHeight - 10);
+                    pdf.text("Sistema Conecta - Colegio Concepcion Linares", 10, pageHeight - 10);
                     pdf.text("Contacto: contacto@colegioconcepcionlinares.cl", pageWidth - 90, pageHeight - 10);
 
                     // Guardar
-                    pdf.save('reporte_grafico.pdf');
+                    pdf.save('reporte_grafico_permisos.pdf');
+
+                    // Cerrar el indicador de carga
+                    Swal.close();
                 };
             });
         });
