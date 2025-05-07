@@ -5,6 +5,7 @@
 {% block title %}Alumnos{% endblock %}
 
 {% block content %}
+
 <div class="container main-content">
     <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Alumnos</h1>  
     
@@ -358,6 +359,17 @@
                     </div>
                   </div>
                 </div>
+
+                <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                    const rutInput{{ alumno.id }} = document.getElementById('rut{{ alumno.id }}');
+                    if (rutInput{{ alumno.id }}) {
+                      rutInput{{ alumno.id }}.addEventListener('blur', function() {
+                        verificarRutEgresado(this);
+                      });
+                    }
+                  });
+                </script>
               </div>
               {% endif %}
 
@@ -1270,67 +1282,7 @@
           });
         </script>
 
-{% comment %} Verficacion si el rut ingresado es de un alumno egresado {% endcomment %}
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            // Función para verificar si un RUT pertenece a un alumno egresado
-            function verificarRutEgresado(rutInput) {
-              const rut = rutInput.value.trim();
-              if (rut.length > 8) { // Verificar solo si el RUT tiene un formato válido
-                fetch(`{% url 'Modulo_admin:verificar_rut_egresado' %}?rut=${encodeURIComponent(rut)}`)
-                  .then(response => response.json())
-                  .then(data => {
-                    // Obtener o crear el contenedor de mensajes
-                    let msgContainer = rutInput.nextElementSibling;
-                    if (!msgContainer || !msgContainer.classList.contains('rut-validation-message')) {
-                      msgContainer = document.createElement('div');
-                      msgContainer.classList.add('rut-validation-message', 'mt-2');
-                      rutInput.parentNode.insertBefore(msgContainer, rutInput.nextSibling);
-                    }
-                    
-                    // Mostrar mensaje si es un egresado
-                    if (data.es_egresado) {
-                      msgContainer.innerHTML = `
-                        <div class="alert alert-danger">
-                          <i class="fas fa-exclamation-triangle"></i> 
-                          <strong>Atención:</strong> Este RUT pertenece a ${data.nombre}, 
-                          alumno egresado en ${data.año_egreso}. No puede ser registrado nuevamente.
-                        </div>
-                      `;
-                      rutInput.classList.add('is-invalid');
-                      
-                      // Deshabilitar el botón de envío del formulario
-                      const submitBtn = rutInput.closest('form').querySelector('button[type="submit"]');
-                      if (submitBtn) submitBtn.disabled = true;
-                    } else {
-                      msgContainer.innerHTML = '';
-                      rutInput.classList.remove('is-invalid');
-                      
-                      // Habilitar el botón de envío del formulario
-                      const submitBtn = rutInput.closest('form').querySelector('button[type="submit"]');
-                      if (submitBtn) submitBtn.disabled = false;
-                    }
-                  })
-                  .catch(error => console.error('Error al verificar RUT:', error));
-              }
-            }
-            
-            // Aplicar la verificación al campo de RUT en el formulario de registro            const rutAlumnoRegistro = document.querySelector('#{{ form.rut.id_for_label }}');
-            if (rutAlumnoRegistro) {
-              rutAlumnoRegistro.addEventListener('blur', function() {
-                verificarRutEgresado(this);
-              });
-            }
-            
-            // Aplicar la verificación al campo de RUT en el formulario de edición
-            const rutAlumnoEdicion = document.querySelector('#{{ alumno.id }}');
-            if (rutAlumnoEdicion) {
-              rutAlumnoRegistro.addEventListener('blur', function() {
-                verificarRutEgresado(this);
-              });
-            }
-          });
-        </script>
+
         
 
 {% comment %} Validacion para el buscador de Nombre o rut {% endcomment %}
@@ -1413,6 +1365,61 @@
     }
   });
 </script>
+
+
+{% comment %} Verficacion si el rut ingresado es de un alumno egresado {% endcomment %}
+<script>
+  // Función para verificar si un RUT pertenece a un alumno egresado
+  function verificarRutEgresado(rutInput) {
+    const rut = rutInput.value.trim();
+    if (rut.length > 8) { // Verificar solo si el RUT tiene un formato válido
+      fetch(`{% url 'Modulo_admin:verificar_rut_egresado' %}?rut=${encodeURIComponent(rut)}`)
+        .then(response => response.json())
+        .then(data => {
+          // Obtener o crear el contenedor de mensajes
+          let msgContainer = rutInput.nextElementSibling;
+          if (!msgContainer || !msgContainer.classList.contains('rut-validation-message')) {
+            msgContainer = document.createElement('div');
+            msgContainer.classList.add('rut-validation-message', 'mt-2');
+            rutInput.parentNode.insertBefore(msgContainer, rutInput.nextSibling);
+          }
+          
+          // Mostrar mensaje si es un egresado
+          if (data.es_egresado) {
+            msgContainer.innerHTML = `
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> 
+                <strong>Atención:</strong> Este RUT pertenece a ${data.nombre}, 
+                alumno egresado en ${data.año_egreso}. No puede ser registrado nuevamente.
+              </div>
+            `;
+            rutInput.classList.add('is-invalid');
+            
+            // Deshabilitar el botón de envío del formulario
+            const submitBtn = rutInput.closest('form').querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+          } else {
+            msgContainer.innerHTML = '';
+            rutInput.classList.remove('is-invalid');
+            
+            // Habilitar el botón de envío del formulario
+            const submitBtn = rutInput.closest('form').querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = false;
+          }
+        })
+        .catch(error => console.error('Error al verificar RUT:', error));
+    }
+  }
+  
+  // Aplicar la verificación al campo de RUT en el formulario de registro
+  const rutAlumnoRegistro = document.querySelector('#{{ form.rut.id_for_label }}');
+  if (rutAlumnoRegistro) {
+    rutAlumnoRegistro.addEventListener('blur', function() {
+      verificarRutEgresado(this);
+    });
+  }
+</script>
+
 
 
 {% comment %} Confirmacion de eliminacion Familiar de Alumno {% endcomment %}
