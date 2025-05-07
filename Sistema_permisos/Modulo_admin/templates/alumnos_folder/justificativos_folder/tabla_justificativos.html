@@ -1,1 +1,663 @@
-<h1>Tabla de Justificativos</h1>
+{% extends 'base_admin.html' %}
+
+{% load static %}
+
+{% block title %}Justificativos{% endblock %}
+
+{% block content %}
+<style>
+  @media print {
+    /* Ocultar elementos en el PDF */
+    #sidebar,
+    #busqueda,
+    #curso,
+    #estado,
+    #btn_limpiar,
+    #btn_buscar,
+    #filtros,
+    #browserPrint,
+    #footer,
+    #header,
+    .card,
+    .card-header,
+    .card-body,
+    .row.mb-4,
+    .alert,
+    .pagination-container,
+    h1,
+    .form-label,
+    nav,
+    form,
+    .modal,
+    .col-md-2,
+    .col-md-3,
+    .col-md-4 { 
+      display: none !important;
+    }
+    
+    /* Ocultar todos los elementos del formulario y filtros */
+    #filtroForm, 
+    #filtroForm * {
+      display: none !important;
+    }
+    
+    /* Eliminar cualquier padding o margen que pueda estar causando el espacio en la izquierda */
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    /* Asegurar que el contenedor principal ocupe todo el ancho y no tenga márgenes ni padding */
+    .container, 
+    .main-content, 
+    .tabla_global,
+    .row,
+    .col-md-12 {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      left: 0 !important;
+    }
+    
+    /* Resetear cualquier posicionamiento que pueda estar afectando */
+    .main-content {
+      position: absolute !important;
+      left: 0 !important;
+      padding-left: 0 !important;
+      margin-left: 0 !important;
+    }
+
+    /* Agrandar la tabla al máximo */
+    .tabla_ancha {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-collapse: collapse;
+      margin: 0 !important;
+      padding: 0 !important;
+      table-layout: fixed !important; 
+    }
+
+    .thead_custom th, 
+    .tbody_custom td {
+      padding: 8px;
+      border: 1px solid #000;
+      text-align: left;
+      font-size: 11pt;
+      word-wrap: break-word; 
+    }
+    
+    /* Ajustar el tamaño de las columnas para optimizar espacio */
+    .tabla_ancha th:nth-child(1),
+    .tabla_ancha td:nth-child(1) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(2),
+    .tabla_ancha td:nth-child(2) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(3), 
+    .tabla_ancha td:nth-child(3) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(4),
+    .tabla_ancha td:nth-child(4) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(5), 
+    .tabla_ancha td:nth-child(5) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(6), 
+    .tabla_ancha td:nth-child(6) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(7), 
+    .tabla_ancha td:nth-child(7) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(8), 
+    .tabla_ancha td:nth-child(8) {
+      width: 10%;
+    }
+    
+    /* Ocultar la columna de acciones */
+    .tabla_ancha th:last-child,
+    .tabla_ancha td:last-child {
+      display: none !important;
+    }
+    
+    /* Agregar un título para el PDF */
+    .tabla_global::before {
+      content: "Registro de Justificativos";
+      display: block;
+      text-align: center;
+      font-size: 18pt;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  }
+</style>
+
+<div class="container main-content" style="padding-left: 10px; margin-left: 10px; max-width: 93%;">    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Justificativos</h1>  
+    
+    <!-- Filtros combinados (buscador, curso y nivel) -->
+    <div class="row mb-4 mt-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filtros</h5>
+          </div>
+          <div class="card-body">
+            <form id="filtroForm" method="get" action="{% url 'Modulo_admin:justificaciones' %}" class="row g-3">
+              <!-- Buscador -->
+              <div class="col-md-4">
+                <label for="busqueda" class="form-label">Buscar por nombre o RUT:</label>
+                <input type="text" id="busqueda" name="busqueda" class="form-control" placeholder="Nombre o RUT"
+                  value="{{ busqueda }}" autocomplete="off">
+              </div>
+
+              <!-- Filtro por curso -->
+              <div class="col-md-3">
+                <label for="curso" class="form-label">Curso:</label>
+                <select class="form-select" id="curso" name="curso">
+                  <option value="">Todos los cursos</option>
+                  {% for curso in cursos %}
+                  <option value="{{ curso.id }}" {% if curso_filtro == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <div class="d-grid gap-2 w-100">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Buscar
+                  </button>
+                  {% if busqueda or curso_filtro %}
+                  <a href="{% url 'Modulo_admin:justificaciones' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Limpiar filtros
+                  </a>
+                  {% endif %}
+                    <button type="button" id="browserPrint" class="btn btn-danger">
+                      <i class="fas fa-file-pdf"></i> Exportar a PDF
+                    </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Indicadores de filtros activos -->
+    {% if busqueda or curso_filtro or nivel_filtro %}
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="alert alert-info">
+          <h5 class="alert-heading">Filtros activos:</h5>
+          <ul class="mb-0">
+            {% if busqueda %}
+            <li>Búsqueda: <strong>{{ busqueda }}</strong></li>
+            {% endif %}
+            {% if curso_filtro %}
+            <li>Curso: <strong>{{ curso_nombre }}</strong></li>
+            {% endif %}
+            </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tabla_global">
+          <table class="tabla_ancha">
+                <thead class="thead_custom">
+                <tr>
+                    <th>RUT Apoderado/Familiar </th>
+                    <th>Nombre Alumno</th>
+                    <th>RUT Alumno</th>
+                    <th>Curso</th>
+                    <th>Fecha y hora de llegada</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody class="tbody_custom">
+                    {% for justificativo in justificativos %}
+                        <tr>
+                            <td>{{ justificativo.rut_persona_justifica }}</td>
+                            <td>{{ justificativo.nombre_estudiante }}</td>
+                            <td>{{ justificativo.rut_estudiante }}</td>
+                            <td>{{ justificativo.curso }}</td>
+                            <td>{{ justificativo.hora_llegada }}</td>
+                            <td>
+                                <button type="button" class="btn btn_primary btn-outline-primary m-1" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#verDetalleModal{{ justificativo.id }}">
+                                Ver Detalle
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal para Ver Detalle -->
+                        <div class="modal fade" id="verDetalleModal{{ justificativo.id }}" tabindex="-1" aria-labelledby="verDetalleModalLabel{{ justificativo.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="verDetalleModalLabel{{ justificativo.id }}">Detalles del Justificativo | {{ justificativo.nombre_estudiante }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                <div class="row d-flex">
+                                    <div class="col-md-6">
+                                        <div class="card mb-1 h-100">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Alumno justificado</h5>
+                                                <p><strong>RUT:</strong> {{ justificativo.rut_estudiante }}</p>
+                                                <p><strong>Nombre Completo:</strong> {{ justificativo.nombre_estudiante }}</p>
+                                                <p><strong>Curso:</strong> {{ justificativo.curso }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card mb-1 h-100" >
+                                            <div class="card-body ">
+                                                <h5 class="card-title">Apoderado que justifica</h5>
+                                                <p><strong>Apoderado/Familiar:</strong> {{ justificativo.nombre_persona_justifica }}</p>
+                                                <p><strong>RUT: </strong> {{ justificativo.rut_persona_justifica |default:"No registrado" }}</p>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                    <div class="col-md-12 mt-2">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Información de la justificación</h5>
+                                                <p><strong>Fecha y hora del registro (Llegada del alumno): </strong> {{ justificativo.hora_llegada |default:"No hay fecha y hora de registro" }}</p>
+                                                <p><strong>Tipo de justificación: </strong> {{ justificativo.get_tipo_justificacion_display |default:"No se ha indicado el tipo de justificación" }}</p>
+                                                <p><strong>Motivo: </strong> {{ justificativo.motivo_justificacion |default:"No se ha indicado motivo" }}</p>
+                                                <p><strong>Código: </strong> {{ justificativo.codigo_verificacion |default:"No se ha proporcionado un codigo." }}</p>
+                                                <p class="text-muted small">Este código es utilizado para relacionar el certificado médico correspondiente.</p>
+                                            </div>
+                                        </div> 
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="9">No hay justificativos registrados.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+            {% comment %} Navegación entre paginas {% endcomment %}
+            <div class="pagination-container my-4">
+                <nav aria-label="Navegación de páginas">
+                    <ul class="pagination pagination-md justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Primera">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                            <span class="d-none d-sm-inline">Primera</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="d-none d-sm-inline">Anterior</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                            <span class="d-none d-sm-inline">Primera</span>
+                            </span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="d-none d-sm-inline">Anterior</span>
+                            </span>
+                        </li>
+                        {% endif %}
+            
+                        <!-- Indicador de página actual -->
+                        <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                        </li>
+            
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Siguiente">
+                            <span class="d-none d-sm-inline">Siguiente</span>
+                            <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Última">
+                            <span class="d-none d-sm-inline">Última</span>
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                            <span class="d-none d-sm-inline">Siguiente</span>
+                            <span aria-hidden="true">&raquo;</span>
+                            </span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                            <span class="d-none d-sm-inline">Última</span>
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                            </span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                <!-- Información adicional sobre registros -->
+                <div class="text-center text-muted mt-2">
+                  <small>Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index }} de {{ total_registros }} en total</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  
+  
+  
+    
+
+<!-- Script para SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      
+<!-- Script para generar PDF -->
+<script>
+  function downloadPDFWithBrowserPrint() {
+    window.print();
+  }
+  
+  document.querySelector('#browserPrint').addEventListener('click', downloadPDFWithBrowserPrint);
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+  // Función para aplicar el formateo de RUT a un elemento
+  function aplicarFormateoRut(elemento) {
+    elemento.addEventListener('input', function() {
+      let valor = this.value.replace(/\./g, '').replace(/-/g, '');
+        if (valor.length > 1) {
+          // Obtener dígito verificador
+          let dv = valor.slice(-1);
+          // Obtener cuerpo del RUT
+          let rutCuerpo = valor.slice(0, -1);
+            // Formatear RUT
+                let rutFormateado = '';
+                for (let i = rutCuerpo.length; i > 0; i -= 3) {
+                  const inicio = Math.max(0, i - 3);
+                  rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+                }
+                rutFormateado = rutFormateado.substring(1) + '-' + dv;
+                this.value = rutFormateado;
+              }
+            });
+          }
+      
+          // Función para inicializar todos los campos de RUT
+          function inicializarCamposRut() {
+            document.querySelectorAll('.rut-input').forEach(aplicarFormateoRut);
+            console.log('Campos RUT inicializados:', document.querySelectorAll('.rut-input').length);
+          }
+      
+          // Inicializar campos existentes
+          inicializarCamposRut();
+      
+          // Reinicializar cuando se abre cualquier modal
+          document.querySelectorAll('.modal').forEach(function(modal) {
+            modal.addEventListener('shown.bs.modal', function() {
+              setTimeout(inicializarCamposRut, 100); 
+            });
+          });
+      
+          // Observar cambios en el DOM para aplicar formateo a nuevos campos
+          const observer = new MutationObserver(function(mutations) {
+            let needsInit = false;
+            mutations.forEach(function(mutation) {
+              if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                needsInit = true;
+              }
+            });
+            if (needsInit) {
+              inicializarCamposRut();
+            }
+          });
+      
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+          
+          // Validación de RUT para todos los formularios
+          function validarRut(rut) {
+            // Eliminar puntos y guiones
+            rut = rut.replace(/\./g, '').replace(/-/g, '');
+            
+            // Verificar longitud mínima
+            if (rut.length < 2) return false;
+            
+            // Separar cuerpo y dígito verificador
+            const cuerpo = rut.slice(0, -1);
+            const dv = rut.slice(-1).toUpperCase();
+            
+            // Calcular dígito verificador
+            let suma = 0;
+            let multiplicador = 2;
+            
+            // Recorrer el cuerpo de derecha a izquierda
+            for (let i = cuerpo.length - 1; i >= 0; i--) {
+              suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+              multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+            }
+            
+            // Calcular dígito esperado
+            const resto = suma % 11;
+            const dvEsperado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
+            
+            // Comparar dígito verificador
+            return dv === dvEsperado;
+          }
+          
+          // Validación al enviar los formularios
+          const justificacionesForm = document.querySelectorAll('.justificacionesForm');
+          justificacionesForm.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+              const rutInputs = this.querySelectorAll('.rut-input');
+              let formValido = true;
+              
+              rutInputs.forEach(function(input) {
+                // Solo validar si el campo tiene valor (permite campos opcionales)
+                if (input.value.trim() !== '') {
+                  if (!validarRut(input.value)) {
+                    formValido = false;
+                    input.classList.add('is-invalid');
+                    
+                    // Crear mensaje de error si no existe
+                    let errorMsg = input.nextElementSibling;
+                    if (!errorMsg || !errorMsg.classList.contains('invalid-feedback')) {
+                      errorMsg = document.createElement('div');
+                      errorMsg.classList.add('invalid-feedback');
+                      input.parentNode.insertBefore(errorMsg, input.nextSibling);
+                    }
+                    errorMsg.textContent = 'RUT inválido. Verifique el formato y dígito verificador.';
+                  } else {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                    
+                    // Eliminar mensaje de error si existe
+                    const errorMsg = input.nextElementSibling;
+                    if (errorMsg && errorMsg.classList.contains('invalid-feedback')) {
+                      errorMsg.remove();
+                    }
+                  }
+                }
+              });
+              
+              if (!formValido) {
+                e.preventDefault();
+                Swal.fire({
+                  icon: 'error',
+                  title: '¡Error de validación!',
+                  text: 'Hay uno o más RUTs inválidos en el formulario. Por favor, verifique los campos marcados.',
+                  confirmButtonText: 'Entendido'
+                });
+              }
+            });
+          });
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Depuración de modales
+    const modales = document.querySelectorAll('.modal');
+    console.log('Modales encontrados:', modales.length);
+    
+    // Registrar eventos para cada modal
+    modales.forEach(function(modal, index) {
+      console.log(`Modal #${index} ID:`, modal.id);
+      
+      modal.addEventListener('show.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento show.bs.modal disparado`);
+      });
+      
+      modal.addEventListener('shown.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento shown.bs.modal disparado`);
+      });
+      
+      modal.addEventListener('hide.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento hide.bs.modal disparado`);
+      });
+      
+      modal.addEventListener('hidden.bs.modal', function() {
+        console.log(`Modal ${modal.id} - Evento hidden.bs.modal disparado`);
+      });
+      
+      // Verificar botones que abren este modal
+      const botones = document.querySelectorAll(`[data-bs-target="#${modal.id}"]`);
+      console.log(`Botones para modal ${modal.id}:`, botones.length);
+    });
+    
+    // Verificar si Bootstrap está disponible
+    if (typeof bootstrap !== 'undefined') {
+      console.log('Bootstrap JS está disponible');
+    } else {
+      console.error('Bootstrap JS NO está disponible - Los modales no funcionarán');
+    }
+  });
+</script>
+
+{% comment %} Validacion para el buscador de Nombre o rut {% endcomment %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const busquedaInput = document.getElementById('busqueda');
+    const filtroForm = document.getElementById('filtroForm');
+    
+    // Función para formatear RUT
+    function formatearRut(rut) {
+      // Eliminar puntos y guiones
+      let valor = rut.replace(/\./g, '').replace(/-/g, '');
+  
+      // Obtener dígito verificador
+      let dv = valor.slice(-1);
+  
+      // Obtener cuerpo del RUT
+      let rutCuerpo = valor.slice(0, -1);
+  
+      // Formatear RUT con puntos y guión
+      let rutFormateado = '';
+  
+      // Agregar puntos de miles
+      for (let i = rutCuerpo.length; i > 0; i -= 3) {
+        const inicio = Math.max(0, i - 3);
+        rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+      }
+  
+      // Eliminar el primer punto
+      rutFormateado = rutFormateado.substring(1);
+  
+      // Agregar guión y dígito verificador
+      return rutFormateado + '-' + dv;
+    }
+  
+    // Evento para formatear el RUT mientras se escribe
+    if (busquedaInput) {
+      busquedaInput.addEventListener('input', function(e) {
+        const valor = this.value.trim();
+  
+        // Si parece ser un RUT (contiene números y posiblemente K/k)
+        if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
+          // Guardar la posición del cursor
+          const start = this.selectionStart;
+          const end = this.selectionEnd;
+          const valorOriginal = this.value;
+  
+          // Eliminar caracteres no numéricos excepto K/k
+          let valorLimpio = this.value.replace(/[^\dkK]/g, '');
+  
+          // Si hay suficientes caracteres para formatear como RUT
+          if (valorLimpio.length > 1) {
+            // Formatear el valor
+            this.value = formatearRut(valorLimpio);
+  
+            // Calcular nueva posición del cursor
+            const diff = this.value.length - valorOriginal.length;
+  
+            // Restaurar la posición del cursor
+            this.setSelectionRange(start + diff, end + diff);
+          }
+        }
+      });
+      
+      // Asegurarse de que el RUT esté correctamente formateado al enviar el formulario
+      if (filtroForm) {
+        filtroForm.addEventListener('submit', function(e) {
+          const busquedaValor = busquedaInput.value.trim();
+          
+          // Si parece ser un RUT, asegurarse de que esté bien formateado
+          if (/^[0-9kK.-]+$/.test(busquedaValor) && busquedaValor.length > 1) {
+            // Limpiar y reformatear
+            const valorLimpio = busquedaValor.replace(/[^\dkK]/g, '');
+            if (valorLimpio.length > 1) {
+              busquedaInput.value = formatearRut(valorLimpio);
+            }
+          }
+        });
+      }
+    }
+  });
+</script>
+
+
+
+    
+{% endblock %}

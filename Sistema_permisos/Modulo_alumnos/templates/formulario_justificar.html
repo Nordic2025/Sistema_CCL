@@ -1,1 +1,554 @@
-<h1>ANASHEEEE</h1>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Justificación de Estudiantes - Colegio Concepcion Linares
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Registrar Justificación de Estudiante</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Paso 1: Verificación de Apoderado -->
+                    <div id="paso1" class="mb-4">
+                        <h4 class="mb-3">Paso 1: Verificación de Apoderado</h4>
+                        <div class="form-group mb-3">
+                            <label for="rut_apoderado" class="form-label">RUT de quien justifica:</label>
+                            <input type="text" class="form-control rut-input" id="rut_apoderado" placeholder="Ej: 12.345.678-9" maxlength="12" required >
+                            <small class="form-text text-muted">Ingrese el RUT con formato XX.XXX.XXX-X</small>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" id="btnVerificarApoderado">
+                                <i class="fas fa-check-circle"></i> Verificar Apoderado
+                            </button>
+                        </div>
+                        <div id="resultadoVerificacion" class="mt-3"></div>
+                    </div>
+                    
+                    <!-- Paso 2: Selección de Alumno y Registro de la justificacón -->
+                    <div id="paso2" style="display: none;">
+                        <h4 class="mb-3">Paso 2: Registro de Justificación</h4>
+                        <form method="post" class="mb-3" id="formularioJustificacion" action="{% url 'Modulo_alumnos:procesar_justificacion' %}">
+                            {% csrf_token %}
+                            
+                            <input type="hidden" id="rut_persona_justifica" name="rut_persona_justifica">
+                            
+                            <div class="form-group mb-3">
+                                <label for="id_nombre_persona_justifica" class="form-label">Nombre de quien justifica:</label>
+                                <input type="text" class="form-control" id="id_nombre_persona_justifica" name="nombre_persona_justifica" readonly>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="rut_estudiante" class="form-label">RUT del estudiante:</label>
+                                <select class="form-select" id="rut_estudiante" name="rut_estudiante" required>
+                                    <option value="">Seleccione un estudiante</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="nombre_estudiante" class="form-label">Nombre del estudiante:</label>
+                                <input type="text" class="form-control bg-light" id="nombre_estudiante" name="nombre_estudiante" readonly style="cursor: not-allowed; opacity: 0.8; color: #6c757d;">
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="curso" class="form-label">Curso:</label>
+                                <input type="text" class="form-control bg-light" id="curso" name="curso" readonly style="cursor: not-allowed; opacity: 0.8; color: #6c757d;">
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="hora_llegada" class="form-label">Hora de llegada:</label>
+                                <input type="text" class="form-control bg-light" id="hora_llegada" name="hora_llegada" readonly style="cursor: not-allowed; opacity: 0.8; color: #6c757d;">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label">Tipo de justificación:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_justificacion" id="con_certificado" value="con_certificado" required>
+                                    <label class="form-check-label" for="con_certificado">
+                                        Con Certificado Médico
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="tipo_justificacion" id="sin_certificado" value="sin_certificado">
+                                    <label class="form-check-label" for="sin_certificado">
+                                        Sin Certificado Médico
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group mb-3" id="motivo_container" style="display: none;">
+                                <label for="motivo_justificacion" class="form-label">Motivo de la justificación:</label>
+                                <select class="form-select" id="motivo_justificacion" name="motivo_justificacion">
+                                    <option value="">Seleccione un motivo</option>
+                                    <option value="Asuntos Medicos">Asuntos Médicos</option>
+                                    <option value="Asuntos Familiares">Asuntos Familiares</option>
+                                    <option value="Tramites">Trámites</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="btnRegistrarJustificativo">
+                                    <i class="fas fa-save"></i> Registrar Justificación
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            <i class="fas fa-arrow-left"></i> Volver al inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de carga -->
+<div class="modal fade" id="loadingScreen" tabindex="-1" aria-labelledby="loadingScreenLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <h5 class="modal-title mb-3" id="loadingScreenLabel">Procesando justificación</h5>
+                <p>Por favor espere mientras procesamos su solicitud...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .input-readonly {
+        background-color: #f8f9fa !important;
+        cursor: not-allowed !important;
+        opacity: 0.8 !important;
+        color: #6c757d !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Referencias a elementos del DOM
+        const paso1 = document.getElementById('paso1');
+        const paso2 = document.getElementById('paso2');
+        const btnVerificarApoderado = document.getElementById('btnVerificarApoderado');
+        const rutApoderadoInput = document.getElementById('rut_apoderado');
+        const rutPersonaJustificaInput = document.getElementById('rut_persona_justifica');
+        const nombrePersonaJustificaInput = document.getElementById('id_nombre_persona_justifica');
+            if (!nombrePersonaJustificaInput) {console.error('No se encontró el campo nombre_persona_justifica');}
+        const resultadoVerificacion = document.getElementById('resultadoVerificacion');
+        const rutEstudianteSelect = document.getElementById('rut_estudiante');
+        const nombreEstudianteInput = document.getElementById('nombre_estudiante');
+        const cursoInput = document.getElementById('curso');
+        const horaLlegadaInput = document.getElementById('hora_llegada');
+        const conCertificadoRadio = document.getElementById('con_certificado');
+        const sinCertificadoRadio = document.getElementById('sin_certificado');
+        const motivoContainer = document.getElementById('motivo_container');
+        const motivoJustificacionSelect = document.getElementById('motivo_justificacion');
+        const formularioJustificacion = document.getElementById('formularioJustificacion');
+        
+        // Función para formatear automáticamente el RUT
+        function formatearRut(rut) {
+            // Eliminar puntos y guiones
+            let valor = rut.replace(/\./g, '').replace(/-/g, '');
+            
+            // Obtener dígito verificador y convertir 'k' a 'K'
+            let dv = valor.slice(-1).toUpperCase();
+            
+            // Obtener cuerpo del RUT
+            let rutCuerpo = valor.slice(0, -1);
+            
+            // Formatear RUT con puntos y guión
+            let rutFormateado = '';
+            
+            // Agregar puntos de miles
+            for (let i = rutCuerpo.length; i > 0; i -= 3) {
+                const inicio = Math.max(0, i - 3);
+                rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+            }
+            
+            // Eliminar el primer punto
+            rutFormateado = rutFormateado.substring(1);
+            
+            // Agregar guión y dígito verificador
+            return rutFormateado + '-' + dv;
+        }
+        
+        // Función para aplicar formato a un campo RUT
+        function aplicarFormatoRut(inputElement) {
+            // Evento para formatear el RUT mientras se escribe
+            inputElement.addEventListener('input', function(e) {
+                // Guardar la posición del cursor
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const valorOriginal = this.value;
+                
+                // Eliminar caracteres no numéricos excepto K/k y conservar solo dígitos y K/k
+                let valor = this.value.replace(/[^\dkK]/g, '');
+                
+                // Si hay algo que formatear
+                if (valor.length > 1) {
+                    // Formatear el valor
+                    this.value = formatearRut(valor);
+                    
+                    // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
+                    const diff = this.value.length - valorOriginal.length;
+                    
+                    // Restaurar la posición del cursor
+                    this.setSelectionRange(start + diff, end + diff);
+                }
+            });
+    
+            // Evento blur para formatear cuando el campo pierde el foco
+            inputElement.addEventListener('blur', function() {
+                if (this.value.length > 1) {
+                    // Eliminar caracteres no numéricos excepto K/k
+                    let valor = this.value.replace(/[^\dkK]/g, '');
+                    this.value = formatearRut(valor);
+                }
+            });
+        }
+        
+        // Función para validar formato de RUT chileno
+        function validarFormatoRut(rut) {
+            // Expresión regular para validar formato XX.XXX.XXX-X
+            const rutRegex = /^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$/;
+            return rutRegex.test(rut);
+        }
+        
+        // Aplicar formato al campo RUT de apoderado
+        aplicarFormatoRut(rutApoderadoInput);
+
+        //Manejo del cambio en los botones de tipo_justificacion
+        conCertificadoRadio.addEventListener('change', function(){
+            if(this.checked) {
+                motivo_container.style.display ='none';
+                motivoJustificacionSelect.value ='';
+                motivoJustificacionSelect.required = false;
+            }
+        });
+
+        sinCertificadoRadio.addEventListener('change', function(){
+            if (this.checked){
+                motivo_container.style.display = 'block';
+                motivoJustificacionSelect.value= '';
+                motivoJustificacionSelect.required = true;
+            }
+        });
+        
+       // Función para verificar el apoderado
+        function verificarApoderado() {
+            let rutApoderado = rutApoderadoInput.value.trim();
+            
+            // Normalizar el RUT (convertir 'k' a 'K')
+            rutApoderado = rutApoderado.toUpperCase();
+            
+            // Actualizar el valor en el campo
+            rutApoderadoInput.value = rutApoderado;
+            
+            // Validar formato del RUT
+            if (!validarFormatoRut(rutApoderado)) {
+                Swal.fire({
+                    title: 'Formato de RUT incorrecto',
+                    text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            // Mostrar indicador de carga
+            resultadoVerificacion.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Verificando apoderado...</p>
+                </div>
+            `;
+            
+            // Realizar la petición AJAX para verificar el apoderado
+            fetch(`{% url 'Modulo_alumnos:verificar_apoderado' %}?rut_apoderado=${rutApoderado}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.valido) {
+                    // Si el apoderado es válido, mostrar mensaje de éxito y habilitar paso 2
+                    resultadoVerificacion.innerHTML = `
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">¡Persona autorizada verificada!</h5>
+                            <p>${data.mensaje}</p>
+                        </div>
+                    `;
+                    
+                    // Guardar el RUT del apoderado en el campo oculto
+                    rutPersonaJustificaInput.value = rutApoderado;
+                    
+                    // Guardar el nombre del apoderado en el campo visible
+                    if (data.nombre_apoderado) {
+                        nombrePersonaJustificaInput.value = data.nombre_apoderado;
+                        console.log('Nombre del apoderado asignado:', data.nombre_apoderado);
+                    } else {
+                        nombrePersonaJustificaInput.value = "Apoderado Autorizado";
+                        console.log('Usando nombre por defecto');
+                    }
+                    
+                    // Llenar el select con los alumnos asociados al apoderado
+                    rutEstudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
+                    data.alumnos.forEach(alumno => {
+                        const option = document.createElement('option');
+                        option.value = alumno.rut;
+                        option.textContent = `${alumno.nombre} (${alumno.rut})`;
+                        option.dataset.nombre = alumno.nombre;
+                        option.dataset.curso = alumno.curso;
+                        option.dataset.tipoPersona = alumno.tipo_persona;
+                        rutEstudianteSelect.appendChild(option);
+                    });
+                    
+                    // Mostrar el paso 2
+                    paso2.style.display = 'block';
+                    
+                    // Desplazarse suavemente al paso 2
+                    paso2.scrollIntoView({ behavior: 'smooth' });
+
+                    //Establecer la hora de actual (llegada)
+                    const ahora = new Date();
+                    const formatoHora = ahora.toLocaleString('es-CL',{
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    });
+                    horaLlegadaInput.value = formatoHora
+                    
+                } else {
+                    // Si el apoderado no es válido, mostrar mensaje de error
+                    resultadoVerificacion.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">Error de verificación</h5>
+                            <p>${data.mensaje}</p>
+                        </div>
+                    `;
+                    
+                    // Ocultar el paso 2
+                    paso2.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultadoVerificacion.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Error de conexión</h5>
+                        <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
+                    </div>
+                `;
+                
+                // Ocultar el paso 2
+                paso2.style.display = 'none';
+            });
+        }
+        
+        // Evento para el botón de verificar apoderado
+        btnVerificarApoderado.addEventListener('click', verificarApoderado);
+        
+        // Evento para cuando se presiona Enter en el campo de RUT de apoderado
+        rutApoderadoInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verificarApoderado();
+            }
+        });
+        
+        // Función para obtener los datos del alumno seleccionado
+        function obtenerDatosAlumno() {
+            const rutEstudiante = rutEstudianteSelect.value;
+            const rutApoderado = rutApoderadoInput.value.trim();
+            
+            if (!rutEstudiante) {
+                nombreEstudianteInput.value = '';
+                cursoInput.value = '';
+                inspectorCargoInput.value = '';
+                return;
+            }
+            
+            // Verificar si podemos obtener los datos directamente del select
+            const selectedOption = rutEstudianteSelect.options[rutEstudianteSelect.selectedIndex];
+            if (selectedOption.dataset.nombre && selectedOption.dataset.curso) {
+                nombreEstudianteInput.value = selectedOption.dataset.nombre;
+                cursoInput.value = selectedOption.dataset.curso;
+                
+                
+                // Realizar la petición AJAX solo para obtener el inspector a cargo
+                fetch(`{% url 'Modulo_alumnos:obtener_datos_alumno' %}?rut_estudiante=${rutEstudiante}&rut_apoderado=${rutApoderado}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    inspectorCargoInput.value = 'No disponible';
+                });
+                
+                return;
+            }
+            // Si no tenemos los datos en el select, realizar la petición AJAX completa
+            fetch('{% url "Modulo_alumnos:procesar_justificacion" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.encontrado) {
+                    nombreEstudianteInput.value = data.nombre;
+                    cursoInput.value = data.curso;
+                    
+                    // Verificar si está autorizado
+                    if (!data.autorizado) {
+                        Swal.fire({
+                            title: 'Advertencia',
+                            text: 'Esta persona no está registrada como apoderado autorizado para este estudiante.',
+                            icon: 'warning',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                } else {
+                    nombreEstudianteInput.value = '';
+                    cursoInput.value = '';
+                    
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.mensaje,
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                nombreEstudianteInput.value = '';
+                cursoInput.value = '';
+                
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'Ocurrió un error al obtener los datos del estudiante. Por favor, intente nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+            });
+        }
+        
+        // Evento para cuando cambia el estudiante seleccionado
+        rutEstudianteSelect.addEventListener('change', obtenerDatosAlumno);
+        
+        // Validar el formulario antes de enviar
+        formularioJustificacion.addEventListener('submit', function(event) {
+            // Verificar que todos los campos estén completos
+            if (!rutPersonaJustificaInput.value || 
+            !rutEstudianteSelect.value ||
+            !nombreEstudianteInput.value ||
+            !cursoInput.value) {
+        
+                event.preventDefault();
+                
+                Swal.fire({
+                    title: 'Formulario incompleto',
+                    text: 'Por favor complete todos los campos requeridos.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+    
+            submitForm(event);
+        });
+
+        //Manejo del envio del formulario
+        formularioJustificacion.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            console.log('Formulario enviado');
+            
+            const formData = new FormData(this);
+            
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+            
+            // Modal de carga
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingScreen'));
+            loadingModal.show();
+            
+            fetch('{% url "Modulo_alumnos:procesar_justificacion" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.text();
+            })
+            .then(text => {
+                console.log('Response text:', text);
+                try {
+                    const data = JSON.parse(text);
+                    console.log('Parsed JSON:', data);
+                    
+                    loadingModal.hide();
+                    
+                    if (data.success) {
+                        window.location.href = `/Modulo_alumnos/confirmacion_justificacion/${data.justificacion_id}/`;
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.mensaje || 'Ocurrió un error al registrar la justificación.',
+                            icon: 'error',
+                            confirmButtonText: 'Entendido'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing JSON:', e);
+                    loadingModal.hide();
+                    Swal.fire({
+                        title: 'Error de respuesta',
+                        text: 'El servidor no devolvió una respuesta válida. Por favor, intente nuevamente.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                loadingModal.hide();
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+            });
+        });
+    });
+</script>        
+                    
+
+    
+{% endblock %}

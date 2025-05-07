@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Confirmación de Justificación - Colegio Concepcion Linares
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0 text-center">Justificación Registrada Correctamente</h3>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                        <h4 class="mt-3">¡Justificación registrada con éxito!</h4>
+                        <p class="lead">La justificación para el estudiante ha sido registrada correctamente en el sistema.</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Detalles de la Justificación</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Estudiante:</strong> {{ justificacion.nombre_estudiante }}</p>
+                                    <p><strong>RUT:</strong> {{ justificacion.rut_estudiante }}</p>
+                                    <p><strong>Curso:</strong> {{ justificacion.curso }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Apoderado:</strong> {{ justificacion.nombre_persona_justifica }}</p>
+                                    <p><strong>Fecha y hora:</strong> {{ justificacion.hora_llegada|date:"d/m/Y H:i" }}</p>
+                                    <p><strong>Tipo:</strong> 
+                                        {% if justificacion.tipo_justificacion == 'con_certificado' %}
+                                            Con Certificado Médico
+                                        {% else %}
+                                            Sin Certificado Médico
+                                        {% endif %}
+                                    </p>
+                                    {% if justificacion.motivo_justificacion %}
+                                        <p><strong>Motivo:</strong> {{ justificacion.motivo_justificacion }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if justificacion.tipo_justificacion == 'con_certificado' and justificacion.codigo_verificacion %}
+                    <div class="card mb-4 border-primary">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Código de Verificación</h5>
+                            <p class="lead">Este código debe ser presentado junto con el certificado médico:</p>
+                            <div class="bg-light p-3 rounded mb-3">
+                                <h2 class="mb-0 text-primary">{{ justificacion.codigo_verificacion }}</h2>
+                            </div>
+                            <p class="text-muted small">Guarde este código. Será requerido para validar el certificado médico.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center">
+                        <a href="{% url 'Modulo_alumnos:retiro_justificacion' %}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

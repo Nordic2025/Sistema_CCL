@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/sweetalert2.min.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/script.js' %}"></script>
-    <title>Gestion Permisos Colegio Concepción | {% block title %}{% endblock %}</title>
+    <title>Inicio de Sesión</title>
 
 
     <!-- Estilos para el footer fijo -->
@@ -33,7 +34,7 @@
       
       .footer {
           flex-shrink: 0; /* Evita que el footer se encoja */
-          background-color: #6f82be;
+          background-color: #003366;
           padding: 1rem 0;
           text-align: center;
           width: 100%;
@@ -49,7 +50,7 @@
     <a href="{% url 'principal' %}">
       <img src="{% static 'images/logo_ccl.png'%}" alt="Logo Colegio Concepcion" class="logoCCL">
   </a>
-    <h1 class="h1_global">Ingresos Colegio Concepción</h1>
+    <h1 class="h1_global">Conecta - Colegio Concepción Linares</h1>
     <div class="btn_login">
         <a href="{% url 'Modulo_admin:admin' %}">
             <img class="user_icon" src="{% static 'icon/user_icon.svg' %}" alt="Icono de Usuario">
@@ -63,7 +64,7 @@
         <form method="POST" action="{% url 'Modulo_admin:login_admin' %}" class="card_body_login">
           {% csrf_token %}
             <label for="rut" class="usuario">RUT:</label>
-            <input type="text" id="rut" name="rut" class="Login_input" placeholder="Ej: 12.345.678-9" required>
+            <input type="text" id="rut" name="rut" class="Login_input" placeholder="Ej: 12.345.678-9" required maxlength="12">
             <label for="password" class="contraseña">Contraseña:</label>
             <input type="password" id="password" name="password" class="Login_input" required>
             <small class="form-text text-muted">Si olvido su contraseña, dirijase a Área de Informatica.</small>

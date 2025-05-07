@@ -7,7 +7,7 @@ from django.urls import reverse
 from .forms import AdministradorForm, AdministradorEditForm , AreasForm, CambiarPasswordForm, CursoForm, AlumnoForm, FamiliarForm, InspectorForm
 from .models import Administrador, Areas, Curso, Alumno, Inspector, AlumnoEgresado
 from Modulo_funcionarios.models import RegistroSalida
-from Modulo_alumnos.models import RegistroRetiro
+from Modulo_alumnos.models import RegistroRetiro, RegistroJustificativo
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db.models import Q
@@ -70,6 +70,7 @@ def logout_admin(request):
 def inicio_view(request):
 
     dias_semana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+    limite_24h = timezone.now() - timedelta(hours=24)
     
 
     # Obtener la fecha actual y la fecha de hace 7 dias
@@ -104,7 +105,7 @@ def inicio_view(request):
         datos_retiros.append(retiros_dia)
 
     # Obtener estadistica de los permisos
-    permisos_activos = RegistroSalida.objects.filter(hora_regreso__isnull=True).count()
+    permisos_activos = RegistroSalida.objects.filter(hora_regreso__isnull=True, hora_salida__gte = limite_24h).count()
 
     # Obtener los ultimos 5 permisos
     permisos_recientes = RegistroSalida.objects.order_by('-hora_salida')[:5]
@@ -117,6 +118,9 @@ def inicio_view(request):
 
     #Obtener todos los alumnos
     total_alumnos = Alumno.objects.all().count()
+
+    #Obtener todos los justificativos
+    total_justificaciones = RegistroJustificativo.objects.all().count()
 
     # Convertir listas a formato JSON para el template
     import json
@@ -133,7 +137,8 @@ def inicio_view(request):
         'permisos_recientes': permisos_recientes,
         'retiros_hoy': retiros_hoy,
         'total_alumnos': total_alumnos,
-        'retiros_pendientes': retiros_pendientes,  # Añadido para la notificación
+        'retiros_pendientes': retiros_pendientes, 
+        'total_justificaciones': total_justificaciones
     }
 
     return render(request, 'inicio.html', context)
@@ -830,7 +835,6 @@ def registrar_alumno(request):
 
 
 
-
 def editar_alumno(request, id):
     """Vista para editar un alumno existente."""
     alumno = get_object_or_404(Alumno, id=id)
@@ -964,6 +968,7 @@ def agregar_familiar(request, id, familiar_num):
     
     return redirect('Modulo_admin:alumnos')
 
+
 @login_required(login_url='Modulo_admin:login_admin')
 def eliminar_familiar(request, id, familiar_num):
     """Vista para eliminar un familiar de un alumno."""
@@ -1022,8 +1027,9 @@ def retiros_view(request):
     curso_filtro = request.GET.get('curso', '')
     estado_filtro = request.GET.get('estado', '')
     curso_nombre = ""
+    estado_filtro = request.GET.get('estado', '')    
     
-    # Aplicar búsqueda por nombre o RUT si se proporciona
+    # Aplicar búsqueda por nombre o RUT 
     if busqueda:
         # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
         busqueda_rut = busqueda.replace('.', '').replace('-', '')
@@ -1036,10 +1042,7 @@ def retiros_view(request):
         Q(rut_persona_retira__icontains=busqueda)
         )
 
-
-
-    
-    # Filtrar por curso si se proporciona
+    # Filtrar por curso 
     if curso_filtro:
         try:
             # Obtener el objeto curso para mostrar su nombre en los filtros activos
@@ -1066,6 +1069,11 @@ def retiros_view(request):
 
     if estado_filtro:
         retiros = retiros.filter(estado=estado_filtro)
+
+    # Filtrar por estado
+    if estado_filtro: 
+        retiros = retiros.filter(estado=estado_filtro)
+
 
     paginator = Paginator(retiros, 35)
     page_number = request.GET.get('page')
@@ -1112,11 +1120,6 @@ def confirmar_retiro(request, retiro_id):
     
     # Redirigir de vuelta a la página de retiros
     return redirect('Modulo_admin:retiros')
-
-
-@login_required(login_url='Modulo_admin:login_admin')
-def justificativos_view(request):
-    return render(request, 'alumnos_folder/justificativos_folder/tabla_justificativos.html')
 
 
 @login_required(login_url='Modulo_admin:login_admin')
@@ -1225,6 +1228,8 @@ def grafico_alumnos_view(request):
     }
     
     return render(request, 'alumnos_folder/grafico_folder/grafico.html', context)
+
+
 
 # BOTON ABANZAR DE AÑO
 def promocion_anual_view(request):
@@ -1562,8 +1567,6 @@ def alumnos_egresados_view(request):
 
     queryset = AlumnoEgresado.objects.filter(año_egreso=año_filtro)
 
-
-    
     # Filtrar los egresados según el año seleccionado
     if año_filtro:
         try:
@@ -1592,3 +1595,73 @@ def alumnos_egresados_view(request):
     }
     
     return render(request, 'alumnos_folder/estudiantes_folder/alumnos_egresados.html', context)
+
+
+@login_required(login_url='Modulo_admin:login_admin')
+def justificativos_view(request):
+    # Iniciar con todos los justificativos
+    justificativos = RegistroJustificativo.objects.all().order_by('-hora_llegada')
+    cursos = Curso.objects.all()
+
+
+    queryset = RegistroJustificativo.objects.all().order_by('-hora_llegada')
+
+    # Obtener parámetros de filtrado
+    busqueda = request.GET.get('busqueda', '')
+    curso_filtro = request.GET.get('curso', '')
+    curso_nombre = ""
+    
+    # Aplicar búsqueda por nombre o RUT 
+    if busqueda:
+        # Limpiar el RUT para la búsqueda (quitar puntos y guiones)
+        busqueda_rut = busqueda.replace('.', '').replace('-', '')
+        justificativos = justificativos.filter(
+        Q(nombre_estudiante__icontains=busqueda) | 
+        Q(rut_estudiante__icontains=busqueda_rut) |
+        Q(rut_estudiante__icontains=busqueda) |
+        Q(nombre_persona_justifica__icontains=busqueda) |
+        Q(rut_persona_justifica__icontains=busqueda_rut) |
+        Q(rut_persona_justifica__icontains=busqueda)
+        )
+
+    # Filtrar por curso 
+    if curso_filtro:
+        try:
+            # Obtener el objeto curso para mostrar su nombre en los filtros activos
+            curso_obj = Curso.objects.get(id=curso_filtro)
+            curso_nombre = curso_obj.nombre
+            
+            # Filtrar retiros por el curso seleccionado
+            justificaciones_exactas= justificativos.filter (curso__iexact = curso_obj.nombre)
+
+            if justificaciones_exactas.exists():
+                justificativos = justificaciones_exactas
+            else:
+                numero_match = re.search(r'(\d+[°º]?)', curso_obj.nombre)
+                numero_curso = numero_match.group(1) if numero_match else None
+                nivel_match = re.search(r'[°º]?\s*([A-Za-zÁ-Úá-ú]+)', curso_obj.nombre)
+                nivel_curso = nivel_match.group(1) if nivel_match else None
+
+                if numero_curso and nivel_curso:
+                    justificativos = justificativos.filter(Q(curso__icontains=numero_curso) & Q(curso__icontains=nivel_curso))
+                else:
+                    justificativos = justificativos.filter(curso__icontains = curso_obj.nombre)
+        except Curso.DoesNotExist:
+            pass
+
+
+    paginator = Paginator(justificativos, 35)
+    page_number = request.GET.get('page')
+    page_obj =  paginator.get_page(page_number)
+    
+    context = {
+        'justificativos': page_obj,
+        'busqueda': busqueda,
+        'curso_filtro': curso_filtro,
+        'cursos': cursos,
+        'curso_nombre': curso_nombre,
+        'total_registros': justificativos.count(),
+        'page_obj':page_obj
+    }
+
+    return render(request, 'alumnos_folder/justificativos_folder/tabla_justificativos.html', context)

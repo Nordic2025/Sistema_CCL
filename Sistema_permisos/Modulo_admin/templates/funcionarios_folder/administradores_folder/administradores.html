@@ -62,7 +62,7 @@
               </tr>
               
               {% if user.is_superuser %}
-              <!-- Modal para Editar Administrador - solo visible para staff -->
+              <!-- Modal para Editar Administrador -->
               <div class="modal fade" id="editarAdministradorModal{{ administrador.id }}" tabindex="-1" aria-labelledby="editarAdministradorModalLabel{{ administrador.id }}" aria-hidden="true">
                 <div class="modal-dialog">
                   <div class="modal-content">
@@ -107,7 +107,7 @@
               </div>
               {% endif %}
 
-              <!-- Modal para Cambiar Contraseña - solo visible para staff -->
+              <!-- Modal para Cambiar Contraseña -->
               {% if user.is_staff %}
               <div class="modal fade" id="cambiarContraseñaModal{{ administrador.id }}" tabindex="-1" aria-labelledby="cambiarContraseñaModal{{ administrador.id }}" aria-hidden="true">
                 <div class="modal-dialog">
@@ -177,7 +177,7 @@
  
   
   {% if user.is_superuser %}
-  <!-- Modal para Agregar Administrador - solo visible para staff -->
+  <!-- Modal para Agregar Administrador-->
   <div class="modal fade" id="agregarAdministradorModal" tabindex="-1" aria-labelledby="agregarAdministradorModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -190,7 +190,7 @@
             {% csrf_token %}
             <div class="mb-3">
               <label for="rut" class="form-label">RUT</label>
-              <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required>
+              <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required maxlength="12">
               <small class="form-text text-muted">Este RUT será utilizado para iniciar sesión en el sistema.</small>
             </div>
             <div class="mb-3">

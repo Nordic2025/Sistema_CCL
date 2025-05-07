@@ -4,17 +4,164 @@
 
 {% block title %}Retiros{% endblock %}
 
+
+
 {% block content %}
+
+<style>
+  @media print {
+    /* Ocultar elementos que no quieres que salgan en el PDF */
+    #sidebar,
+    #busqueda,
+    #curso,
+    #estado,
+    #btn_limpiar,
+    #btn_buscar,
+    #filtros,
+    #browserPrint,
+    #footer,
+    #header,
+    .card,
+    .card-header,
+    .card-body,
+    .row.mb-4,
+    .alert,
+    .pagination-container,
+    h1,
+    .form-label,
+    nav,
+    form,
+    .modal,
+    .col-md-2,
+    .col-md-3,
+    .col-md-4 { 
+      display: none !important;
+    }
+    
+    /* Ocultar todos los elementos del formulario y filtros */
+    #filtroForm, 
+    #filtroForm * {
+      display: none !important;
+    }
+    
+    /* Eliminar cualquier padding o margen que pueda estar causando el espacio en la izquierda */
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    /* Asegurar que el contenedor principal ocupe todo el ancho y no tenga márgenes ni padding */
+    .container, 
+    .main-content, 
+    .tabla_global,
+    .row,
+    .col-md-12 {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      left: 0 !important;
+    }
+    
+    /* Resetear cualquier posicionamiento que pueda estar afectando */
+    .main-content {
+      position: absolute !important;
+      left: 0 !important;
+      padding-left: 0 !important;
+      margin-left: 0 !important;
+    }
+
+    /* Agrandar la tabla al máximo */
+    .tabla_ancha {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-collapse: collapse;
+      margin: 0 !important;
+      padding: 0 !important;
+      table-layout: fixed !important; 
+    }
+
+    .thead_custom th, 
+    .tbody_custom td {
+      padding: 8px;
+      border: 1px solid #000;
+      text-align: left;
+      font-size: 11pt;
+      word-wrap: break-word; 
+    }
+    
+    /* Ajustar el tamaño de las columnas para optimizar espacio */
+    .tabla_ancha th:nth-child(1), /* RUT Apoderado */
+    .tabla_ancha td:nth-child(1) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(2), /* Nombre Apoderado */
+    .tabla_ancha td:nth-child(2) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(3), /* Nombre Alumno */
+    .tabla_ancha td:nth-child(3) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(4), /* RUT Alumno */
+    .tabla_ancha td:nth-child(4) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(5), /* Curso */
+    .tabla_ancha td:nth-child(5) {
+      width: 10%;
+    }
+    
+    .tabla_ancha th:nth-child(6), /* Fecha y hora */
+    .tabla_ancha td:nth-child(6) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(7), /* Motivo */
+    .tabla_ancha td:nth-child(7) {
+      width: 15%;
+    }
+    
+    .tabla_ancha th:nth-child(8), /* Estado */
+    .tabla_ancha td:nth-child(8) {
+      width: 10%;
+    }
+    
+    /* Ocultar la columna de acciones */
+    .tabla_ancha th:last-child,
+    .tabla_ancha td:last-child {
+      display: none !important;
+    }
+    
+    /* Agregar un título para el PDF */
+    .tabla_global::before {
+      content: "Registro de Retiros";
+      display: block;
+      text-align: center;
+      font-size: 18pt;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  }
+</style>
+
+
 <div class="container main-content" style="padding-left: 10px; margin-left: 10px; max-width: 93%;">    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Retiros</h1>  
     
     <!-- Filtros combinados (buscador, curso y nivel) -->
-    <div class="row mb-4 mt-4">
+    <div class="row mb-4 mt-4" >
       <div class="col-md-12">
         <div class="card">
           <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Filtros</h5>
           </div>
-          <div class="card-body">
+          <div class="card-body" id="fitros">
             <form id="filtroForm" method="get" action="{% url 'Modulo_admin:retiros' %}" class="row g-3">
               <!-- Buscador -->
               <div class="col-md-4">
@@ -49,15 +196,19 @@
 
               <div class="col-md-2 d-flex align-items-end">
                 <div class="d-grid gap-2 w-100">
-                  <button type="submit" class="btn btn-primary">
+                  <button type="submit" class="btn btn-primary" id="btn_buscar">
                     <i class="fas fa-search"></i> Buscar
                   </button>
                   {% if busqueda or curso_filtro or estado_filtro %}
+<<<<<<< HEAD
                   <a href="{% url 'Modulo_admin:retiros' %}" class="btn btn-outline-secondary">
+=======
+                  <a href="{% url 'Modulo_admin:retiros' %}" class="btn btn-outline-secondary" id="btn_limpiar">
+>>>>>>> justificativos
                     <i class="fas fa-times"></i> Limpiar filtros
                   </a>
                   {% endif %}
-                    <button type="button" id="exportarPDF" class="btn btn-danger">
+                    <button type="button" id="browserPrint" class="btn btn-danger" >
                       <i class="fas fa-file-pdf"></i> Exportar a PDF
                     </button>
                 </div>
@@ -225,9 +376,16 @@
                 {% endif %}
               </ul>
             </nav>
+          <!-- Información adicional sobre registros -->
+          <div class="text-center text-muted mt-2">
+            <small>Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index }} de {{ total_registros }} en total</small>
+          </div>
         </div>
       </div>
     </div>
+
+
+          
 
   
   <!-- Modales fuera de la tabla pero dentro del bucle -->
@@ -261,167 +419,16 @@
 
 <!-- Script para SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-      
+
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Botón para exportar a PDF
-    document.getElementById('exportarPDF').addEventListener('click', function() {
-      // Mostrar mensaje de carga
-      const loadingMessage = document.createElement('div');
-      loadingMessage.style.position = 'fixed';
-      loadingMessage.style.top = '0';
-      loadingMessage.style.left = '0';
-      loadingMessage.style.width = '100%';
-      loadingMessage.style.height = '100%';
-      loadingMessage.style.backgroundColor = 'rgba(0,0,0,0.5)';
-      loadingMessage.style.display = 'flex';
-      loadingMessage.style.justifyContent = 'center';
-      loadingMessage.style.alignItems = 'center';
-      loadingMessage.style.zIndex = '9999';
-      loadingMessage.innerHTML = '<div style="background-color: white; padding: 20px; border-radius: 5px;"><h3>Generando PDF, por favor espere...</h3></div>';
-      document.body.appendChild(loadingMessage);
+  function downloadPDFWithBrowserPrint() {
+    window.print();
+  }
   
-      // Obtener el contenido a convertir
-      const content = document.querySelector('.tabla_global');
-      
-      // Configurar opciones para html2canvas
-      const options = {
-        scale: 2, // Mayor escala para mejor calidad
-        useCORS: true, // Permitir imágenes de otros dominios
-        logging: false, // Desactivar logs
-        letterRendering: true, // Mejor renderizado de texto
-        allowTaint: true, // Permitir elementos tainted
-      };
-  
-      // Convertir el contenido a imagen
-      html2canvas(content, options).then(canvas => {
-        // Crear PDF con jsPDF
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal para más espacio
-        
-        // Calcular dimensiones para ajustar al PDF
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        
-        // Usar todo el ancho de la página menos márgenes
-        const imgWidth = pageWidth - 20; // 10mm de margen a cada lado
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        
-        // Convertir canvas a imagen
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Cargar imagen del logo
-        const logo = new Image();
-        logo.src = "{% static 'images/logo_ccl.png' %}";
-        logo.onload = function() {
-          // Función para añadir encabezado y pie de página a cada página
-          const addHeaderFooter = function(pageNumber) {
-            // === Encabezado ===
-            // Logo (ahora a la izquierda)
-            pdf.addImage(logo, 'PNG', 10, 10, 20, 20);
-            
-            // Título principal (ahora a la derecha)
-            pdf.setFontSize(16);
-            pdf.setTextColor(40, 40, 40);
-            pdf.text('Colegio Concepción Linares', 35, 15);
-            
-            // Subtítulo (también a la derecha)
-            pdf.setFontSize(12);
-            pdf.text('Reporte de Retiros', 35, 22);
-            
-            // Fecha y hora (alineada a la izquierda, debajo del logo)
-            const now = new Date();
-            const fecha = now.toLocaleDateString();
-            const hora = now.toLocaleTimeString();
-            pdf.setFontSize(10);
-            pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });  
-            pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
-            // === Pie de página ===
-            pdf.setFontSize(10);
-            pdf.setTextColor(100);
-            pdf.text("Sistema de Control de Permisos - Colegio Concepción Linares", 10, pageHeight - 10);
-            pdf.text(`Página ${pageNumber}`, pageWidth - 25, pageHeight - 10);
-          };
-          
-          // Calcular cuántas páginas necesitaremos
-          const totalPages = Math.ceil(imgHeight / (pageHeight - 55)); // 55mm para encabezado y pie de página
-          
-          // Para cada página
-          for (let i = 0; i < totalPages; i++) {
-            // Si no es la primera página, añadir una nueva
-            if (i > 0) {
-              pdf.addPage();
-            }
-            
-            // Añadir encabezado y pie de página
-            addHeaderFooter(i + 1);
-            
-            // Calcular qué parte de la imagen mostrar en esta página
-            const srcY = i * (pageHeight - 55) * canvas.height / imgHeight;
-            const srcHeight = Math.min(canvas.height - srcY, (pageHeight - 55) * canvas.height / imgHeight);
-            
-            // Añadir la parte correspondiente de la imagen (ahora con más espacio para el encabezado)
-            pdf.addImage(
-              imgData, 
-              'PNG', 
-              10, // x
-              45, // y (aumentado para dejar más espacio al encabezado)
-              imgWidth, // ancho (ahora usa todo el ancho disponible)
-              srcHeight * imgWidth / canvas.width, // alto proporcional
-              '', // alias
-              'FAST', // compresión
-              0, // rotación
-              srcY, // srcY - desde dónde empezar a recortar verticalmente
-              canvas.width, // srcWidth - ancho completo
-              srcHeight // srcHeight - altura a recortar
-            );
-          }
-          
-          // Generar nombre de archivo con fecha y hora
-          const now = new Date();
-          const filename = `retiros_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.pdf`;
-          
-          // Descargar el PDF
-          pdf.save(filename);
-          
-          // Quitar mensaje de carga
-          document.body.removeChild(loadingMessage);
-        };
-        
-        // Si hay error al cargar el logo
-        logo.onerror = function() {
-          console.error('Error al cargar el logo');
-          
-          // Crear PDF sin logo
-          pdf.setFontSize(16);
-          pdf.text('Colegio Concepción Linares', 10, 15);
-          pdf.setFontSize(12);
-          pdf.text('Reporte de Retiros', 10, 22);
-          
-          // Fecha y hora actual
-          const now = new Date();
-          const fecha = now.toLocaleDateString();
-          const hora = now.toLocaleTimeString();
-          pdf.setFontSize(10);
-          pdf.text(`Fecha: ${fecha} - Hora: ${hora}`, pageWidth - 10, 15, { align: 'right' });
-          pdf.text(`Total registros: {{ total_registros }}`, pageWidth - 10, 22, { align: 'right' });
-          
-          // Añadir la imagen del contenido (con espacio para el encabezado)
-          pdf.addImage(imgData, 'PNG', 10, 45, imgWidth, imgHeight);
-          
-          // Generar nombre de archivo con fecha y hora
-          const filename = `retiros_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.pdf`;
-          
-          // Descargar el PDF
-          pdf.save(filename);
-          
-          // Quitar mensaje de carga
-          document.body.removeChild(loadingMessage);
-        };
-      });
-    });
-  });
+  document.querySelector('#browserPrint').addEventListener('click', downloadPDFWithBrowserPrint);
 </script>
+  
+
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {

@@ -192,7 +192,7 @@
                               <div class="col-md-4">
                                 <div class="form-group">
                                   <label for="rut{{ alumno.id }}" class="form-label">RUT</label>
-                                  <input type="text" class="form-control rut-input" id="rut{{ alumno.id }}" name="rut" value="{{ alumno.rut|default:'' }}">
+                                  <input type="text" class="form-control rut-input" id="rut{{ alumno.id }}" name="rut" value="{{ alumno.rut|default:'' }}" maxlength="12">
                                 </div>
                               </div>
                               <div class="col-md-8">
@@ -229,13 +229,13 @@
                               <div class="col-md-6">
                                 <div class="form-group">
                                   <label for="apoderado_titular{{ alumno.id }}" class="form-label">Nombre Completo</label>
-                                  <input type="text" class="form-control" id="apoderado_titular{{ alumno.id }}" name="apoderado_titular" value="{{ alumno.apoderado_titular|default:'' }}">
+                                  <input type="text" class="form-control" id="apoderado_titular{{ alumno.id }}" name="apoderado_titular" value="{{ alumno.apoderado_titular|default:'' }}" maxlength="12">
                                 </div>
                               </div>
                               <div class="col-md-6">
                                 <div class="form-group">
                                   <label for="rut_apoderadoT{{ alumno.id }}" class="form-label">RUT</label>
-                                  <input type="text" class="form-control rut-input" id="rut_apoderadoT{{ alumno.id }}" name="rut_apoderadoT" value="{{ alumno.rut_apoderadoT|default:'' }}">
+                                  <input type="text" class="form-control rut-input" id="rut_apoderadoT{{ alumno.id }}" name="rut_apoderadoT" value="{{ alumno.rut_apoderadoT|default:'' }}" maxlength="12">
                                 </div>
                               </div>
                               <div class="col-md-12">
@@ -268,7 +268,7 @@
                               <div class="col-md-6">
                                 <div class="form-group">
                                   <label for="rut_apoderadoS{{ alumno.id }}" class="form-label">RUT</label>
-                                  <input type="text" class="form-control rut-input" id="rut_apoderadoS{{ alumno.id }}" name="rut_apoderadoS" value="{{ alumno.rut_apoderadoS|default:'' }}">
+                                  <input type="text" class="form-control rut-input" id="rut_apoderadoS{{ alumno.id }}" name="rut_apoderadoS" value="{{ alumno.rut_apoderadoS|default:'' }}" maxlength="12">
                                 </div>
                               </div>
                               <div class="col-md-12">
@@ -300,7 +300,7 @@
                                 </div>
                                 <div class="form-group mb-3">
                                   <label for="rut_familiar_1{{ alumno.id }}" class="form-label">RUT</label>
-                                  <input type="text" class="form-control rut-input" id="rut_familiar_1{{ alumno.id }}" name="rut_familiar_1" value="{{ alumno.rut_familiar_1|default:'' }}">
+                                  <input type="text" class="form-control rut-input" id="rut_familiar_1{{ alumno.id }}" name="rut_familiar_1" value="{{ alumno.rut_familiar_1|default:'' }}" maxlength="12">
                                 </div>
                                 <div class="form-group mb-3">
                                   <label for="familiar_1_relacion{{ alumno.id }}" class="form-label">Relación</label>
@@ -331,7 +331,7 @@
                                 </div>
                                 <div class="form-group mb-3">
                                   <label for="rut_familiar_2{{ alumno.id }}" class="form-label">RUT</label>
-                                  <input type="text" class="form-control rut-input" id="rut_familiar_2{{ alumno.id }}" name="rut_familiar_2" value="{{ alumno.rut_familiar_2|default:'' }}">
+                                  <input type="text" class="form-control rut-input" id="rut_familiar_2{{ alumno.id }}" name="rut_familiar_2" value="{{ alumno.rut_familiar_2|default:'' }}" maxlength="12">
                                 </div>
                                 <div class="form-group mb-3">
                                   <label for="familiar_2_relacion{{ alumno.id }}" class="form-label">Relación</label>
@@ -457,72 +457,71 @@
                   </div>
                 </div>
               </div>
-              
-              <!-- Modal para Añadir Familiar 1 -->
-              <div class="modal fade" id="agregarFamiliar1Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true" data-bs-backdrop="static">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="agregarFamiliar1ModalLabel{{ alumno.id }}">Añadir Familiar 1 | {{ alumno.nombre }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 1 %}" class="familiarForm">
+                  <!-- Modal para Añadir Familiar 1 -->
+                  <div class="modal fade" id="agregarFamiliar1Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar1ModalLabel{{ alumno.id }}" aria-hidden="true" data-bs-backdrop="static">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="agregarFamiliar1ModalLabel{{ alumno.id }}">Añadir Familiar 1 | {{ alumno.nombre }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'Modulo_admin:agregar_familiar' alumno.id 1 %}" class="familiarForm">
+                                    {% csrf_token %}
                                 {% csrf_token %}
-                            {% csrf_token %}
-                            <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
-                              {{ familiar_form.familiar_nombre }}
-                              {% if familiar_form.familiar_nombre.errors %}
-                                <div class="text-danger">
-                                  {% for error in familiar_form.familiar_nombre.errors %}
-                                    {{ error }}
-                                  {% endfor %}
+                                <div class="mb-3">
+                                  <label for="{{ familiar_form.familiar_nombre.id_for_label }}" class="form-label">Nombre del Familiar</label>
+                                  {{ familiar_form.familiar_nombre }}
+                                  {% if familiar_form.familiar_nombre.errors %}
+                                    <div class="text-danger">
+                                      {% for error in familiar_form.familiar_nombre.errors %}
+                                        {{ error }}
+                                      {% endfor %}
+                                    </div>
+                                  {% endif %}
                                 </div>
-                              {% endif %}
-                            </div>
-                            <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_rut.id_for_label }}" class="form-label">RUT del Familiar</label>
-                              {{ familiar_form.familiar_rut }}
-                              {% if familiar_form.familiar_rut.errors %}
-                                <div class="text-danger">
-                                  {% for error in familiar_form.familiar_rut.errors %}
-                                    {{ error }}
-                                  {% endfor %}
+                                <div class="mb-3">
+                                  <label for="{{ familiar_form.familiar_rut.id_for_label }}" class="form-label">RUT del Familiar</label>
+                                  {{ familiar_form.familiar_rut }}
+                                  {% if familiar_form.familiar_rut.errors %}
+                                    <div class="text-danger">
+                                      {% for error in familiar_form.familiar_rut.errors %}
+                                        {{ error }}
+                                      {% endfor %}
+                                    </div>
+                                  {% endif %}
                                 </div>
-                              {% endif %}
-                            </div>
-                            <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_relacion.id_for_label }}" class="form-label">Relación con el Alumno</label>
-                              {{ familiar_form.familiar_relacion }}
-                              {% if familiar_form.familiar_relacion.errors %}
-                                <div class="text-danger">
-                                  {% for error in familiar_form.familiar_relacion.errors %}
-                                    {{ error }}
-                                  {% endfor %}
+                                <div class="mb-3">
+                                  <label for="{{ familiar_form.familiar_relacion.id_for_label }}" class="form-label">Relación con el Alumno</label>
+                                  {{ familiar_form.familiar_relacion }}
+                                  {% if familiar_form.familiar_relacion.errors %}
+                                    <div class="text-danger">
+                                      {% for error in familiar_form.familiar_relacion.errors %}
+                                        {{ error }}
+                                      {% endfor %}
+                                    </div>
+                                  {% endif %}
                                 </div>
-                              {% endif %}
-                            </div>
-                            <div class="mb-3">
-                              <label for="{{ familiar_form.familiar_telefono.id_for_label }}" class="form-label">Teléfono de Contacto</label>
-                              {{ familiar_form.familiar_telefono }}
-                              {% if familiar_form.familiar_telefono.errors %}
-                                <div class="text-danger">
-                                  {% for error in familiar_form.familiar_telefono.errors %}
-                                    {{ error }}
-                                  {% endfor %}
+                                <div class="mb-3">
+                                  <label for="{{ familiar_form.familiar_telefono.id_for_label }}" class="form-label">Teléfono de Contacto</label>
+                                  {{ familiar_form.familiar_telefono }}
+                                  {% if familiar_form.familiar_telefono.errors %}
+                                    <div class="text-danger">
+                                      {% for error in familiar_form.familiar_telefono.errors %}
+                                        {{ error }}
+                                      {% endfor %}
+                                    </div>
+                                  {% endif %}
                                 </div>
-                              {% endif %}
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                              <button type="submit" class="btn btn-success">Guardar Familiar</button>
-                          </div>
-                      </form>
-                  </div>
-              </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                  <button type="submit" class="btn btn-success">Guardar Familiar</button>
+                              </div>
+                          </form>
+                      </div>
+                </div>
+            </div>
           </div>
-      </div>
 
           <!-- Modal para Añadir Familiar 2 -->
           <div class="modal fade" id="agregarFamiliar2Modal{{ alumno.id }}" tabindex="-1" aria-labelledby="agregarFamiliar2ModalLabel{{ alumno.id }}" aria-hidden="true" data-bs-backdrop="static">
@@ -632,7 +631,7 @@
                       <div class="col-md-4">
                         <div class="form-group">
                           <label for="{{ form.rut.id_for_label }}" class="form-label">RUT</label>
-                          <input type="text" class="form-control rut-input" id="{{ form.rut.id_for_label }}" name="{{ form.rut.html_name }}" value="{{ form.rut.value|default:'' }}" placeholder="Ej: 12.345.678-9">
+                          <input type="text" class="form-control rut-input" id="{{ form.rut.id_for_label }}" name="{{ form.rut.html_name }}" value="{{ form.rut.value|default:'' }}" placeholder="Ej: 12.345.678-9" maxlength="12">
                           {% if form.rut.errors %}
                             <div class="text-danger">
                               {% for error in form.rut.errors %}
@@ -704,7 +703,7 @@
                       <div class="col-md-6">
                         <div class="form-group">
                           <label for="{{ form.rut_apoderadoT.id_for_label }}" class="form-label">RUT</label>
-                          <input type="text" class="form-control rut-input" id="{{ form.rut_apoderadoT.id_for_label }}" name="{{ form.rut_apoderadoT.html_name }}" value="{{ form.rut_apoderadoT.value|default:'' }}" placeholder="Ej: 12.345.678-9">
+                          <input type="text" class="form-control rut-input" id="{{ form.rut_apoderadoT.id_for_label }}" name="{{ form.rut_apoderadoT.html_name }}" value="{{ form.rut_apoderadoT.value|default:'' }}" placeholder="Ej: 12.345.678-9" maxlength="12">
                           {% if form.rut_apoderadoT.errors %}
                             <div class="text-danger">
                               {% for error in form.rut_apoderadoT.errors %}
@@ -754,7 +753,7 @@
                       <div class="col-md-6">
                         <div class="form-group">
                           <label for="{{ form.rut_apoderadoS.id_for_label }}" class="form-label">RUT</label>
-                          <input type="text" class="form-control rut-input" id="{{ form.rut_apoderadoS.id_for_label }}" name="{{ form.rut_apoderadoS.html_name }}" value="{{ form.rut_apoderadoS.value|default:'' }}" placeholder="Ej: 12.345.678-9">
+                          <input type="text" class="form-control rut-input" id="{{ form.rut_apoderadoS.id_for_label }}" name="{{ form.rut_apoderadoS.html_name }}" value="{{ form.rut_apoderadoS.value|default:'' }}" placeholder="Ej: 12.345.678-9" maxlength="12">
                           {% if form.rut_apoderadoS.errors %}
                             <div class="text-danger">
                               {% for error in form.rut_apoderadoS.errors %}
@@ -971,7 +970,7 @@
               let formValido = true;
               
               rutInputs.forEach(function(input) {
-                // Solo validar si el campo tiene valor (permite campos opcionales)
+                // Solo validar si el campo tiene valor
                 if (input.value.trim() !== '') {
                   if (!validarRut(input.value)) {
                     formValido = false;
@@ -1228,9 +1227,6 @@
           if (data.success) {
             // Si todos los cursos existen, mostrar el modal de confirmación
             Swal.close();
-            // Reemplazar esta línea:
-            // $('#promocionAnualModal').modal('show');
-            // Por esta:
             const promocionModal = new bootstrap.Modal(document.getElementById('promocionAnualModal'));
             promocionModal.show();
           } else {
@@ -1319,20 +1315,20 @@
               }
             }
             
-            // Aplicar la verificación a todos los campos de RUT en el formulario de registro
-            const rutInputs = document.querySelectorAll('#agregarAlumnoModal .rut-input');
-            rutInputs.forEach(input => {
-              input.addEventListener('blur', function() {
+            // Aplicar la verificación al campo de RUT en el formulario de registro            const rutAlumnoRegistro = document.querySelector('#{{ form.rut.id_for_label }}');
+            if (rutAlumnoRegistro) {
+              rutAlumnoRegistro.addEventListener('blur', function() {
                 verificarRutEgresado(this);
               });
-            });
+            }
             
-            // También aplicar a los campos de RUT en los formularios de edición
-            document.querySelectorAll('[id^="editarAlumnoModal"] .rut-input').forEach(input => {
-              input.addEventListener('blur', function() {
+            // Aplicar la verificación al campo de RUT en el formulario de edición
+            const rutAlumnoEdicion = document.querySelector('#{{ alumno.id }}');
+            if (rutAlumnoEdicion) {
+              rutAlumnoRegistro.addEventListener('blur', function() {
                 verificarRutEgresado(this);
               });
-            });
+            }
           });
         </script>
         
