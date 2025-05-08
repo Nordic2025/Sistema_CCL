@@ -50,9 +50,9 @@ urlpatterns = [
     path('agregar_alumno/',views.registrar_alumno, name='agregar_alumno'),
     path('editar_alumno/<int:id>/', views.editar_alumno, name='editar_alumno'),
     path('verificar_rut_egresado/', views.verificar_rut_egresado, name='verificar_rut_egresado'),    
-    path('agregar_familiares/<int:id>/<int:familiar_num>/', views.agregar_familiar, name='agregar_familiar'),
-    path('alumnos/eliminar-familiar/<int:id>/<int:familiar_num>/', views.eliminar_familiar, name='eliminar_familiar'),
-    
+   path('agregar_familiares/<int:alumno_id>/<int:familiar_num>/', views.agregar_familiar, name='agregar_familiar'),
+    path('alumnos/eliminar-familiar/<int:alumno_id>/<int:familiar_num>/', views.eliminar_familiar, name='eliminar_familiar'),
+    path('alumnos/obtener-datos/<int:alumno_id>/', views.obtener_datos_alumno, name='obtener_datos_alumno'),
     
     
     path('retiros/', views.retiros_view, name='retiros'),

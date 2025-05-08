@@ -16,6 +16,7 @@ from functools import wraps
 from django.db import IntegrityError, transaction
 import re
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_GET, require_POST
 
 
 # Decorador para verificar si el usuario es staff
@@ -727,6 +728,55 @@ def eliminar_inspector_view(request, id):
 
 
 
+@require_GET
+def obtener_datos_alumno(request, alumno_id):
+    """
+    Vista para obtener los datos de un alumno en formato JSON para actualización dinámica
+    """
+    try:
+        # Busca el alumno por el id
+        alumno = Alumno.objects.get(id=alumno_id)
+        
+        # Crear un diccionario con los datos del alumno
+        alumno_data = {
+            'id': alumno.id,
+            'nombre': alumno.nombre,
+            'rut': alumno.rut,
+            'curso': alumno.curso.nombre if alumno.curso else '',
+            'apoderado_titular': alumno.apoderado_titular,
+            'rut_apoderadoT': alumno.rut_apoderadoT,
+            'telefono_apoderadoT': alumno.telefono_apoderadoT,
+            'apoderado_suplente': alumno.apoderado_suplente,
+            'rut_apoderadoS': alumno.rut_apoderadoS,
+            'telefono_apoderadoS': alumno.telefono_apoderadoS,
+            'familiar_1': alumno.familiar_1,
+            'rut_familiar_1': alumno.rut_familiar_1,
+            'familiar_1_relacion': alumno.familiar_1_relacion,
+            'familiar_1_telefono': alumno.familiar_1_telefono,
+            'familiar_2': alumno.familiar_2,
+            'rut_familiar_2': alumno.rut_familiar_2,
+            'familiar_2_relacion': alumno.familiar_2_relacion,
+            'familiar_2_telefono': alumno.familiar_2_telefono,
+        }
+
+        # Devuelve los datos en formato JSON para que se utilicen en el Script
+        return JsonResponse({
+            'success': True,
+            'alumno': alumno_data,
+            'is_superuser': request.user.is_superuser
+        })
+    except Alumno.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'mensaje': 'Alumno no encontrado'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'mensaje': str(e)
+        }, status=500)
+    
+
 
 #Alumnos
 @login_required(login_url='Modulo_admin:login_admin')
@@ -740,6 +790,7 @@ def alumnos_view(request):
     alumnos = Alumno.objects.all()
     cursos = Curso.objects.all()
 
+    alumnos = alumnos.select_related('curso').all()
 
     # Obtener parámetros de filtrado
     busqueda = request.GET.get('busqueda', '')
@@ -927,91 +978,138 @@ def verificar_rut_egresado(request):
         return JsonResponse({'es_egresado': False})
 
 
-
-
-
 @login_required(login_url='Modulo_admin:login_admin')
-def agregar_familiar(request, id, familiar_num):
-    """Vista para agregar un familiar a un alumno."""
-    alumno = get_object_or_404(Alumno, id=id)
-    
-    if request.method == 'POST':
-        form = FamiliarForm(request.POST)
-        if form.is_valid():
-            familiar_nombre = form.cleaned_data['familiar_nombre']
-            familiar_relacion = form.cleaned_data['familiar_relacion']
-            familiar_telefono = form.cleaned_data['familiar_telefono']
-            familiar_rut = form.cleaned_data['familiar_rut']
-            
-            # Actualizar el familiar correspondiente
-            if familiar_num == 1:
-                alumno.familiar_1 = familiar_nombre
-                alumno.familiar_1_relacion = familiar_relacion
-                alumno.familiar_1_telefono = familiar_telefono
-                alumno.rut_familiar_1 = familiar_rut
-                mensaje = f'Familiar 1 agregado correctamente para {alumno.nombre}'
-            elif familiar_num == 2:
-                alumno.familiar_2 = familiar_nombre
-                alumno.familiar_2_relacion = familiar_relacion
-                alumno.familiar_2_telefono = familiar_telefono
-                alumno.rut_familiar_2 = familiar_rut
-                mensaje = f'Familiar 2 agregado correctamente para {alumno.nombre}'
-            
-            # Guardar los cambios
-            alumno.save()
-            messages.success(request, mensaje)
+@require_POST
+def agregar_familiar(request, alumno_id, familiar_num):
+    """
+    Vista para agregar un familiar a un alumno
+    """
+    try:
+        alumno = Alumno.objects.get(id=alumno_id)
+        
+        # Validar el formulario
+        familiar_nombre = request.POST.get('familiar_nombre', '').strip()
+        familiar_rut = request.POST.get('familiar_rut', '').strip()
+        familiar_relacion = request.POST.get('familiar_relacion', '').strip()
+        familiar_telefono = request.POST.get('familiar_telefono', '').strip()
+        
+        errores = []
+        
+        if not familiar_nombre:
+            errores.append('El nombre del familiar es obligatorio')
+        
+        # Si hay errores, devolver respuesta con errores
+        if errores:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errores': errores
+                })
+            else:
+                messages.error(request, ', '.join(errores))
+                return redirect('Modulo_admin:alumnos')
+        
+        # Guardar los datos según el número de familiar
+        if str(familiar_num) == '1':
+            alumno.familiar_1 = familiar_nombre
+            alumno.rut_familiar_1 = familiar_rut
+            alumno.familiar_1_relacion = familiar_relacion
+            alumno.familiar_1_telefono = f"+56{familiar_telefono}" if familiar_telefono else ""
+        elif str(familiar_num) == '2':
+            alumno.familiar_2 = familiar_nombre
+            alumno.rut_familiar_2 = familiar_rut
+            alumno.familiar_2_relacion = familiar_relacion
+            alumno.familiar_2_telefono = f"+56{familiar_telefono}" if familiar_telefono else ""
+        
+        alumno.save()
+        
+        # Devolver respuesta según el tipo de solicitud
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'mensaje': f'Familiar {familiar_num} agregado correctamente'
+            })
         else:
-            # Si el formulario no es válido, mostrar errores
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'Error en el campo {field}: {error}')
-    
-    return redirect('Modulo_admin:alumnos')
-
-
-@login_required(login_url='Modulo_admin:login_admin')
-def eliminar_familiar(request, id, familiar_num):
-    """Vista para eliminar un familiar de un alumno."""
-    alumno = get_object_or_404(Alumno, id=id)
-
-        # Verificar si el usuario es superusuario
-    if not request.user.is_superuser:
-        messages.error(request, 'No tienes permisos para realizar esta acción')
-        return redirect('Modulo_admin:alumnos')
-    
-    if request.method == 'POST':
-        # Determinar qué familiar eliminar
-        if familiar_num == 1:
-            # Guardar el nombre para el mensaje
-            nombre_familiar = alumno.familiar_1
+            messages.success(request, f'Familiar {familiar_num} agregado correctamente')
+            return redirect('Modulo_admin:alumnos')
             
-            # Limpiar los campos del familiar 1
-            alumno.familiar_1 = ''
-            alumno.familiar_1_relacion = ''
-            alumno.familiar_1_telefono = ''
-            alumno.rut_familiar_1 = ''
-            
-            mensaje = f'Familiar {nombre_familiar} eliminado correctamente'
-        elif familiar_num == 2:
-            # Guardar el nombre para el mensaje
-            nombre_familiar = alumno.familiar_2
-            
-            # Limpiar los campos del familiar 2
-            alumno.familiar_2 = ''
-            alumno.familiar_2_relacion = ''
-            alumno.familiar_2_telefono = ''
-            alumno.rut_familiar_2 = ''
-            
-            mensaje = f'Familiar {nombre_familiar} eliminado correctamente'
+    except Alumno.DoesNotExist:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'mensaje': 'Alumno no encontrado'
+            }, status=404)
         else:
-            messages.error(request, 'Número de familiar no válido')
+            messages.error(request, 'Alumno no encontrado')
+            return redirect('Modulo_admin:alumnos')
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # Depuracion por consola para ver errores
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'mensaje': str(e)
+            }, status=500)
+        else:
+            messages.error(request, f'Error: {str(e)}')
             return redirect('Modulo_admin:alumnos')
         
-        # Guardar los cambios
+
+@login_required(login_url='Modulo_admin:login_admin')
+@require_POST
+def eliminar_familiar(request, alumno_id, familiar_num):
+    """
+    Vista para eliminar un familiar de un alumno
+    """
+    try:
+        alumno = Alumno.objects.get(id=alumno_id)
+        
+        # Eliminar los datos según el número de familiar
+        if int(familiar_num) == 1:
+            nombre_familiar = alumno.familiar_1
+            alumno.familiar_1 = ""
+            alumno.rut_familiar_1 = ""
+            alumno.familiar_1_relacion = ""
+            alumno.familiar_1_telefono = ""
+        elif int(familiar_num) == 2:
+            nombre_familiar = alumno.familiar_2
+            alumno.familiar_2 = ""
+            alumno.rut_familiar_2 = ""
+            alumno.familiar_2_relacion = ""
+            alumno.familiar_2_telefono = ""
+        
         alumno.save()
-        messages.success(request, mensaje)
-    
-    return redirect('Modulo_admin:alumnos')
+        
+        # Devolver respuesta según el tipo de solicitud
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'mensaje': f'Familiar eliminado correctamente'
+            })
+        else:
+            messages.success(request, f'Familiar eliminado correctamente')
+            return redirect('Modulo_admin:alumnos')
+            
+    except Alumno.DoesNotExist:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'mensaje': 'Alumno no encontrado'
+            }, status=404)
+        else:
+            messages.error(request, 'Alumno no encontrado')
+            return redirect('Modulo_admin:alumnos')
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())  # Depuracion por consola para ver errores
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'mensaje': str(e)
+            }, status=500)
+        else:
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('Modulo_admin:alumnos')
 
 
 @login_required(login_url='Modulo_admin:login_admin')
