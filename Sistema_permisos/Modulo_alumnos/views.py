@@ -366,8 +366,20 @@ def procesar_retiro(request):
 
 
 def verificar_estado_retiro(request):
+
+
+    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         retiro_id = request.GET.get('retiro_id')
+        estado = request.GET.get('estado')
+
+        if estado == 'timeout':
+            return JsonResponse({
+                'status': 'timeout',
+                'message': 'Tiempo de espera agotado',
+                'redirect_url': reverse('Modulo_alumnos:formulario_retiro')
+            })
+    
         if not retiro_id:
             return JsonResponse({'error': 'No se proporcionó retiro_id'}, status=400)
 
@@ -375,15 +387,19 @@ def verificar_estado_retiro(request):
 
         print("Vista verificar_estado_retiro fue llamada con:", retiro_id, "estado:", registro.estado)
 
-        if registro.estado in ['confirmed', 'confirmed_busy']:
+        if registro.estado in ['confirmed']:
             return JsonResponse({
                 'status': registro.estado,
                 'redirect_url': f"/Modulo_alumnos/confirmacion_retiro/{registro.id}/"
             })
         else:
             return JsonResponse({'status': registro.estado})
+
     else:
         return JsonResponse({'error': 'Acceso no permitido'}, status=403)
+    
+
+
     
 
 @csrf_exempt

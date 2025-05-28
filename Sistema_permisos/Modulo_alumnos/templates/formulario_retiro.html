@@ -185,15 +185,15 @@
                 }
             });
     
-    // Evento blur para formatear cuando el campo pierde el foco
-    inputElement.addEventListener('blur', function() {
-        if (this.value.length > 1) {
-            // Eliminar caracteres no numéricos excepto K/k
-            let valor = this.value.replace(/[^\dkK]/g, '');
-            this.value = formatearRut(valor);
+            // Evento blur para formatear cuando el campo pierde el foco
+            inputElement.addEventListener('blur', function() {
+                if (this.value.length > 1) {
+                    // Eliminar caracteres no numéricos excepto K/k
+                    let valor = this.value.replace(/[^\dkK]/g, '');
+                    this.value = formatearRut(valor);
+                }
+            });
         }
-    });
-}
         
         // Función para validar formato de RUT chileno
         function validarFormatoRut(rut) {
@@ -205,112 +205,111 @@
         // Aplicar formato al campo RUT de apoderado
         aplicarFormatoRut(rutApoderadoInput);
         
-        // Función para verificar el apoderado
        // Función para verificar el apoderado
-function verificarApoderado() {
-    let rutApoderado = rutApoderadoInput.value.trim();
-    
-    // Normalizar el RUT (convertir 'k' a 'K')
-    rutApoderado = rutApoderado.toUpperCase();
-    
-    // Actualizar el valor en el campo
-    rutApoderadoInput.value = rutApoderado;
-    
-    // Validar formato del RUT
-    if (!validarFormatoRut(rutApoderado)) {
-        Swal.fire({
-            title: 'Formato de RUT incorrecto',
-            text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
-            icon: 'error',
-            confirmButtonText: 'Entendido'
-        });
-        return;
-    }
-    
-    // Mostrar indicador de carga
-    resultadoVerificacion.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <p class="mt-2">Verificando apoderado...</p>
-        </div>
-    `;
-    
-    // Realizar la petición AJAX para verificar el apoderado
-    fetch(`{% url 'Modulo_alumnos:verificar_apoderado' %}?rut_apoderado=${rutApoderado}`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.valido) {
-            // Si el apoderado es válido, mostrar mensaje de éxito y habilitar paso 2
-            resultadoVerificacion.innerHTML = `
-                <div class="alert alert-success">
-                    <h5 class="alert-heading">¡Persona autorizada verificada!</h5>
-                    <p>${data.mensaje}</p>
-                </div>
-            `;
+        function verificarApoderado() {
+            let rutApoderado = rutApoderadoInput.value.trim();
             
-            // Guardar el RUT del apoderado en el campo oculto
-            rutPersonaRetiraInput.value = rutApoderado;
+            // Normalizar el RUT (convertir 'k' a 'K')
+            rutApoderado = rutApoderado.toUpperCase();
             
-            // Guardar el nombre del apoderado en el campo visible
-            if (data.nombre_apoderado) {
-                 nombrePersonaRetiraInput.value = data.nombre_apoderado;
-                console.log('Nombre del apoderado asignado:', data.nombre_apoderado);
-            } else {
-                nombrePersonaRetiraInput.value = "Apoderado Autorizado";
-                console.log('Usando nombre por defecto');
+            // Actualizar el valor en el campo
+            rutApoderadoInput.value = rutApoderado;
+            
+            // Validar formato del RUT
+            if (!validarFormatoRut(rutApoderado)) {
+                Swal.fire({
+                    title: 'Formato de RUT incorrecto',
+                    text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
             }
             
-            // Llenar el select con los alumnos asociados al apoderado
-            rutEstudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
-            data.alumnos.forEach(alumno => {
-                const option = document.createElement('option');
-                option.value = alumno.rut;
-                option.textContent = `${alumno.nombre} (${alumno.rut})`;
-                option.dataset.nombre = alumno.nombre;
-                option.dataset.curso = alumno.curso;
-                option.dataset.tipoPersona = alumno.tipo_persona;
-                rutEstudianteSelect.appendChild(option);
-            });
-            
-            // Mostrar el paso 2
-            paso2.style.display = 'block';
-            
-            // Desplazarse suavemente al paso 2
-            paso2.scrollIntoView({ behavior: 'smooth' });
-            
-        } else {
-            // Si el apoderado no es válido, mostrar mensaje de error
+            // Mostrar indicador de carga
             resultadoVerificacion.innerHTML = `
-                <div class="alert alert-danger">
-                    <h5 class="alert-heading">Error de verificación</h5>
-                    <p>${data.mensaje}</p>
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Verificando apoderado...</p>
                 </div>
             `;
             
-            // Ocultar el paso 2
-            paso2.style.display = 'none';
+            // Realizar la petición AJAX para verificar el apoderado
+            fetch(`{% url 'Modulo_alumnos:verificar_apoderado' %}?rut_apoderado=${rutApoderado}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.valido) {
+                    // Si el apoderado es válido, mostrar mensaje de éxito y habilitar paso 2
+                    resultadoVerificacion.innerHTML = `
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">¡Persona autorizada verificada!</h5>
+                            <p>${data.mensaje}</p>
+                        </div>
+                    `;
+                    
+                    // Guardar el RUT del apoderado en el campo oculto
+                    rutPersonaRetiraInput.value = rutApoderado;
+                    
+                    // Guardar el nombre del apoderado en el campo visible
+                    if (data.nombre_apoderado) {
+                        nombrePersonaRetiraInput.value = data.nombre_apoderado;
+                        console.log('Nombre del apoderado asignado:', data.nombre_apoderado);
+                    } else {
+                        nombrePersonaRetiraInput.value = "Apoderado Autorizado";
+                        console.log('Usando nombre por defecto');
+                    }
+                    
+                    // Llenar el select con los alumnos asociados al apoderado
+                    rutEstudianteSelect.innerHTML = '<option value="">Seleccione un estudiante</option>';
+                    data.alumnos.forEach(alumno => {
+                        const option = document.createElement('option');
+                        option.value = alumno.rut;
+                        option.textContent = `${alumno.nombre} (${alumno.rut})`;
+                        option.dataset.nombre = alumno.nombre;
+                        option.dataset.curso = alumno.curso;
+                        option.dataset.tipoPersona = alumno.tipo_persona;
+                        rutEstudianteSelect.appendChild(option);
+                    });
+                    
+                    // Mostrar el paso 2
+                    paso2.style.display = 'block';
+                    
+                    // Desplazarse suavemente al paso 2
+                    paso2.scrollIntoView({ behavior: 'smooth' });
+                    
+                } else {
+                    // Si el apoderado no es válido, mostrar mensaje de error
+                    resultadoVerificacion.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">Error de verificación</h5>
+                            <p>${data.mensaje}</p>
+                        </div>
+                    `;
+                    
+                    // Ocultar el paso 2
+                    paso2.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultadoVerificacion.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">Error de conexión</h5>
+                        <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
+                    </div>
+                `;
+                
+                // Ocultar el paso 2
+                paso2.style.display = 'none';
+            });
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        resultadoVerificacion.innerHTML = `
-            <div class="alert alert-danger">
-                <h5 class="alert-heading">Error de conexión</h5>
-                <p>Ocurrió un error al procesar la solicitud. Por favor, intente nuevamente.</p>
-            </div>
-        `;
-        
-        // Ocultar el paso 2
-        paso2.style.display = 'none';
-    });
-}
 
         
         // Evento para el botón de verificar apoderado
@@ -422,155 +421,156 @@ function verificarApoderado() {
         formularioRetiro.addEventListener('submit', function(event) {
             // Verificar que todos los campos estén completos
             if (!rutPersonaRetiraInput.value || 
-        !rutEstudianteSelect.value ||
-        !nombreEstudianteInput.value ||
-        !cursoInput.value ||
-        !document.querySelector('select[name="motivo_retiro"]').value) {
+                !rutEstudianteSelect.value ||
+                !nombreEstudianteInput.value ||
+                !cursoInput.value ||
+                !document.querySelector('select[name="motivo_retiro"]').value) {
         
-        event.preventDefault();
-        
-        Swal.fire({
-            title: 'Formulario incompleto',
-            text: 'Por favor complete todos los campos requeridos.',
-            icon: 'error',
-            confirmButtonText: 'Entendido'
-        });
-        return;
-    }
-    
-    submitForm(event);
-});
-
-function submitForm(event) {
-    event.preventDefault();
-    console.log("Formulario enviado");
-    
-    // Mostrar modal de carga
-    var myModal = new bootstrap.Modal(document.getElementById('loadingScreen'));
-    myModal.show();
-    console.log("Modal mostrado");
-    
-    // Obtener datos del formulario
-    const formData = new FormData(formularioRetiro);
-    
-    // Enviar formulario mediante AJAX
-    fetch('{% url "Modulo_alumnos:procesar_retiro" %}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Respuesta del servidor:", data);
-        
-        if (data.retiro_id) {
-            // Iniciar verificación periódica del estado
-            console.log("Iniciando verificación para retiro ID:", data.retiro_id);
-            checkRetiroStatus(data.retiro_id);
-        } else {
-            // Ocultar modal de carga
-            myModal.hide();
-            
-            // Mostrar error
-            Swal.fire({
-                title: 'Error',
-                text: data.message || 'Ocurrió un error al procesar el retiro.',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        
-        // Ocultar modal de carga
-        myModal.hide();
-        
-        // Mostrar error
-        Swal.fire({
-            title: 'Error',
-            text: 'Ocurrió un error al procesar la solicitud.',
-            icon: 'error',
-            confirmButtonText: 'Entendido'
-        });
-    });
-}
-// Función para verificar el estado del retiro periódicamente
-function checkRetiroStatus(retiroId) {
-    console.log(`Iniciando polling para retiroId: ${retiroId}`);
-    
-    const checkInterval = setInterval(() => {
-        console.log(`Verificando estado del retiro ${retiroId}...`);
-        
-        fetch(`{% url "Modulo_alumnos:verificar_estado_retiro" %}?retiro_id=${retiroId}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(`Estado actual del retiro ${retiroId}:`, data);
-            
-            if (data.status === 'confirmed') {
-                // Retiro confirmado, detener el polling y redirigir
-                console.log(`Retiro ${retiroId} confirmado, redirigiendo a:`, data.redirect_url);
-                clearInterval(checkInterval);
-                window.location.href = data.redirect_url;
-            } else if (data.status === 'rejected') {
-                // Retiro rechazado, detener el polling y mostrar mensaje
-                console.log(`Retiro ${retiroId} rechazado`);
-                clearInterval(checkInterval);
-                
-                // Ocultar el modal de carga
-                var loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingScreen'));
-                if (loadingModal) {
-                    loadingModal.hide();
-                } else {
-                    $('#loadingScreen').modal('hide'); // Fallback para Bootstrap 4
-                }
+                event.preventDefault();
                 
                 Swal.fire({
-                    title: 'Retiro rechazado',
-                    text: data.message || 'El inspector ha rechazado el retiro.',
-                    icon: 'warning',
+                    title: 'Formulario incompleto',
+                    text: 'Por favor complete todos los campos requeridos.',
+                    icon: 'error',
                     confirmButtonText: 'Entendido'
                 });
-            } else if (data.status === 'timeout') {
-                // Tiempo de espera agotado
-                console.log(`Tiempo de espera agotado para retiro ${retiroId}`);
-                clearInterval(checkInterval);
-                
-                // Ocultar el modal de carga
-                var loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingScreen'));
-                if (loadingModal) {
-                    loadingModal.hide();
-                } else {
-                    $('#loadingScreen').modal('hide'); // Fallback para Bootstrap 4
-                }
-                
-                Swal.fire({
-                    title: 'Tiempo de espera agotado',
-                    text: 'No se recibió respuesta del inspector. El retiro ha sido registrado pero requiere verificación.',
-                    icon: 'info',
-                    confirmButtonText: 'Continuar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = data.redirect_url;
-                    }
-                });
+                return;
             }
-            // Si status sigue siendo 'waiting', continuamos el polling
-        })
-        .catch(error => {
-            console.error(`Error al verificar estado del retiro ${retiroId}:`, error);
-            // No detenemos el polling por errores de red temporales
+    
+            submitForm(event);
         });
-    }, 3000); // Verificar cada 3 segundos
-}
-})
+
+        function submitForm(event) {
+            event.preventDefault();
+            console.log("Formulario enviado");
+            
+            // Mostrar modal de carga
+            var myModal = new bootstrap.Modal(document.getElementById('loadingScreen'));
+            myModal.show();
+            console.log("Modal mostrado");
+            
+            // Obtener datos del formulario
+            const formData = new FormData(formularioRetiro);
+            
+            // Enviar formulario mediante AJAX
+            fetch('{% url "Modulo_alumnos:procesar_retiro" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Respuesta del servidor:", data);
+                
+                if (data.retiro_id) {
+                    // Iniciar verificación periódica del estado
+                    console.log("Iniciando verificación para retiro ID:", data.retiro_id);
+                    checkRetiroStatus(data.retiro_id);
+                } else {
+                    // Ocultar modal de carga
+                    myModal.hide();
+                    
+                    // Mostrar error
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'Ocurrió un error al procesar el retiro.',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Ocultar modal de carga
+                myModal.hide();
+                
+                // Mostrar error
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al procesar la solicitud.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido'
+                });
+            });
+        }
+        // Función para verificar el estado del retiro periódicamente
+        function checkRetiroStatus(retiroId) {
+            console.log(`Iniciando polling para retiroId: ${retiroId}`);
+            
+            const checkInterval = setInterval(() => {
+                console.log(`Verificando estado del retiro ${retiroId}...`);
+                
+                fetch(`{% url "Modulo_alumnos:verificar_estado_retiro" %}?retiro_id=${retiroId}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(`Estado actual del retiro ${retiroId}:`, data);
+                    
+                    if (data.status === 'confirmed') {
+                        // Retiro confirmado, detener el polling y redirigir
+                        console.log(`Retiro ${retiroId} confirmado, redirigiendo a:`, data.redirect_url);
+                        clearInterval(checkInterval);
+                        window.location.href = data.redirect_url;
+                    } else if (data.status === 'rejected') {
+                        // Retiro rechazado, detener el polling y mostrar mensaje
+                        console.log(`Retiro ${retiroId} rechazado`);
+                        clearInterval(checkInterval);
+                        
+                        // Ocultar el modal de carga
+                        var loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingScreen'));
+                        if (loadingModal) {
+                            loadingModal.hide();
+                        } else {
+                            $('#loadingScreen').modal('hide'); 
+                        }
+                        
+                        Swal.fire({
+                            title: 'Retiro rechazado',
+                            text: data.message || 'El inspector ha rechazado el retiro.',
+                            icon: 'warning',
+                            confirmButtonText: 'Entendido'
+                        });
+                    } else if (data.status === 'timeout') {
+                        // Tiempo de espera agotado
+                        console.log(`Tiempo de espera agotado para retiro ${retiroId}`);
+                        clearInterval(checkInterval);
+                        
+                        // Ocultar el modal de carga
+                        var loadingModal = bootstrap.Modal.getInstance(document.getElementById('loadingScreen'));
+                        if (loadingModal) {
+                            loadingModal.hide();
+                        } else {
+                            $('#loadingScreen').modal('hide'); 
+                        }
+                        
+                        Swal.fire({
+                            title: 'Tiempo de espera agotado',
+                            text: 'No se recibió respuesta del inspector. El retiro ha sido registrado pero requiere verificación.',
+                            icon: 'info',
+                            confirmButtonText: 'Continuar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const redirect_url = data.redirect_url || "{% url 'Modulo_alumnos:formulario_retiro' %}";
+                                window.location.href = redirect_url;
+                            }
+                        });
+                    }
+                    // Si status sigue siendo 'waiting', continuamos el polling
+                })
+                .catch(error => {
+                    console.error(`Error al verificar estado del retiro ${retiroId}:`, error);
+                    // No detenemos el polling por errores de red temporales
+                });
+            }, 3000); // Verificar cada 3 segundos
+        }
+    })
 
         
 </script>
