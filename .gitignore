@@ -1,6 +1,15 @@
 # Entorno virtual
-venv/
+venv*/
+*.env
 .env
+env*/
+
+env_Luis/
+env_claudio/
+env_pcclaudio/
+
+
+
 *.pyc
 _pycache_/
 
@@ -23,4 +32,5 @@ node_modules/
 *.tar.gz
 
 
-.wwebjs_auth
+# Bot de WhatsApp, genera codigo QR para iniciar sesion y inicializar el bot
+*.wwebjs_auth
