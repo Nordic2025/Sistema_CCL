@@ -33,4 +33,4 @@ node_modules/
 
 
 # Bot de WhatsApp, genera codigo QR para iniciar sesion y inicializar el bot
-Sistema_permisos/wsp_bot/.wwebjs_auth
+*.wwebjs_auth
