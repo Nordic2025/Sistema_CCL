@@ -132,10 +132,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // NUEVA FUNCIONALIDAD: Formateo automático de RUT
+    // Función para formatear automáticamente el RUT
     const rutInput = document.getElementById('rut');
     
-    // Función para formatear automáticamente el RUT
     function formatearRut(rut) {
         // Eliminar puntos y guiones
         let valor = rut.replace(/\./g, '').replace(/-/g, '');
@@ -240,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            buscarCodigo(); // Llamar a la función de búsqueda
+            buscarCodigo();
         }
     });
 });

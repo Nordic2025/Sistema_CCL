@@ -1,13 +1,10 @@
-{% extends 'base_admin.html' %}
-
-{% load static %}
-
-{% block title %}Alumnos Egresados{% endblock %}
-
-{% block content %}
+{% extends 'base_admin.html' %} {% load static %} {% block title %}Alumnos
+Egresados{% endblock %} {% block content %}
 <div class="container main-content">
-  <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Alumnos Egresados</h1>  
-  
+  <h1 style="margin-top: 30px; font-size: 2rem">
+    Panel de Administrador | Alumnos Egresados
+  </h1>
+
   <div class="row mb-4">
     <div class="col-md-6">
       <a href="{% url 'Modulo_admin:alumnos' %}" class="btn btn_general">
@@ -16,35 +13,57 @@
     </div>
     <div class="col-md-6 text-end">
       <div class="btn-group">
-        <button type="button" class="btn btn_general dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <button
+          type="button"
+          class="btn btn_general dropdown-toggle"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
           Filtrar por Año de Egreso
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="{% url 'Modulo_admin:alumnos_egresados' %}">Todos los años</a></li>
-          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a
+              class="dropdown-item"
+              href="{% url 'Modulo_admin:alumnos_egresados' %}"
+              >Todos los años</a
+            >
+          </li>
+          <li><hr class="dropdown-divider" /></li>
           {% for año in años_egreso %}
-            <li><a class="dropdown-item" href="{% url 'Modulo_admin:alumnos_egresados' %}?año={{ año }}">{{ año }}</a></li>
+          <li>
+            <a
+              class="dropdown-item"
+              href="{% url 'Modulo_admin:alumnos_egresados' %}?año={{ año }}"
+              >{{ año }}</a
+            >
+          </li>
           {% endfor %}
         </ul>
       </div>
     </div>
   </div>
-  
+
   <!-- Indicador de filtro activo -->
   {% if año_filtro %}
   <div class="row mb-4">
     <div class="col-md-12">
       <div class="alert alert-info">
         <h5 class="alert-heading">Filtro activo:</h5>
-        <p class="mb-0">Mostrando egresados del año: <strong>{{ año_filtro }}</strong></p>
-        <a href="{% url 'Modulo_admin:alumnos_egresados' %}" class="btn btn-sm btn-outline-secondary mt-2">
+        <p class="mb-0">
+          Mostrando egresados del año: <strong>{{ año_filtro }}</strong>
+        </p>
+        <a
+          href="{% url 'Modulo_admin:alumnos_egresados' %}"
+          class="btn btn-sm btn-outline-secondary mt-2"
+        >
           <i class="fas fa-times"></i> Limpiar filtro
         </a>
       </div>
     </div>
   </div>
   {% endif %}
-  
+
   <div class="row">
     <div class="col-md-12">
       <div class="tabla_global">
@@ -70,19 +89,40 @@
               <td>{{ egresado.apoderado_titular }}</td>
               <td>{{ egresado.telefono_apoderadoT }}</td>
               <td>
-                <button type="button" class="btn btn_primary btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detalleEgresadoModal{{ egresado.id }}">
+                <button
+                  type="button"
+                  class="btn btn_primary btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#detalleEgresadoModal{{ egresado.id }}"
+                >
                   Ver Detalle
                 </button>
               </td>
             </tr>
-            
+
             <!-- Modal de Detalles -->
-            <div class="modal fade" id="detalleEgresadoModal{{ egresado.id }}" tabindex="-1" aria-labelledby="detalleEgresadoModalLabel{{ egresado.id }}" aria-hidden="true">
+            <div
+              class="modal fade"
+              id="detalleEgresadoModal{{ egresado.id }}"
+              tabindex="-1"
+              aria-labelledby="detalleEgresadoModalLabel{{ egresado.id }}"
+              aria-hidden="true"
+            >
               <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
-                    <h5 class="modal-title" id="detalleEgresadoModalLabel{{ egresado.id }}">Detalles del Alumno Egresado | {{ egresado.nombre }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5
+                      class="modal-title"
+                      id="detalleEgresadoModalLabel{{ egresado.id }}"
+                    >
+                      Detalles del Alumno Egresado | {{ egresado.nombre }}
+                    </h5>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
                   </div>
                   <div class="modal-body">
                     <div class="row">
@@ -91,52 +131,110 @@
                           <div class="card-body">
                             <h5 class="card-title">Información Personal</h5>
                             <p><strong>RUT:</strong> {{ egresado.rut }}</p>
-                            <p><strong>Nombre Completo:</strong> {{ egresado.nombre }}</p>
-                            <p><strong>Último Curso:</strong> {{ egresado.ultimo_curso }}</p>
-                            <p><strong>Año de Egreso:</strong> {{ egresado.año_egreso }}</p>
+                            <p>
+                              <strong>Nombre Completo:</strong> {{
+                              egresado.nombre }}
+                            </p>
+                            <p>
+                              <strong>Último Curso:</strong> {{
+                              egresado.ultimo_curso }}
+                            </p>
+                            <p>
+                              <strong>Año de Egreso:</strong> {{
+                              egresado.año_egreso }}
+                            </p>
                           </div>
                         </div>
-                        
+
                         <div class="card">
                           <div class="card-body">
                             <h5 class="card-title">Apoderados</h5>
-                            <p><strong>Apoderado Titular:</strong> {{ egresado.apoderado_titular }}</p>
-                            <p><strong>RUT Apoderado Titular:</strong> {{ egresado.rut_apoderadoT|default:"No registrado" }}</p>
-                            <p><strong>Telefono Apoderado Titular:</strong> {{ egresado.telefono_apoderadoT|default:"No registrado" }}</p>
-                            <p><strong>Apoderado Suplente:</strong> {{ egresado.apoderado_suplente|default:"No registrado" }}</p>
-                            <p><strong>RUT Apoderado Suplente:</strong> {{ egresado.rut_apoderadoS|default:"No registrado" }}</p>
-                            <p><strong>Telefono Apoderado Suplente:</strong> {{ egresado.telefono_apoderadoS|default:"No registrado" }}</p>
+                            <p>
+                              <strong>Apoderado Titular:</strong> {{
+                              egresado.apoderado_titular }}
+                            </p>
+                            <p>
+                              <strong>RUT Apoderado Titular:</strong> {{
+                              egresado.rut_apoderadoT|default:"No registrado" }}
+                            </p>
+                            <p>
+                              <strong>Telefono Apoderado Titular:</strong> {{
+                              egresado.telefono_apoderadoT|default:"No
+                              registrado" }}
+                            </p>
+                            <p>
+                              <strong>Apoderado Suplente:</strong> {{
+                              egresado.apoderado_suplente|default:"No
+                              registrado" }}
+                            </p>
+                            <p>
+                              <strong>RUT Apoderado Suplente:</strong> {{
+                              egresado.rut_apoderadoS|default:"No registrado" }}
+                            </p>
+                            <p>
+                              <strong>Telefono Apoderado Suplente:</strong> {{
+                              egresado.telefono_apoderadoS|default:"No
+                              registrado" }}
+                            </p>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div class="col-md-6">
                         <h5 class="card-title mb-3">Familiares Adicionales</h5>
-                        
+
                         {% if egresado.familiar_1 %}
                         <div class="card mb-3">
                           <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">Familiar 1</h6>
-                            <p><strong>Nombre:</strong> {{ egresado.familiar_1 }}</p>
-                            <p><strong>RUT:</strong> {{ egresado.rut_familiar_1|default:"No registrado" }}</p>
-                            <p><strong>Relación:</strong> {{ egresado.familiar_1_relacion|default:"No especificada" }}</p>
-                            <p><strong>Teléfono:</strong> {{ egresado.familiar_1_telefono|default:"No registrado" }}</p>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                              Familiar 1
+                            </h6>
+                            <p>
+                              <strong>Nombre:</strong> {{ egresado.familiar_1 }}
+                            </p>
+                            <p>
+                              <strong>RUT:</strong> {{
+                              egresado.rut_familiar_1|default:"No registrado" }}
+                            </p>
+                            <p>
+                              <strong>Relación:</strong> {{
+                              egresado.familiar_1_relacion|default:"No
+                              especificada" }}
+                            </p>
+                            <p>
+                              <strong>Teléfono:</strong> {{
+                              egresado.familiar_1_telefono|default:"No
+                              registrado" }}
+                            </p>
                           </div>
                         </div>
                         {% else %}
                         <div class="alert alert-secondary mb-3">
                           <p class="mb-0">No hay información del Familiar 1</p>
                         </div>
-                        {% endif %}
-                        
-                        {% if egresado.familiar_2 %}
+                        {% endif %} {% if egresado.familiar_2 %}
                         <div class="card">
                           <div class="card-body">
-                            <h6 class="card-subtitle mb-2 text-muted">Familiar 2</h6>
-                            <p><strong>Nombre:</strong> {{ egresado.familiar_2 }}</p>
-                            <p><strong>RUT:</strong> {{ egresado.rut_familiar_2|default:"No registrado" }}</p>
-                            <p><strong>Relación:</strong> {{ egresado.familiar_2_relacion|default:"No especificada" }}</p>
-                            <p><strong>Teléfono:</strong> {{ egresado.familiar_2_telefono|default:"No registrado" }}</p>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                              Familiar 2
+                            </h6>
+                            <p>
+                              <strong>Nombre:</strong> {{ egresado.familiar_2 }}
+                            </p>
+                            <p>
+                              <strong>RUT:</strong> {{
+                              egresado.rut_familiar_2|default:"No registrado" }}
+                            </p>
+                            <p>
+                              <strong>Relación:</strong> {{
+                              egresado.familiar_2_relacion|default:"No
+                              especificada" }}
+                            </p>
+                            <p>
+                              <strong>Teléfono:</strong> {{
+                              egresado.familiar_2_telefono|default:"No
+                              registrado" }}
+                            </p>
                           </div>
                         </div>
                         {% else %}
@@ -148,14 +246,22 @@
                     </div>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                    >
+                      Cerrar
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
             {% empty %}
             <tr>
-              <td colspan="7" class="text-center">No hay alumnos egresados registrados</td>
+              <td colspan="7" class="text-center">
+                No hay alumnos egresados registrados
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -164,82 +270,99 @@
     </div>
   </div>
 
+  <!-- Navegación de paginación con estilos mejorados -->
+  <div class="pagination-container my-4">
+    <nav aria-label="Navegación de páginas">
+      <ul class="pagination pagination-md justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+            aria-label="Primera"
+          >
+            <span aria-hidden="true">&laquo;&laquo;</span>
+            <span class="d-none d-sm-inline">Primera</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+            aria-label="Anterior"
+          >
+            <span aria-hidden="true">&laquo;</span>
+            <span class="d-none d-sm-inline">Anterior</span>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">
+            <span aria-hidden="true">&laquo;&laquo;</span>
+            <span class="d-none d-sm-inline">Primera</span>
+          </span>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">
+            <span aria-hidden="true">&laquo;</span>
+            <span class="d-none d-sm-inline">Anterior</span>
+          </span>
+        </li>
+        {% endif %}
 
+        <!-- Indicador de página actual -->
+        <li class="page-item active">
+          <span class="page-link">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+          </span>
+        </li>
 
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+            aria-label="Siguiente"
+          >
+            <span class="d-none d-sm-inline">Siguiente</span>
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+            aria-label="Última"
+          >
+            <span class="d-none d-sm-inline">Última</span>
+            <span aria-hidden="true">&raquo;&raquo;</span>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">
+            <span class="d-none d-sm-inline">Siguiente</span>
+            <span aria-hidden="true">&raquo;</span>
+          </span>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">
+            <span class="d-none d-sm-inline">Última</span>
+            <span aria-hidden="true">&raquo;&raquo;</span>
+          </span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
 
-        <!-- Navegación de paginación con estilos mejorados -->
-        <div class="pagination-container my-4">
-          <nav aria-label="Navegación de páginas">
-            <ul class="pagination pagination-md justify-content-center">
-              {% if page_obj.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Primera">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                    <span class="d-none d-sm-inline">Primera</span>
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Anterior">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="d-none d-sm-inline">Anterior</span>
-                  </a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                    <span class="d-none d-sm-inline">Primera</span>
-                  </span>
-                </li>
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="d-none d-sm-inline">Anterior</span>
-                  </span>
-                </li>
-              {% endif %}
-  
-              <!-- Indicador de página actual -->
-              <li class="page-item active">
-                <span class="page-link">
-                  Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                </span>
-              </li>
-  
-              {% if page_obj.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Siguiente">
-                    <span class="d-none d-sm-inline">Siguiente</span>
-                    <span aria-hidden="true">&raquo;</span>
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Última">
-                    <span class="d-none d-sm-inline">Última</span>
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                  </a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span class="d-none d-sm-inline">Siguiente</span>
-                    <span aria-hidden="true">&raquo;</span>
-                  </span>
-                </li>
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span class="d-none d-sm-inline">Última</span>
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                  </span>
-                </li>
-              {% endif %}
-            </ul>
-          </nav>
-          
-          <!-- Información adicional sobre registros -->
-          <div class="text-center text-muted mt-2">
-            <small>Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index }} de {{ total_registros }} en total</small>
-          </div>
-        </div>
-      
-{% endblock %}
+    <!-- Información adicional sobre registros -->
+    <div class="text-center text-muted mt-2">
+      <small
+        >Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index
+        }} de {{ total_registros }} en total</small
+      >
+    </div>
+  </div>
+
+  {% endblock %}
+</div>

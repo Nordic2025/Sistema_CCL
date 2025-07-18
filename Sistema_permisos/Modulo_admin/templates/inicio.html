@@ -342,11 +342,22 @@
         }
     </style>
 
+    {% comment %} Scripts para traer los datos del backend {% endcomment %}
+    <script id="fechas-data" type="application/json">
+        {{fechas|safe}}
+    </script>
+    <script id="datos-permisos-data" type="application/json">
+        {{datos_permisos|safe}}
+    </script>
+    <script id="datos-retiros-data" type="application/json">
+        {{datos_retiros|safe}}
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const fechas = {{fechas|safe}};
-            const datosPermisos = {{datos_permisos|safe}};
-            const datosRetiros = {{datos_retiros|safe}};
+            const fechas = JSON.parse(document.getElementById('fechas-data').textContent);
+            const datosPermisos = JSON.parse(document.getElementById('datos-permisos-data').textContent);
+            const datosRetiros = JSON.parse(document.getElementById('datos-retiros-data').textContent);
             
             // Crear el mini gráfico
             Highcharts.chart('mini-chart', {

@@ -366,7 +366,7 @@
                     if (this.checkValidity()) {
                         disableButtons();
                         
-                        // Restaurar botones si el envío tarda demasiado (timeout de seguridad)
+                        // Restaurar botones si el envío tarda demasiado (por si acaso)
                         setTimeout(() => {
                             if (submitButtons[0].disabled) {
                                 restoreButtons();

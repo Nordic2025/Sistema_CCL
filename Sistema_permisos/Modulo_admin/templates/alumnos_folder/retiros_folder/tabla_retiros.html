@@ -233,7 +233,6 @@
             <li>Estado: <strong>
               {% if estado_filtro == 'waiting' %}Esperando
               {% elif estado_filtro == 'confirmed' %}Confirmado
-              {% elif estado_filtro == 'confirmed_busy' %}Alumno Ocupado
               {% elif estado_filtro == 'rejected' %}Rechazado
               {% elif estado_filtro == 'timeout' %}Tiempo agotado
               {% else %}{{ estado_filtro }}
@@ -461,7 +460,7 @@
           // Reinicializar cuando se abre cualquier modal
           document.querySelectorAll('.modal').forEach(function(modal) {
             modal.addEventListener('shown.bs.modal', function() {
-              setTimeout(inicializarCamposRut, 100); // Pequeño retraso para asegurar que el DOM está listo
+              setTimeout(inicializarCamposRut, 100);
             });
           });
       

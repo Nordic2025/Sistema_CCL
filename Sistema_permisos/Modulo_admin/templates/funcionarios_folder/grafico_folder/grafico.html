@@ -49,7 +49,20 @@
     </div>
 </div>
 
+{% comment %} Scripts para traer los datos de los permisos de funcionarios {% endcomment %}
 
+<script id= "nombre_areas-data" type="application/json">
+    {{nombre_areas|default:"{}"|safe}}
+</script>
+<script id= "cantidad_permisos-data" type="application/json">
+    {{cantidad_permisos|default:"{}"|safe}}
+</script>
+<script id= "datos_por_mes-data" type="application/json">
+    {{datos_por_mes|default:"{}"|safe}}
+</script>
+<script id= "meses-data" type="application/json">
+    {{meses|default:"{}"|safe}}
+</script>
 
 
 {% comment %}
@@ -58,10 +71,10 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Verificación de los datos disponibles
-        const nombreAreas = {{ nombre_areas|default:"[]"|safe }};
-        const cantidadPermisos = {{ cantidad_permisos|default:"[]"|safe }};
-        const datosPorMes = JSON.parse('{{ datos_por_mes|default:"{}"|safe }}');
-        const meses = {{ meses|default:"[]"|safe }};
+        const nombreAreas =JSON.parse(document.getElementById('nombre_areas-data').textContent);
+        const cantidadPermisos = JSON.parse(document.getElementById('cantidad_permisos-data').textContent);
+        const datosPorMes = JSON.parse(document.getElementById('datos_por_mes-data').textContent);
+        const meses = JSON.parse(document.getElementById('meses-data').textContent);
 
         console.log("Datos de áreas:", nombreAreas);
         console.log("Datos de permisos:", cantidadPermisos);

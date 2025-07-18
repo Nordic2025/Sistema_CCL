@@ -353,7 +353,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     const busquedaInput = document.getElementById('busqueda');
 
-    // Función para formatear RUT (igual que en formulario_permisos.html)
+    // Función para formatear RUT
     function formatearRut(rut) {
       // Eliminar puntos y guiones
       let valor = rut.replace(/\./g, '').replace(/-/g, '');
@@ -384,7 +384,7 @@
     busquedaInput.addEventListener('input', function (e) {
       const valor = this.value.trim();
 
-      // Si parece ser un RUT (contiene números y posiblemente K/k)
+      // Si parece ser un RUT
       if (/^[0-9kK]+$/.test(valor.replace(/[^0-9kK]/g, ''))) {
         // Guardar la posición del cursor
         const start = this.selectionStart;

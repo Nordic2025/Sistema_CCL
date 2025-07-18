@@ -115,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
         getAreaEncargado(autorizadoPorSelect.value);
     }
     
-    // NUEVA FUNCIONALIDAD: Formateo automático de RUT
     
     // Función para formatear automáticamente el RUT
     function formatearRut(rut) {
@@ -159,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Formatear el valor
             this.value = formatearRut(valor);
             
-            // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
+
             const diff = this.value.length - valorOriginal.length;
             
             // Restaurar la posición del cursor

@@ -1,831 +1,1129 @@
-{% extends 'base_admin.html' %}
-
-{% load static %}
-
-{% block title %}Inspectores{% endblock %}
-
-{% block content %}
+{% extends 'base_admin.html' %} {% load static %} {% block title %}Inspectores{%
+endblock %} {% block content %}
 <div class="container main-content">
-    <h1 style="margin-top: 30px; font-size: 2rem;">Panel de Administrador | Inspectores</h1>  
-    <div class="row">
-      <div class="col-md-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-        <button type="button" class="btn btn_general" data-bs-toggle="modal" data-bs-target="#agregarInspectorModal">
+  <h1 style="margin-top: 30px; font-size: 2rem">
+    Panel de Administrador | Inspectores
+  </h1>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <button
+          type="button"
+          class="btn btn_general"
+          data-bs-toggle="modal"
+          data-bs-target="#agregarInspectorModal"
+        >
           Registrar nuevo inspector
         </button>
 
-          <!-- Filtros combinados (nivel y estado) -->
-          <div class="d-flex">
-            <div class="filtro-nivel me-3">
-              <label for="filtroNivel" class="me-2">Filtrar por nivel:</label>
-              <select id="filtroNivel" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                <option value="todos">Todos los niveles</option>
-                <option value="Pre-basica">Pre-básica</option>
-                <option value="Basica">Básica</option>
-                <option value="Media">Media</option>
-              </select>
-            </div>
-            <!-- Nuevo filtro por estado -->
-            <div class="filtro-estado">
-              <label for="filtroEstado" class="me-2">Filtrar por estado:</label>
-              <select id="filtroEstado" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                <option value="todos">Todos los estados</option>
-                <option value="activo">Activos</option>
-                <option value="inactivo">Inactivos</option>
-              </select>
-            </div>
+        <!-- Filtros combinados (nivel y estado) -->
+        <div class="d-flex">
+          <div class="filtro-nivel me-3">
+            <label for="filtroNivel" class="me-2">Filtrar por nivel:</label>
+            <select
+              id="filtroNivel"
+              class="form-select form-select-sm"
+              style="width: auto; display: inline-block"
+            >
+              <option value="todos">Todos los niveles</option>
+              <option value="Pre-basica">Pre-básica</option>
+              <option value="Basica">Básica</option>
+              <option value="Media">Media</option>
+            </select>
           </div>
-      </div>
-
-        <div class="tabla_global">
-          <table class="tabla_ancha">
-            <thead class="thead_custom">
-              <tr>
-                <th>Nombre</th>
-                <th>RUT</th>
-                <th>Teléfono</th>
-                <th>Estado</th>
-                <th>Tipo</th>
-                <th>Niveles Asignados</th>
-                <th>Cursos a cargo</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="tbody_custom">
-              {% for inspector in inspectores %}
-              <tr class="fila-inspector {% if not inspector.is_active %}table-secondary{% endif %}" 
-                  data-estado="{% if inspector.is_active %}activo{% else %}inactivo{% endif %}"
-                  data-niveles="{{ inspector.get_niveles_asignados }}">
-                <td>{{ inspector.nombre }}</td>
-                <td>{{ inspector.rut }}</td>
-                <td>{{ inspector.telefono }}</td>
-                <td>
-                  <span class="badge {% if inspector.is_active %}bg-success{% else %}bg-danger{% endif %}">
-                    {% if inspector.is_active %}Activo{% else %}Inactivo{% endif %}
-                  </span>
-                </td>
-                <td>
-                  {% if inspector.is_salida %}
-                    <span class="badge bg-primary">Inspector de Salida</span>
-                  {% else %}
-                    <span class="badge bg-secondary">Inspector Regular</span>
-                  {% endif %}
-                </td>
-                <td>{{ inspector.get_niveles_asignados }}</td>
-                <td>
-                  {% for curso in inspector.cursos.all %}
-                    <span class="badge bg-primary">{{ curso.nombre }}</span>
-                  {% empty %}
-                    <span class="text-muted">Sin cursos asignados</span>
-                  {% endfor %}
-                </td>
-                <td>
-                  <button type="button" class="btn btn_editar btn-outline-warning m-1" 
-                          data-bs-toggle="modal" 
-                          data-bs-target="#editarInspectorModal{{ inspector.id }}">
-                    Editar
-                  </button>
-                  <button type="button" class="btn {% if inspector.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} m-1" 
-                          onclick="confirmarCambioEstado('{{ inspector.id }}', '{{ inspector.nombre }}', {% if inspector.is_active %}false{% else %}true{% endif %})">
-                    {% if inspector.is_active %}Desactivar{% else %}Activar{% endif %}
-                  </button>
-                  <button type="button" class="btn btn_eliminar btn-outline-danger m-1" 
-                          onclick="confirmarEliminacion('{{ inspector.id }}', '{{ inspector.nombre }}')">
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-              
-              <!-- Modal para Editar Inspector -->
-              <div class="modal fade" id="editarInspectorModal{{ inspector.id }}" tabindex="-1" aria-labelledby="editarInspectorModalLabel{{ inspector.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="editarInspectorModalLabel{{ inspector.id }}">Editar Inspector</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <form method="POST" action="{% url 'Modulo_admin:editar_inspector' inspector.id %}">
-                        {% csrf_token %}
-                        <div class="row mb-3">
-                          <div class="col-md-6">
-                            <label for="nombre{{ inspector.id }}" class="form-label">Nombre Completo</label>
-                            <input type="text" class="form-control" id="nombre{{ inspector.id }}" name="nombre" value="{{ inspector.nombre }}" required>
-                          </div>
-                          <div class="col-md-6">
-                            <label for="rut{{ inspector.id }}" class="form-label">RUT</label>
-                            <input type="text" class="form-control rut-input" id="rut{{ inspector.id }}" name="rut" value="{{ inspector.rut }}" required maxlength="12">
-                            <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
-                          </div>
-                        </div>
-                        <div class="mb-3">
-                          <label for="telefono{{ inspector.id }}" class="form-label">Teléfono</label>
-                          <div class="input-group">
-                            <span class="input-group-text">+56</span>
-                            <input type="text" class="form-control telefono-input" id="telefono{{ inspector.id }}" name="telefono" value="{{ inspector.telefono|slice:'3:' }}" required maxlength="9">
-                          </div>
-                          <small class="form-text text-muted">Ingrese solo los 9 dígitos, sin el prefijo +56</small>
-                        </div>
-                        <div class="mb-3">
-                          <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="is_active{{ inspector.id }}" name="is_active" {% if inspector.is_active %}checked{% endif %}>
-                            <label class="form-check-label" for="is_active{{ inspector.id }}">
-                              Inspector Activo
-                            </label>
-                          </div>
-                          <small class="form-text text-muted">Desactive esta opción si el inspector está de licencia o no disponible temporalmente</small>
-                        </div>
-                        
-                        <div class="mb-3">
-                          <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="is_salida{{ inspector.id }}" name="is_salida" 
-                                  {% if inspector.is_salida %}checked{% endif %}
-                                  {% if not inspector.is_salida and inspector_salida_exists %}disabled{% endif %}>
-                            <label class="form-check-label" for="is_salida{{ inspector.id }}">
-                              Inspector de Salida
-                            </label>
-                          </div>
-                          <small class="form-text text-muted">
-                            El Inspector de Salida tiene acceso a todos los cursos automáticamente
-                            {% if not inspector.is_salida and inspector_salida_exists %}
-                              <br><span class="text-danger">Ya existe un Inspector de Salida en el sistema</span>
-                            {% endif %}
-                          </small>
-                        </div>
-                        
-                        <div class="mb-3">
-                          <label class="form-label">Niveles Asignados</label>
-                          <input type="text" class="form-control" value="{{ inspector.get_niveles_asignados }}" disabled>
-                          <small class="form-text text-muted">Este campo se actualiza automáticamente según los cursos seleccionados</small>
-                        </div>
-                        
-                        <div class="mb-3 cursos-container" id="cursos-container{{ inspector.id }}" {% if inspector.is_salida %}style="display:none"{% endif %}>
-                          <label class="form-label">Cursos a cargo</label>
-                          <div class="row">
-                            {% for curso in cursos %}
-                            <div class="col-md-4 mb-2">
-                              <div class="form-check">
-                                <input class="form-check-input curso-checkbox" type="checkbox" name="cursos" value="{{ curso.id }}" id="curso{{ inspector.id }}_{{ curso.id }}" data-nivel="{{ curso.get_nivel_display }}"
-                                  {% if curso in inspector.cursos.all %}checked{% endif %}>
-                                <label class="form-check-label" for="curso{{ inspector.id }}_{{ curso.id }}">
-                                  {{ curso.nombre }} ({{ curso.get_nivel_display }})
-                                </label>
-                              </div>
-                            </div>
-                            {% endfor %}
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {% empty %}
-              <tr id="mensajeVacio">
-                <td colspan="8" class="text-center py-3">
-                  <div class="alert alert-info mb-0">
-                    No hay inspectores registrados.
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-              <tr id="mensajeFiltroVacio" style="display: none;">
-                <td colspan="8" class="text-center py-3">
-                  <div class="alert alert-info mb-0">
-                    No hay inspectores registrados para los criterios seleccionados.
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Nuevo filtro por estado -->
+          <div class="filtro-estado">
+            <label for="filtroEstado" class="me-2">Filtrar por estado:</label>
+            <select
+              id="filtroEstado"
+              class="form-select form-select-sm"
+              style="width: auto; display: inline-block"
+            >
+              <option value="todos">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-
-  <!-- Modal para Agregar Inspector -->
-  <div class="modal fade" id="agregarInspectorModal" tabindex="-1" aria-labelledby="agregarInspectorModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="agregarInspectorModalLabel">Registrar nuevo Inspector</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form method="POST" action="{% url 'Modulo_admin:agregar_inspector' %}" id="formAgregarInspector">
-            {% csrf_token %}
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="nombre" class="form-label">Nombre Completo</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre completo" required>
-              </div>
-              <div class="col-md-6">
-                <label for="rut" class="form-label">RUT</label>
-                <input type="text" class="form-control rut-input" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required maxlength="12">
-                <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="telefono" class="form-label">Teléfono</label>
-              <div class="input-group">
-                <span class="input-group-text">+56</span>
-                <input type="text" class="form-control telefono-input" id="telefono" name="telefono" placeholder="912345678" required maxlength="9">
-              </div>
-              <small class="form-text text-muted">Ingrese solo los 9 dígitos, sin el prefijo +56</small>
-            </div>
-            
-            <!-- Nuevos campos para estado y tipo de inspector -->
-            <div class="mb-3">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
-                <label class="form-check-label" for="is_active">
-                  Inspector Activo
-                </label>
-              </div>
-              <small class="form-text text-muted">Desactive esta opción si el inspector está de licencia o no disponible temporalmente</small>
-            </div>
-            
-            <div class="mb-3">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="is_salida" name="is_salida" 
-                      {% if inspector_salida_exists %}disabled{% endif %}>
-                <label class="form-check-label" for="is_salida">
-                  Inspector de Salida
-                </label>
-              </div>
-              <small class="form-text text-muted">
-                El Inspector de Salida tiene acceso a todos los cursos automáticamente
-                {% if inspector_salida_exists %}
-                  <br><span class="text-danger">Ya existe un Inspector de Salida en el sistema</span>
-                {% endif %}
-              </small>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Niveles Asignados</label>
-              <input type="text" class="form-control" id="niveles_asignados" value="Sin niveles asignados" disabled>
-              <small class="form-text text-muted">Este campo se actualiza automáticamente según los cursos seleccionados</small>
-            </div>
-            
-            <div class="mb-3" id="cursos-container-nuevo">
-              <label class="form-label">Cursos a cargo</label>
-              <div class="row">
-                {% for curso in cursos %}
-                <div class="col-md-4 mb-2">
-                  <div class="form-check">
-                    <input class="form-check-input curso-checkbox-nuevo" type="checkbox" name="cursos" value="{{ curso.id }}" id="curso_{{ curso.id }}" data-nivel="{{ curso.get_nivel_display }}">
-                    <label class="form-check-label" for="curso_{{ curso.id }}">
-                      {{ curso.nombre }} ({{ curso.get_nivel_display }})
-                    </label>
-                  </div>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-primary">Guardar Inspector</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-
-        <!-- Navegación de paginación con estilos mejorados -->
-        <div class="pagination-container my-4">
-          <nav aria-label="Navegación de páginas">
-            <ul class="pagination pagination-md justify-content-center">
-              {% if page_obj.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Primera">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                    <span class="d-none d-sm-inline">Primera</span>
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Anterior">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="d-none d-sm-inline">Anterior</span>
-                  </a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span aria-hidden="true">&laquo;&laquo;</span>
-                    <span class="d-none d-sm-inline">Primera</span>
-                  </span>
-                </li>
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="d-none d-sm-inline">Anterior</span>
-                  </span>
-                </li>
-              {% endif %}
-  
-              <!-- Indicador de página actual -->
-              <li class="page-item active">
-                <span class="page-link">
-                  Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+      <div class="tabla_global">
+        <table class="tabla_ancha">
+          <thead class="thead_custom">
+            <tr>
+              <th>Nombre</th>
+              <th>RUT</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>Tipo</th>
+              <th>Niveles Asignados</th>
+              <th>Cursos a cargo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="tbody_custom">
+            {% for inspector in inspectores %}
+            <tr
+              class="fila-inspector {% if not inspector.is_active %}table-secondary{% endif %}"
+              data-estado="{% if inspector.is_active %}activo{% else %}inactivo{% endif %}"
+              data-niveles="{{ inspector.get_niveles_asignados }}"
+            >
+              <td>{{ inspector.nombre }}</td>
+              <td>{{ inspector.rut }}</td>
+              <td>{{ inspector.telefono }}</td>
+              <td>
+                <span
+                  class="badge {% if inspector.is_active %}bg-success{% else %}bg-danger{% endif %}"
+                >
+                  {% if inspector.is_active %}Activo{% else %}Inactivo{% endif
+                  %}
                 </span>
-              </li>
-  
-              {% if page_obj.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Siguiente">
-                    <span class="d-none d-sm-inline">Siguiente</span>
-                    <span aria-hidden="true">&raquo;</span>
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}" aria-label="Última">
-                    <span class="d-none d-sm-inline">Última</span>
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                  </a>
-                </li>
-              {% else %}
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span class="d-none d-sm-inline">Siguiente</span>
-                    <span aria-hidden="true">&raquo;</span>
-                  </span>
-                </li>
-                <li class="page-item disabled">
-                  <span class="page-link">
-                    <span class="d-none d-sm-inline">Última</span>
-                    <span aria-hidden="true">&raquo;&raquo;</span>
-                  </span>
-                </li>
-              {% endif %}
-            </ul>
-          </nav>
-          
-          <!-- Información adicional sobre registros -->
-          <div class="text-center text-muted mt-2">
-            <small>Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index }} de {{ total_registros }} en total</small>
-          </div>
-        </div>
-      
+              </td>
+              <td>
+                {% if inspector.is_salida %}
+                <span class="badge bg-primary">Inspector de Salida</span>
+                {% else %}
+                <span class="badge bg-secondary">Inspector Regular</span>
+                {% endif %}
+              </td>
+              <td>{{ inspector.get_niveles_asignados }}</td>
+              <td>
+                {% for curso in inspector.cursos.all %}
+                <span class="badge bg-primary">{{ curso.nombre }}</span>
+                {% empty %}
+                <span class="text-muted">Sin cursos asignados</span>
+                {% endfor %}
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn_editar btn-outline-warning m-1"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editarInspectorModal{{ inspector.id }}"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="btn {% if inspector.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} m-1"
+                  onclick="confirmarCambioEstado('{{ inspector.id }}', '{{ inspector.nombre }}', '{{ 'false' if inspector.is_active else 'true' }}')"
+                >
+                  {% if inspector.is_active %}Desactivar{% else %}Activar{%
+                  endif %}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn_eliminar btn-outline-danger m-1"
+                  onclick="confirmarEliminacion('{{ inspector.id }}', '{{ inspector.nombre }}')"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
 
-  <!-- Script para SweetAlert, validación de RUT y actualización de niveles -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Función para formatear automáticamente el RUT
-      function formatearRut(rut) {
-        // Eliminar puntos y guiones
-        let valor = rut.replace(/\./g, '').replace(/-/g, '');
-        
-        // Obtener dígito verificador
-        let dv = valor.slice(-1);
-        
-        // Obtener cuerpo del RUT
-        let rutCuerpo = valor.slice(0, -1);
-        
-        // Formatear RUT con puntos y guión
-        let rutFormateado = '';
-        
-        // Agregar puntos de miles
-        for (let i = rutCuerpo.length; i > 0; i -= 3) {
-            const inicio = Math.max(0, i - 3);
-            rutFormateado = '.' + rutCuerpo.substring(inicio, i) + rutFormateado;
+            <!-- Modal para Editar Inspector -->
+            <div
+              class="modal fade"
+              id="editarInspectorModal{{ inspector.id }}"
+              tabindex="-1"
+              aria-labelledby="editarInspectorModalLabel{{ inspector.id }}"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5
+                      class="modal-title"
+                      id="editarInspectorModalLabel{{ inspector.id }}"
+                    >
+                      Editar Inspector
+                    </h5>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body">
+                    <form
+                      method="POST"
+                      action="{% url 'Modulo_admin:editar_inspector' inspector.id %}"
+                    >
+                      {% csrf_token %}
+                      <div class="row mb-3">
+                        <div class="col-md-6">
+                          <label
+                            for="nombre{{ inspector.id }}"
+                            class="form-label"
+                            >Nombre Completo</label
+                          >
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="nombre{{ inspector.id }}"
+                            name="nombre"
+                            value="{{ inspector.nombre }}"
+                            required
+                          />
+                        </div>
+                        <div class="col-md-6">
+                          <label for="rut{{ inspector.id }}" class="form-label"
+                            >RUT</label
+                          >
+                          <input
+                            type="text"
+                            class="form-control rut-input"
+                            id="rut{{ inspector.id }}"
+                            name="rut"
+                            value="{{ inspector.rut }}"
+                            required
+                            maxlength="12"
+                          />
+                          <small class="form-text text-muted"
+                            >Formato: XX.XXX.XXX-X</small
+                          >
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label
+                          for="telefono{{ inspector.id }}"
+                          class="form-label"
+                          >Teléfono</label
+                        >
+                        <div class="input-group">
+                          <span class="input-group-text">+56</span>
+                          <input
+                            type="text"
+                            class="form-control telefono-input"
+                            id="telefono{{ inspector.id }}"
+                            name="telefono"
+                            value="{{ inspector.telefono|slice:'3:' }}"
+                            required
+                            maxlength="9"
+                          />
+                        </div>
+                        <small class="form-text text-muted"
+                          >Ingrese solo los 9 dígitos, sin el prefijo +56</small
+                        >
+                      </div>
+                      <div class="mb-3">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="is_active{{ inspector.id }}"
+                            name="is_active"
+                            {%
+                            if
+                            inspector.is_active
+                            %}checked{%
+                            endif
+                            %}
+                          />
+                          <label
+                            class="form-check-label"
+                            for="is_active{{ inspector.id }}"
+                          >
+                            Inspector Activo
+                          </label>
+                        </div>
+                        <small class="form-text text-muted"
+                          >Desactive esta opción si el inspector está de
+                          licencia o no disponible temporalmente</small
+                        >
+                      </div>
+
+                      <div class="mb-3">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="is_salida{{ inspector.id }}"
+                            name="is_salida"
+                            {%
+                            if
+                            inspector.is_salida
+                            %}checked{%
+                            endif
+                            %}
+                            {%
+                            if
+                            not
+                            inspector.is_salida
+                            and
+                            inspector_salida_exists
+                            %}disabled{%
+                            endif
+                            %}
+                          />
+                          <label
+                            class="form-check-label"
+                            for="is_salida{{ inspector.id }}"
+                          >
+                            Inspector de Salida
+                          </label>
+                        </div>
+                        <small class="form-text text-muted">
+                          El Inspector de Salida tiene acceso a todos los cursos
+                          automáticamente {% if not inspector.is_salida and
+                          inspector_salida_exists %}
+                          <br /><span class="text-danger"
+                            >Ya existe un Inspector de Salida en el
+                            sistema</span
+                          >
+                          {% endif %}
+                        </small>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Niveles Asignados</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          value="{{ inspector.get_niveles_asignados }}"
+                          disabled
+                        />
+                        <small class="form-text text-muted"
+                          >Este campo se actualiza automáticamente según los
+                          cursos seleccionados</small
+                        >
+                      </div>
+
+                      <div
+                        class="mb-3 cursos-container"
+                        id="cursos-container{{ inspector.id }}"
+                        {%
+                        if
+                        inspector.is_salida
+                        %}style="display:none"
+                        {%
+                        endif
+                        %}
+                      >
+                        <label class="form-label">Cursos a cargo</label>
+                        <div class="row">
+                          {% for curso in cursos %}
+                          <div class="col-md-4 mb-2">
+                            <div class="form-check">
+                              <input
+                                class="form-check-input curso-checkbox"
+                                type="checkbox"
+                                name="cursos"
+                                value="{{ curso.id }}"
+                                id="curso{{ inspector.id }}_{{ curso.id }}"
+                                data-nivel="{{ curso.get_nivel_display }}"
+                                {%
+                                if
+                                curso
+                                in
+                                inspector.cursos.all
+                                %}checked{%
+                                endif
+                                %}
+                              />
+                              <label
+                                class="form-check-label"
+                                for="curso{{ inspector.id }}_{{ curso.id }}"
+                              >
+                                {{ curso.nombre }} ({{ curso.get_nivel_display
+                                }})
+                              </label>
+                            </div>
+                          </div>
+                          {% endfor %}
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button
+                          type="button"
+                          class="btn btn-secondary"
+                          data-bs-dismiss="modal"
+                        >
+                          Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                          Guardar Cambios
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <tr id="mensajeVacio">
+              <td colspan="8" class="text-center py-3">
+                <div class="alert alert-info mb-0">
+                  No hay inspectores registrados.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            <tr id="mensajeFiltroVacio" style="display: none">
+              <td colspan="8" class="text-center py-3">
+                <div class="alert alert-info mb-0">
+                  No hay inspectores registrados para los criterios
+                  seleccionados.
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Agregar Inspector -->
+<div
+  class="modal fade"
+  id="agregarInspectorModal"
+  tabindex="-1"
+  aria-labelledby="agregarInspectorModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="agregarInspectorModalLabel">
+          Registrar nuevo Inspector
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form
+          method="POST"
+          action="{% url 'Modulo_admin:agregar_inspector' %}"
+          id="formAgregarInspector"
+        >
+          {% csrf_token %}
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="nombre" class="form-label">Nombre Completo</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombre"
+                name="nombre"
+                placeholder="Nombre completo"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="rut" class="form-label">RUT</label>
+              <input
+                type="text"
+                class="form-control rut-input"
+                id="rut"
+                name="rut"
+                placeholder="Ej: 12.345.678-9"
+                required
+                maxlength="12"
+              />
+              <small class="form-text text-muted">Formato: XX.XXX.XXX-X</small>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <div class="input-group">
+              <span class="input-group-text">+56</span>
+              <input
+                type="text"
+                class="form-control telefono-input"
+                id="telefono"
+                name="telefono"
+                placeholder="912345678"
+                required
+                maxlength="9"
+              />
+            </div>
+            <small class="form-text text-muted"
+              >Ingrese solo los 9 dígitos, sin el prefijo +56</small
+            >
+          </div>
+
+          <!-- Nuevos campos para estado y tipo de inspector -->
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="is_active"
+                name="is_active"
+                checked
+              />
+              <label class="form-check-label" for="is_active">
+                Inspector Activo
+              </label>
+            </div>
+            <small class="form-text text-muted"
+              >Desactive esta opción si el inspector está de licencia o no
+              disponible temporalmente</small
+            >
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="is_salida"
+                name="is_salida"
+                {%
+                if
+                inspector_salida_exists
+                %}disabled{%
+                endif
+                %}
+              />
+              <label class="form-check-label" for="is_salida">
+                Inspector de Salida
+              </label>
+            </div>
+            <small class="form-text text-muted">
+              El Inspector de Salida tiene acceso a todos los cursos
+              automáticamente {% if inspector_salida_exists %}
+              <br /><span class="text-danger"
+                >Ya existe un Inspector de Salida en el sistema</span
+              >
+              {% endif %}
+            </small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Niveles Asignados</label>
+            <input
+              type="text"
+              class="form-control"
+              id="niveles_asignados"
+              value="Sin niveles asignados"
+              disabled
+            />
+            <small class="form-text text-muted"
+              >Este campo se actualiza automáticamente según los cursos
+              seleccionados</small
+            >
+          </div>
+
+          <div class="mb-3" id="cursos-container-nuevo">
+            <label class="form-label">Cursos a cargo</label>
+            <div class="row">
+              {% for curso in cursos %}
+              <div class="col-md-4 mb-2">
+                <div class="form-check">
+                  <input
+                    class="form-check-input curso-checkbox-nuevo"
+                    type="checkbox"
+                    name="cursos"
+                    value="{{ curso.id }}"
+                    id="curso_{{ curso.id }}"
+                    data-nivel="{{ curso.get_nivel_display }}"
+                  />
+                  <label class="form-check-label" for="curso_{{ curso.id }}">
+                    {{ curso.nombre }} ({{ curso.get_nivel_display }})
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Guardar Inspector
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navegación de paginación con estilos mejorados -->
+<div class="pagination-container my-4">
+  <nav aria-label="Navegación de páginas">
+    <ul class="pagination pagination-md justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="?page=1{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+          aria-label="Primera"
+        >
+          <span aria-hidden="true">&laquo;&laquo;</span>
+          <span class="d-none d-sm-inline">Primera</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+          aria-label="Anterior"
+        >
+          <span aria-hidden="true">&laquo;</span>
+          <span class="d-none d-sm-inline">Anterior</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          <span aria-hidden="true">&laquo;&laquo;</span>
+          <span class="d-none d-sm-inline">Primera</span>
+        </span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">
+          <span aria-hidden="true">&laquo;</span>
+          <span class="d-none d-sm-inline">Anterior</span>
+        </span>
+      </li>
+      {% endif %}
+
+      <!-- Indicador de página actual -->
+      <li class="page-item active">
+        <span class="page-link">
+          Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+      </li>
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+          aria-label="Siguiente"
+        >
+          <span class="d-none d-sm-inline">Siguiente</span>
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="?page={{ page_obj.paginator.num_pages }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if curso_filtro %}&curso={{ curso_filtro }}{% endif %}"
+          aria-label="Última"
+        >
+          <span class="d-none d-sm-inline">Última</span>
+          <span aria-hidden="true">&raquo;&raquo;</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">
+          <span class="d-none d-sm-inline">Siguiente</span>
+          <span aria-hidden="true">&raquo;</span>
+        </span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link">
+          <span class="d-none d-sm-inline">Última</span>
+          <span aria-hidden="true">&raquo;&raquo;</span>
+        </span>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Información adicional sobre registros -->
+  <div class="text-center text-muted mt-2">
+    <small
+      >Mostrando registros {{ page_obj.start_index }} al {{ page_obj.end_index
+      }} de {{ total_registros }} en total</small
+    >
+  </div>
+</div>
+
+<!-- Script para SweetAlert, validación de RUT y actualización de niveles -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Función para formatear automáticamente el RUT
+    function formatearRut(rut) {
+      // Eliminar puntos y guiones
+      let valor = rut.replace(/\./g, "").replace(/-/g, "");
+
+      // Obtener dígito verificador
+      let dv = valor.slice(-1);
+
+      // Obtener cuerpo del RUT
+      let rutCuerpo = valor.slice(0, -1);
+
+      // Formatear RUT con puntos y guión
+      let rutFormateado = "";
+
+      // Agregar puntos de miles
+      for (let i = rutCuerpo.length; i > 0; i -= 3) {
+        const inicio = Math.max(0, i - 3);
+        rutFormateado = "." + rutCuerpo.substring(inicio, i) + rutFormateado;
+      }
+
+      // Eliminar el primer punto
+      rutFormateado = rutFormateado.substring(1);
+
+      // Agregar guión y dígito verificador
+      return rutFormateado + "-" + dv;
+    }
+
+    // Función para aplicar formato a un campo RUT
+    function aplicarFormatoRut(inputElement) {
+      // Evento para formatear el RUT mientras se escribe
+      inputElement.addEventListener("input", function (e) {
+        // Guardar la posición del cursor
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        const valorOriginal = this.value;
+
+        // Eliminar caracteres no numéricos excepto K/k y conservar solo dígitos y K/k
+        let valor = this.value.replace(/[^\dkK]/g, "");
+
+        // Si hay algo que formatear
+        if (valor.length > 1) {
+          // Formatear el valor
+          this.value = formatearRut(valor);
+
+          // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
+          const diff = this.value.length - valorOriginal.length;
+
+          // Restaurar la posición del cursor
+          this.setSelectionRange(start + diff, end + diff);
         }
-        
-        // Eliminar el primer punto
-        rutFormateado = rutFormateado.substring(1);
-        
-        // Agregar guión y dígito verificador
-        return rutFormateado + '-' + dv;
-      }
-      
-      // Función para aplicar formato a un campo RUT
-      function aplicarFormatoRut(inputElement) {
-        // Evento para formatear el RUT mientras se escribe
-        inputElement.addEventListener('input', function(e) {
-          // Guardar la posición del cursor
-          const start = this.selectionStart;
-          const end = this.selectionEnd;
-          const valorOriginal = this.value;
-          
-          // Eliminar caracteres no numéricos excepto K/k y conservar solo dígitos y K/k
-          let valor = this.value.replace(/[^\dkK]/g, '');
-          
-          // Si hay algo que formatear
-          if (valor.length > 1) {
-            // Formatear el valor
-            this.value = formatearRut(valor);
-            
-            // Calcular nueva posición del cursor (ajustando por puntos y guión añadidos)
-            const diff = this.value.length - valorOriginal.length;
-            
-            // Restaurar la posición del cursor
-            this.setSelectionRange(start + diff, end + diff);
-          }
-        });
-        
-        // Evento blur para formatear cuando el campo pierde el foco
-        inputElement.addEventListener('blur', function() {
-          if (this.value.length > 1) {
-            // Eliminar caracteres no numéricos excepto K/k
-            let valor = this.value.replace(/[^\dkK]/g, '');
-            this.value = formatearRut(valor);
-          }
-        });
-      }
-      
-      // Función para validar formato de RUT chileno
-      function validarFormatoRut(rut) {
-        // Expresión regular para validar formato XX.XXX.XXX-X
-        const rutRegex = /^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$/;
-        return rutRegex.test(rut);
-      }
-      
-      // Función para validar el dígito verificador del RUT
-      function validarRut(rut) {
-        // Eliminar puntos y guiones
-        rut = rut.replace(/\./g, '').replace(/-/g, '');
-        
-        // Verificar longitud mínima
-        if (rut.length < 2) return false;
-        
-        // Separar cuerpo y dígito verificador
-        const cuerpo = rut.slice(0, -1);
-        const dv = rut.slice(-1).toUpperCase();
-        
-        // Calcular dígito verificador
-        let suma = 0;
-        let multiplicador = 2;
-        
-        // Recorrer el cuerpo de derecha a izquierda
-        for (let i = cuerpo.length - 1; i >= 0; i--) {
-          suma += parseInt(cuerpo.charAt(i)) * multiplicador;
-          multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+      });
+
+      // Evento blur para formatear cuando el campo pierde el foco
+      inputElement.addEventListener("blur", function () {
+        if (this.value.length > 1) {
+          // Eliminar caracteres no numéricos excepto K/k
+          let valor = this.value.replace(/[^\dkK]/g, "");
+          this.value = formatearRut(valor);
         }
-        
-        // Calcular dígito esperado
-        const resto = suma % 11;
-        const dvEsperado = resto === 0 ? '0' : resto === 1 ? 'K' : (11 - resto).toString();
-        
-        // Comparar dígito verificador
-        return dv === dvEsperado;
+      });
+    }
+
+    // Función para validar formato de RUT chileno
+    function validarFormatoRut(rut) {
+      // Expresión regular para validar formato XX.XXX.XXX-X
+      const rutRegex = /^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$/;
+      return rutRegex.test(rut);
+    }
+
+    // Función para validar el dígito verificador del RUT
+    function validarRut(rut) {
+      // Eliminar puntos y guiones
+      rut = rut.replace(/\./g, "").replace(/-/g, "");
+
+      // Verificar longitud mínima
+      if (rut.length < 2) return false;
+
+      // Separar cuerpo y dígito verificador
+      const cuerpo = rut.slice(0, -1);
+      const dv = rut.slice(-1).toUpperCase();
+
+      // Calcular dígito verificador
+      let suma = 0;
+      let multiplicador = 2;
+
+      // Recorrer el cuerpo de derecha a izquierda
+      for (let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += parseInt(cuerpo.charAt(i)) * multiplicador;
+        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
       }
-      
-      // Función para formatear número de teléfono chileno
-      function formatearTelefono(telefono) {
+
+      // Calcular dígito esperado
+      const resto = suma % 11;
+      const dvEsperado =
+        resto === 0 ? "0" : resto === 1 ? "K" : (11 - resto).toString();
+
+      // Comparar dígito verificador
+      return dv === dvEsperado;
+    }
+
+    // Función para formatear número de teléfono chileno
+    function formatearTelefono(telefono) {
+      // Eliminar cualquier carácter que no sea dígito
+      return telefono.replace(/\D/g, "");
+    }
+
+    // Aplicar formato a todos los campos RUT
+    document.querySelectorAll(".rut-input").forEach(function (input) {
+      aplicarFormatoRut(input);
+    });
+
+    // Aplicar formato a todos los campos de teléfono
+    document.querySelectorAll(".telefono-input").forEach(function (input) {
+      input.addEventListener("input", function () {
         // Eliminar cualquier carácter que no sea dígito
-        return telefono.replace(/\D/g, '');
-      }
-      
-      // Aplicar formato a todos los campos RUT
-      document.querySelectorAll('.rut-input').forEach(function(input) {
-        aplicarFormatoRut(input);
+        this.value = formatearTelefono(this.value);
       });
-      
-      // Aplicar formato a todos los campos de teléfono
-      document.querySelectorAll('.telefono-input').forEach(function(input) {
-        input.addEventListener('input', function() {
-          // Eliminar cualquier carácter que no sea dígito
-          this.value = formatearTelefono(this.value);
-        });
+    });
+
+    // Función para actualizar los niveles asignados en el formulario de nuevo inspector
+    function actualizarNivelesNuevoInspector() {
+      const checkboxes = document.querySelectorAll(
+        ".curso-checkbox-nuevo:checked"
+      );
+      const nivelesInput = document.getElementById("niveles_asignados");
+
+      const niveles = new Set();
+      checkboxes.forEach(function (checkbox) {
+        niveles.add(checkbox.dataset.nivel);
       });
-      
-      // Función para actualizar los niveles asignados en el formulario de nuevo inspector
-      function actualizarNivelesNuevoInspector() {
-        const checkboxes = document.querySelectorAll('.curso-checkbox-nuevo:checked');
-        const nivelesInput = document.getElementById('niveles_asignados');
-        
-        const niveles = new Set();
-        checkboxes.forEach(function(checkbox) {
-          niveles.add(checkbox.dataset.nivel);
-        });
-        
-        if (niveles.size === 0) {
-          nivelesInput.value = "Sin niveles asignados";
-        } else {
-          nivelesInput.value = Array.from(niveles).sort().join(" - ");
-        }
+
+      if (niveles.size === 0) {
+        nivelesInput.value = "Sin niveles asignados";
+      } else {
+        nivelesInput.value = Array.from(niveles).sort().join(" - ");
       }
-      
-      // Agregar evento a los checkboxes de cursos en el formulario de nuevo inspector
-      document.querySelectorAll('.curso-checkbox-nuevo').forEach(function(checkbox) {
-        checkbox.addEventListener('change', actualizarNivelesNuevoInspector);
+    }
+
+    // Agregar evento a los checkboxes de cursos en el formulario de nuevo inspector
+    document
+      .querySelectorAll(".curso-checkbox-nuevo")
+      .forEach(function (checkbox) {
+        checkbox.addEventListener("change", actualizarNivelesNuevoInspector);
       });
-      
-      // Función para actualizar los niveles asignados en los formularios de edición
-      function actualizarNivelesEdicion(modalId) {
-        const modal = document.getElementById(modalId);
-        if (!modal) return;
-        
-        const checkboxes = modal.querySelectorAll('.curso-checkbox:checked');
-        const nivelesInputs = modal.querySelectorAll('input[disabled]');
-        
-        if (nivelesInputs.length === 0) return;
-        const nivelesInput = nivelesInputs[0];
-        
-        const niveles = new Set();
-        checkboxes.forEach(function(checkbox) {
-          niveles.add(checkbox.dataset.nivel);
-        });
-        
-        if (niveles.size === 0) {
-          nivelesInput.value = "Sin niveles asignados";
-        } else {
-          nivelesInput.value = Array.from(niveles).sort().join(" - ");
-        }
+
+    // Función para actualizar los niveles asignados en los formularios de edición
+    function actualizarNivelesEdicion(modalId) {
+      const modal = document.getElementById(modalId);
+      if (!modal) return;
+
+      const checkboxes = modal.querySelectorAll(".curso-checkbox:checked");
+      const nivelesInputs = modal.querySelectorAll("input[disabled]");
+
+      if (nivelesInputs.length === 0) return;
+      const nivelesInput = nivelesInputs[0];
+
+      const niveles = new Set();
+      checkboxes.forEach(function (checkbox) {
+        niveles.add(checkbox.dataset.nivel);
+      });
+
+      if (niveles.size === 0) {
+        nivelesInput.value = "Sin niveles asignados";
+      } else {
+        nivelesInput.value = Array.from(niveles).sort().join(" - ");
       }
-      
-      // Agregar evento a los checkboxes de cursos en los formularios de edición
-      document.querySelectorAll('[id^="editarInspectorModal"]').forEach(function(modal) {
+    }
+
+    // Agregar evento a los checkboxes de cursos en los formularios de edición
+    document
+      .querySelectorAll('[id^="editarInspectorModal"]')
+      .forEach(function (modal) {
         const modalId = modal.id;
-        const checkboxes = modal.querySelectorAll('.curso-checkbox');
-        
-        checkboxes.forEach(function(checkbox) {
-          checkbox.addEventListener('change', function() {
+        const checkboxes = modal.querySelectorAll(".curso-checkbox");
+
+        checkboxes.forEach(function (checkbox) {
+          checkbox.addEventListener("change", function () {
             actualizarNivelesEdicion(modalId);
           });
         });
-        
+
         // Actualizar niveles al cargar la página
         actualizarNivelesEdicion(modalId);
       });
-      
-      // Manejar el cambio en el checkbox de Inspector de Salida (nuevo)
-      const isSalidaCheckbox = document.getElementById('is_salida');
-      if (isSalidaCheckbox) {
-        isSalidaCheckbox.addEventListener('change', function() {
-          const cursosContainer = document.getElementById('cursos-container-nuevo');
-          if (this.checked) {
-            cursosContainer.style.display = 'none';
-            // Marcar todos los cursos como seleccionados
-            document.querySelectorAll('.curso-checkbox-nuevo').forEach(function(checkbox) {
+
+    // Manejar el cambio en el checkbox de Inspector de Salida (nuevo)
+    const isSalidaCheckbox = document.getElementById("is_salida");
+    if (isSalidaCheckbox) {
+      isSalidaCheckbox.addEventListener("change", function () {
+        const cursosContainer = document.getElementById(
+          "cursos-container-nuevo"
+        );
+        if (this.checked) {
+          cursosContainer.style.display = "none";
+          // Marcar todos los cursos como seleccionados
+          document
+            .querySelectorAll(".curso-checkbox-nuevo")
+            .forEach(function (checkbox) {
               checkbox.checked = true;
             });
-          } else {
-            cursosContainer.style.display = 'block';
-            // Desmarcar todos los cursos
-            document.querySelectorAll('.curso-checkbox-nuevo').forEach(function(checkbox) {
+        } else {
+          cursosContainer.style.display = "block";
+          // Desmarcar todos los cursos
+          document
+            .querySelectorAll(".curso-checkbox-nuevo")
+            .forEach(function (checkbox) {
               checkbox.checked = false;
             });
-          }
-          // Actualizar niveles
-          actualizarNivelesNuevoInspector();
-        });
-      }
-      
-      // Manejar el cambio en los checkboxes de Inspector de Salida (edición)
-      document.querySelectorAll('[id^="is_salida"]').forEach(function(checkbox) {
-        if (checkbox.id === 'is_salida') return; // Excluir el checkbox del formulario de nuevo inspector
-        
-        checkbox.addEventListener('change', function() {
-          const inspectorId = this.id.replace('is_salida', '');
-          const cursosContainer = document.getElementById('cursos-container' + inspectorId);
-          
-          if (this.checked) {
-            cursosContainer.style.display = 'none';
-            // Marcar todos los cursos como seleccionados
-            document.querySelectorAll(`#cursos-container${inspectorId} .curso-checkbox`).forEach(function(checkbox) {
+        }
+        // Actualizar niveles
+        actualizarNivelesNuevoInspector();
+      });
+    }
+
+    // Manejar el cambio en los checkboxes de Inspector de Salida (edición)
+    document.querySelectorAll('[id^="is_salida"]').forEach(function (checkbox) {
+      if (checkbox.id === "is_salida") return;
+
+      checkbox.addEventListener("change", function () {
+        const inspectorId = this.id.replace("is_salida", "");
+        const cursosContainer = document.getElementById(
+          "cursos-container" + inspectorId
+        );
+
+        if (this.checked) {
+          cursosContainer.style.display = "none";
+          // Marcar todos los cursos como seleccionados
+          document
+            .querySelectorAll(`#cursos-container${inspectorId} .curso-checkbox`)
+            .forEach(function (checkbox) {
               checkbox.checked = true;
             });
-          } else {
-            cursosContainer.style.display = 'block';
-            // Mantener los cursos seleccionados
-          }
-          // Actualizar niveles
-          actualizarNivelesEdicion('editarInspectorModal' + inspectorId);
-        });
+        } else {
+          cursosContainer.style.display = "block";
+          // Mantener los cursos seleccionados
+        }
+        // Actualizar niveles
+        actualizarNivelesEdicion("editarInspectorModal" + inspectorId);
       });
-      
-      // Validar formulario de agregar inspector
-      const formAgregarInspector = document.getElementById('formAgregarInspector');
-      if (formAgregarInspector) {
-        formAgregarInspector.addEventListener('submit', function(event) {
-          const rutInput = document.getElementById('rut');
-          const rutValue = rutInput.value.trim();
-          const telefonoInput = document.getElementById('telefono');
-          
-          if (!validarFormatoRut(rutValue)) {
-            event.preventDefault();
-            Swal.fire({
-              title: 'Formato de RUT incorrecto',
-              text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
-              icon: 'error',
-              confirmButtonText: 'Entendido'
-            });
-            rutInput.focus();
-            return;
-          }
-          
-          // Validar dígito verificador
-          if (!validarRut(rutValue)) {
-            event.preventDefault();
-            Swal.fire({
-              title: 'RUT inválido',
-              text: 'El dígito verificador del RUT no es correcto',
-              icon: 'error',
-              confirmButtonText: 'Entendido'
-            });
-            rutInput.focus();
-            return;
-          }
-          
-          // Validar que el teléfono tenga 9 dígitos
-          const telefonoValue = telefonoInput.value.replace(/\D/g, '');
-          if (telefonoValue.length !== 9) {
-            event.preventDefault();
-            Swal.fire({
-              title: 'Formato de teléfono incorrecto',
-              text: 'El número de teléfono debe tener 9 dígitos',
-              icon: 'error',
-              confirmButtonText: 'Entendido'
-            });
-            telefonoInput.focus();
-            return;
-          }
-          
-          // Si todo está bien, agregar el prefijo +56
-          telefonoInput.value = '+56' + telefonoValue;
-        });
-      }
-      
-      // Validar formularios de editar inspector
-      document.querySelectorAll('[id^="editarInspectorModal"]').forEach(function(modal) {
-        const form = modal.querySelector('form');
-        const rutInput = modal.querySelector('.rut-input');
-        const telefonoInput = modal.querySelector('.telefono-input');
-        
+    });
+
+    // Validar formulario de agregar inspector
+    const formAgregarInspector = document.getElementById(
+      "formAgregarInspector"
+    );
+    if (formAgregarInspector) {
+      formAgregarInspector.addEventListener("submit", function (event) {
+        const rutInput = document.getElementById("rut");
+        const rutValue = rutInput.value.trim();
+        const telefonoInput = document.getElementById("telefono");
+
+        if (!validarFormatoRut(rutValue)) {
+          event.preventDefault();
+          Swal.fire({
+            title: "Formato de RUT incorrecto",
+            text: "Por favor ingrese el RUT con el formato XX.XXX.XXX-X",
+            icon: "error",
+            confirmButtonText: "Entendido",
+          });
+          rutInput.focus();
+          return;
+        }
+
+        // Validar dígito verificador
+        if (!validarRut(rutValue)) {
+          event.preventDefault();
+          Swal.fire({
+            title: "RUT inválido",
+            text: "El dígito verificador del RUT no es correcto",
+            icon: "error",
+            confirmButtonText: "Entendido",
+          });
+          rutInput.focus();
+          return;
+        }
+
+        // Validar que el teléfono tenga 9 dígitos
+        const telefonoValue = telefonoInput.value.replace(/\D/g, "");
+        if (telefonoValue.length !== 9) {
+          event.preventDefault();
+          Swal.fire({
+            title: "Formato de teléfono incorrecto",
+            text: "El número de teléfono debe tener 9 dígitos",
+            icon: "error",
+            confirmButtonText: "Entendido",
+          });
+          telefonoInput.focus();
+          return;
+        }
+
+        // Si todo está bien, agregar el prefijo +56
+        telefonoInput.value = "+56" + telefonoValue;
+      });
+    }
+
+    // Validar formularios de editar inspector
+    document
+      .querySelectorAll('[id^="editarInspectorModal"]')
+      .forEach(function (modal) {
+        const form = modal.querySelector("form");
+        const rutInput = modal.querySelector(".rut-input");
+        const telefonoInput = modal.querySelector(".telefono-input");
+
         if (form && rutInput && telefonoInput) {
-          form.addEventListener('submit', function(event) {
+          form.addEventListener("submit", function (event) {
             const rutValue = rutInput.value.trim();
-            
+
             if (!validarFormatoRut(rutValue)) {
               event.preventDefault();
               Swal.fire({
-                title: 'Formato de RUT incorrecto',
-                text: 'Por favor ingrese el RUT con el formato XX.XXX.XXX-X',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
+                title: "Formato de RUT incorrecto",
+                text: "Por favor ingrese el RUT con el formato XX.XXX.XXX-X",
+                icon: "error",
+                confirmButtonText: "Entendido",
               });
               rutInput.focus();
               return;
             }
-            
+
             // Validar dígito verificador
             if (!validarRut(rutValue)) {
               event.preventDefault();
               Swal.fire({
-                title: 'RUT inválido',
-                text: 'El dígito verificador del RUT no es correcto',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
+                title: "RUT inválido",
+                text: "El dígito verificador del RUT no es correcto",
+                icon: "error",
+                confirmButtonText: "Entendido",
               });
               rutInput.focus();
               return;
             }
-            
+
             // Validar que el teléfono tenga 9 dígitos
-            const telefonoValue = telefonoInput.value.replace(/\D/g, '');
+            const telefonoValue = telefonoInput.value.replace(/\D/g, "");
             if (telefonoValue.length !== 9) {
               event.preventDefault();
               Swal.fire({
-                title: 'Formato de teléfono incorrecto',
-                text: 'El número de teléfono debe tener 9 dígitos',
-                icon: 'error',
-                confirmButtonText: 'Entendido'
+                title: "Formato de teléfono incorrecto",
+                text: "El número de teléfono debe tener 9 dígitos",
+                icon: "error",
+                confirmButtonText: "Entendido",
               });
               telefonoInput.focus();
               return;
             }
-            
+
             // Si todo está bien, agregar el prefijo +56
-            telefonoInput.value = '+56' + telefonoValue;
+            telefonoInput.value = "+56" + telefonoValue;
           });
         }
       });
-      
-      // Script para el filtro de niveles y estado
-      const filtroNivel = document.getElementById('filtroNivel');
-      const filtroEstado = document.getElementById('filtroEstado');
-      const filasInspectores = document.querySelectorAll('.fila-inspector');
-      const mensajeFiltroVacio = document.getElementById('mensajeFiltroVacio');
-      const mensajeVacio = document.getElementById('mensajeVacio');
-      
-      // Función para aplicar ambos filtros
-      function aplicarFiltros() {
-        const nivelSeleccionado = filtroNivel.value;
-        const estadoSeleccionado = filtroEstado.value;
-        let filasVisibles = 0;
 
-        // Oculta el mensaje del filtro inicialmente
-        if (mensajeFiltroVacio) {
-          mensajeFiltroVacio.style.display = 'none';
-        }
+    // Script para el filtro de niveles y estado
+    const filtroNivel = document.getElementById("filtroNivel");
+    const filtroEstado = document.getElementById("filtroEstado");
+    const filasInspectores = document.querySelectorAll(".fila-inspector");
+    const mensajeFiltroVacio = document.getElementById("mensajeFiltroVacio");
+    const mensajeVacio = document.getElementById("mensajeVacio");
 
-        // Si no hay inspectores en general, no hacer nada
-        if (filasInspectores.length === 0) {
-          return;
-        }
+    // Función para aplicar ambos filtros
+    function aplicarFiltros() {
+      const nivelSeleccionado = filtroNivel.value;
+      const estadoSeleccionado = filtroEstado.value;
+      let filasVisibles = 0;
 
-        // Si hay inspectores, ocultar el mensaje de inspectores vacíos
-        if (mensajeVacio) {
-          mensajeVacio.style.display = 'none';
-        }
-        
-        filasInspectores.forEach(fila => {
-          // Obtener datos para filtrar
-          const nivelesTexto = fila.dataset.niveles;
-          const estado = fila.dataset.estado;
-          
-          // Aplicar filtros combinados
-          const pasaFiltroNivel = nivelSeleccionado === 'todos' || 
-                                 (nivelSeleccionado === 'Pre-basica' && nivelesTexto.includes('Pre-básica')) ||
-                                 (nivelSeleccionado === 'Basica' && nivelesTexto.includes('Básica')) ||
-                                 (nivelSeleccionado === 'Media' && nivelesTexto.includes('Media'));
-                                 
-          const pasaFiltroEstado = estadoSeleccionado === 'todos' || 
-                                  (estadoSeleccionado === 'activo' && estado === 'activo') ||
-                                  (estadoSeleccionado === 'inactivo' && estado === 'inactivo');
-          
-          // Mostrar u ocultar según los filtros
-          if (pasaFiltroNivel && pasaFiltroEstado) {
-            fila.style.display = '';
-            filasVisibles++;
-          } else {
-            fila.style.display = 'none';
-          }
-        });
-        
-        // Mostrar mensaje si no hay inspectores visibles para los filtros seleccionados
-        if (filasVisibles === 0 && mensajeFiltroVacio) {
-          mensajeFiltroVacio.style.display = '';
-        }
+      // Oculta el mensaje del filtro inicialmente
+      if (mensajeFiltroVacio) {
+        mensajeFiltroVacio.style.display = "none";
       }
-      
-      // Agregar eventos a los filtros
-      if (filtroNivel) {
-        filtroNivel.addEventListener('change', aplicarFiltros);
+
+      // Si no hay inspectores en general, no hacer nada
+      if (filasInspectores.length === 0) {
+        return;
       }
-      
-      if (filtroEstado) {
-        filtroEstado.addEventListener('change', aplicarFiltros);
+
+      // Si hay inspectores, ocultar el mensaje de inspectores vacíos
+      if (mensajeVacio) {
+        mensajeVacio.style.display = "none";
+      }
+
+      filasInspectores.forEach((fila) => {
+        // Obtener datos para filtrar
+        const nivelesTexto = fila.dataset.niveles;
+        const estado = fila.dataset.estado;
+
+        // Aplicar filtros combinados
+        const pasaFiltroNivel =
+          nivelSeleccionado === "todos" ||
+          (nivelSeleccionado === "Pre-basica" &&
+            nivelesTexto.includes("Pre-básica")) ||
+          (nivelSeleccionado === "Basica" && nivelesTexto.includes("Básica")) ||
+          (nivelSeleccionado === "Media" && nivelesTexto.includes("Media"));
+
+        const pasaFiltroEstado =
+          estadoSeleccionado === "todos" ||
+          (estadoSeleccionado === "activo" && estado === "activo") ||
+          (estadoSeleccionado === "inactivo" && estado === "inactivo");
+
+        // Mostrar u ocultar según los filtros
+        if (pasaFiltroNivel && pasaFiltroEstado) {
+          fila.style.display = "";
+          filasVisibles++;
+        } else {
+          fila.style.display = "none";
+        }
+      });
+
+      // Mostrar mensaje si no hay inspectores visibles para los filtros seleccionados
+      if (filasVisibles === 0 && mensajeFiltroVacio) {
+        mensajeFiltroVacio.style.display = "";
+      }
+    }
+
+    // Agregar eventos a los filtros
+    if (filtroNivel) {
+      filtroNivel.addEventListener("change", aplicarFiltros);
+    }
+
+    if (filtroEstado) {
+      filtroEstado.addEventListener("change", aplicarFiltros);
+    }
+  });
+
+  // Función para confirmar eliminación (manteniendo la funcionalidad original)
+  function confirmarEliminacion(id, nombre) {
+    Swal.fire({
+      title: "¿Está seguro?",
+      text: `¿Desea eliminar al inspector ${nombre}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Redirigir a la URL de eliminación con el ID correcto
+        window.location.href =
+          "{% url 'Modulo_admin:eliminar_inspector' 0 %}".replace(
+            "/0/",
+            "/" + id + "/"
+          );
       }
     });
+  }
 
-    // Función para confirmar eliminación (manteniendo la funcionalidad original)
-    function confirmarEliminacion(id, nombre) {
-      Swal.fire({
-        title: '¿Está seguro?',
-        text: `¿Desea eliminar al inspector ${nombre}?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Redirigir a la URL de eliminación con el ID correcto
-          window.location.href = "{% url 'Modulo_admin:eliminar_inspector' 0 %}".replace('/0/', '/' + id + '/');
-        }
-      });
-    }
-    
-    // Nueva función para confirmar cambio de estado
-    function confirmarCambioEstado(id, nombre, activar) {
-      const accion = activar ? 'activar' : 'desactivar';
-      const mensaje = activar ? 
-        `¿Desea activar al inspector ${nombre}?` : 
-        `¿Desea desactivar al inspector ${nombre}?`;
-      
-      Swal.fire({
-        title: '¿Está seguro?',
-        text: mensaje,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: activar ? '#28a745' : '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: `Sí, ${accion}`,
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Redirigir a la URL de cambio de estado con el ID correcto
-          window.location.href = "{% url 'Modulo_admin:cambiar_estado_inspector' 0 %}".replace('/0/', '/' + id + '/');
-        }
-      });
-    }
-  </script>
-    
-  {% if messages %}
-      {% for message in messages %}
-    <script>
-      mensaje('{{ message.tags }}', '{{ message }}');
-    </script>
-      {% endfor %}
-  {% endif %}
+  // Nueva función para confirmar cambio de estado
+  function confirmarCambioEstado(id, nombre, activar) {
+    const accion = activar ? "activar" : "desactivar";
+    const mensaje = activar
+      ? `¿Desea activar al inspector ${nombre}?`
+      : `¿Desea desactivar al inspector ${nombre}?`;
 
-{% endblock %}
+    Swal.fire({
+      title: "¿Está seguro?",
+      text: mensaje,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: activar ? "#28a745" : "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: `Sí, ${accion}`,
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Redirigir a la URL de cambio de estado con el ID correcto
+        window.location.href =
+          "{% url 'Modulo_admin:cambiar_estado_inspector' 0 %}".replace(
+            "/0/",
+            "/" + id + "/"
+          );
+      }
+    });
+  }
+</script>
+
+{% if messages %} {% for message in messages %}
+<script>
+  mensaje("{{ message.tags }}", "{{ message }}");
+</script>
+{% endfor %} {% endif %} {% endblock %}

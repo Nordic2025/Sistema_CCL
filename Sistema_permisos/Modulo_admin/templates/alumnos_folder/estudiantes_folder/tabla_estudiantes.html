@@ -87,7 +87,7 @@
                 <select class="form-select" id="curso" name="curso">
                   <option value="">Todos los cursos</option>
                   {% for curso in cursos %}
-                  <option value="{{ curso.id }}" {% if curso_filtro == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.nombre }}</option>
+                  <option value="{{ curso.id }}" {% if curso_filtro == curso.id|stringformat:"s" %}selected{% endif %}>{{ curso.nombre }}/>
                   {% endfor %}
                 </select>
               </div>
@@ -207,7 +207,7 @@
                                   <label for="curso{{ alumno.id }}" class="form-label">Curso</label>
                                   <select class="form-control" id="curso{{ alumno.id }}" name="curso">
                                     {% for curso in cursos %}
-                                      <option value="{{ curso.id }}" {% if alumno.curso.id == curso.id %}selected{% endif %}>{{ curso.nombre }}</option>
+                                      <option value="{{ curso.id }}" {% if alumno.curso.id == curso.id %}selected{% endif %}>{{ curso.nombre }}/>
                                     {% endfor %}
                                   </select>
                                 </div>
@@ -362,9 +362,9 @@
                 <!-- Script para validar que el Rut ingresado no se de un alumno egresado -->
                 <script>
                   document.addEventListener('DOMContentLoaded', function() {
-                    const rutInput{{ alumno.id }} = document.getElementById('rut{{ alumno.id }}');
-                    if (rutInput{{ alumno.id }}) {
-                      rutInput{{ alumno.id }}.addEventListener('blur', function() {
+                    const rutInput = document.getElementById('rut{{ alumno.id }}');
+                    if (rutInput) {
+                      rutInput.addEventListener('blur', function() {
                         verificarRutEgresado(this);
                       });
                     }
@@ -938,7 +938,7 @@
           // Reinicializar cuando se abre cualquier modal
           document.querySelectorAll('.modal').forEach(function(modal) {
             modal.addEventListener('shown.bs.modal', function() {
-              setTimeout(inicializarCamposRut, 100); // Pequeño retraso para asegurar que el DOM está listo
+              setTimeout(inicializarCamposRut, 100);
             });
           });
       
@@ -1058,7 +1058,7 @@
           const detalleModals = document.querySelectorAll('[id^="verDetalleModal"]');
           detalleModals.forEach(function(modal) {
             modal.addEventListener('show.bs.modal', function() {
-              // Cuando se muestra el modal de detalles, configuramos los botones para abrir modales anidados
+              // Cuando se muestra el modal de detalles, se configuran los botones para abrir modales anidados
               const addFamiliarBtns = this.querySelectorAll('button[data-bs-target^="#agregarFamiliar"]');
               addFamiliarBtns.forEach(function(btn) {
                 btn.addEventListener('click', function(e) {
@@ -1090,7 +1090,7 @@
                     const targetModal = document.querySelector(targetModalId);
                     
                     if (targetModal) {
-                        // Cuando se abre el modal anidado, ocultar (pero no destruir) el modal padre
+                        // Cuando se abre el modal anidado, ocultar el modal padre
                         targetModal.addEventListener('show.bs.modal', function() {
                             const detalleModalInstance = bootstrap.Modal.getInstance(detalleModal);
                             if (detalleModalInstance) {
@@ -1099,7 +1099,7 @@
                                 detalleModal.style.display = 'none';
                                 // Mantener el fondo oscuro
                                 document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-                                    backdrop.style.zIndex = '1055'; // Asegurar que el backdrop esté detrás del nuevo modal
+                                    backdrop.style.zIndex = '1055';
                                 });
                             }
                         });
@@ -1227,7 +1227,7 @@
             }
             // Función para verificar los cursos necesarios
             function verificarCursosNecesarios() {
-              // Mostrar indicador de carga
+              // Indicador de carga
               Swal.fire({
                 title: 'Verificando cursos...',
                 text: 'Comprobando si existen todos los cursos necesarios para la promoción',
@@ -1511,8 +1511,8 @@
           // Obtener el ID del alumno y número de familiar
           const actionUrl = this.action;
           const urlParts = actionUrl.split('/');
-          const alumnoId = urlParts[urlParts.length - 3]; // Para obtener la posición del ID de alumno en la URL
-          const familiarNum = urlParts[urlParts.length - 2]; // Para obtener la posición del número de familiar en la URL
+          const alumnoId = urlParts[urlParts.length - 3]; 
+          const familiarNum = urlParts[urlParts.length - 2]; 
           
           console.log("URL de acción:", actionUrl);
           console.log("ID de alumno:", alumnoId);
@@ -1811,7 +1811,7 @@
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          // Mostrar indicador de carga
+          //Indicador de carga
           Swal.fire({
             title: 'Procesando...',
             text: 'Eliminando familiar',
@@ -1856,7 +1856,6 @@
                 actualizarModalDetalles(alumnoId);
               });
             } else {
-              // Mostrar error
               Swal.fire({
                 icon: 'error',
                 title: 'Error',
