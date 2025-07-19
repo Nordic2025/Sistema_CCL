@@ -117,6 +117,7 @@ python manage.py runserver
 ![Formulario de permiso](Sistema_permisos/imagenes_README/formulario_permisos.png)
 
 ### 🟢 CRUD Administradores
+**RUTs censurados para evitar posibles problemas de privacidad.**
 ![Listado de administradores](Sistema_permisos/imagenes_README/listado_administradores.PNG)
 ![Registrar administrador](Sistema_permisos/imagenes_README/registrar_administrador.png)
 ![Editar administrador](Sistema_permisos/imagenes_README/editar_administrador.png)
