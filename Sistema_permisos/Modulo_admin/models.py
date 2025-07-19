@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class Administrador(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True )
-    # Validador para RUT chileno (formato: 12.345.678-9)
+    # Validador para RUT chileno
     rut_validator = RegexValidator(
         regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$',
         message='Ingrese un RUT válido en formato XX.XXX.XXX-X'
@@ -55,8 +55,6 @@ class Areas(models.Model):
         return f"{self.encargado} - {self.nombre}"
     
     
-# Agregar al final del archivo
-
 class CursoManager(models.Manager):
     def get_queryset(self):
         # Excluir cursos marcados como eliminados
@@ -92,6 +90,7 @@ class Curso(models.Model):
     def __str__(self):
         return f"{self.nombre} - {self.get_nivel_display()}"
 
+
 #MODELO INSPECTORES
 class InspectorManager(models.Manager):
     def get_queryset(self):
@@ -99,7 +98,7 @@ class InspectorManager(models.Manager):
         return super().get_queryset().filter(is_deleted=False)
 
 class Inspector(models.Model):
-    # Validador para RUT chileno (formato: 12.345.678-9)
+    # Validador para RUT chileno
     rut_validator = RegexValidator(
         regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$',
         message='Ingrese un RUT válido en formato XX.XXX.XXX-X'
@@ -153,7 +152,7 @@ class Inspector(models.Model):
         return " - ".join(sorted(niveles))
 
 
-
+#MODELO ALUMNOS
 class Alumno(models.Model):
     rut = models.CharField(max_length=15, unique=True)
     nombre = models.CharField(max_length=255)
@@ -189,7 +188,7 @@ class Alumno(models.Model):
 class AlumnoEgresado(models.Model):
     rut = models.CharField(max_length=15, unique=True)
     nombre = models.CharField(max_length=255)
-    ultimo_curso = models.CharField(max_length=50)  # Almacena el último curso (4° Medio X)
+    ultimo_curso = models.CharField(max_length=50) 
     apoderado_titular = models.CharField(max_length=255)
     rut_apoderadoT = models.CharField(max_length=15, blank=True, null=True)
     telefono_apoderadoT = models.CharField(max_length=20, blank=True, null=True)
@@ -205,7 +204,7 @@ class AlumnoEgresado(models.Model):
     familiar_2_telefono = models.CharField(max_length=20, blank=True, null=True)
     rut_familiar_2 = models.CharField(max_length=15, blank=True, null=True)
     fecha_egreso = models.DateField(auto_now_add=True)
-    año_egreso = models.IntegerField()  # Año en que egresó
+    año_egreso = models.IntegerField() 
 
     def __str__(self):
         return f"{self.nombre} - Egresado {self.año_egreso}"

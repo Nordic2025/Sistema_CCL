@@ -1348,7 +1348,7 @@ def promocion_anual_view(request):
         for curso in cursos_actuales:
             alumnos_curso = Alumno.objects.filter(curso=curso)
             if not alumnos_curso.exists():
-                continue  # Ignorar cursos sin alumnos
+                continue 
                 
             # Extraer información del nombre del curso
             curso_info = curso.nombre.strip()
@@ -1442,27 +1442,26 @@ def promocion_anual_view(request):
                                 'nivel': "Media"
                             })
         
-        # Si solo estamos validando, devolver la lista de cursos necesarios
         if is_validation_only:
             return JsonResponse({
                 'success': len(cursos_necesarios) == 0,
                 'cursos_necesarios': cursos_necesarios
             })
         
-        # Si hay cursos necesarios, no permitir la promoción
+        # Si faltan cursos, no permitir la promoción
         if cursos_necesarios:
             mensaje = "No se puede realizar la promoción anual porque faltan los siguientes cursos: "
             mensaje += ", ".join([curso['nombre'] for curso in cursos_necesarios])
             messages.error(request, mensaje)
             return redirect('Modulo_admin:alumnos')
         
-        # Si no hay cursos necesarios, proceder con la promoción
+        # Si no hay cursos por agregar, proceder con la promoción
         with transaction.atomic():  # Usar transacción para asegurar integridad
             # 1. Obtener todos los alumnos agrupados por curso
             cursos = Curso.objects.all()
             año_actual = datetime.now().year
             
-            # Crear un diccionario para almacenar los alumnos que ya han sido procesados
+            # Diccionario para almacenar los alumnos que ya han sido procesados
             alumnos_procesados = set()
             
             # 2. Procesar cada curso
@@ -1485,7 +1484,7 @@ def promocion_anual_view(request):
                     nuevo_nivel = "Kinder"
                     nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                     
-                    # Buscar el curso (ya sabemos que existe)
+                    # Buscar el curso 
                     try:
                         nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
                         
@@ -1499,7 +1498,6 @@ def promocion_anual_view(request):
                             alumno.save()
                             alumnos_procesados.add(alumno.id)
                     except Curso.DoesNotExist:
-                        # Si por alguna razón el curso no existe, lanzar error
                         raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                 
                 elif "Kinder" in curso_info and "Pre-Kinder" not in curso_info:
@@ -1511,7 +1509,7 @@ def promocion_anual_view(request):
                     nuevo_nivel = "1° Básico"
                     nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                     
-                    # Buscar el curso (ya sabemos que existe)
+                    # Buscar el curso
                     try:
                         nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
                         
@@ -1525,7 +1523,6 @@ def promocion_anual_view(request):
                             alumno.save()
                             alumnos_procesados.add(alumno.id)
                     except Curso.DoesNotExist:
-                        # Si por alguna razón el curso no existe, lanzar error
                         raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                 
                 elif "Básico" in curso_info or "Basico" in curso_info:
@@ -1539,11 +1536,11 @@ def promocion_anual_view(request):
                         letra = letra_match.group(1) if letra_match else ""
                         
                         if nivel_actual < 8:
-                            # 1°-7° Básico pasan al siguiente básico
+                            # 1°-7° Básico pasan al siguiente nivel
                             nuevo_nivel = f"{nivel_actual + 1}° Básico"
                             nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                             
-                            # Buscar el curso (ya sabemos que existe)
+                            # Buscar el curso
                             try:
                                 nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
                                 
@@ -1557,7 +1554,6 @@ def promocion_anual_view(request):
                                     alumno.save()
                                     alumnos_procesados.add(alumno.id)
                             except Curso.DoesNotExist:
-                                # Si por alguna razón el curso no existe, lanzar error
                                 raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                         
                         elif nivel_actual == 8:
@@ -1565,7 +1561,7 @@ def promocion_anual_view(request):
                             nuevo_nivel = "1° Medio"
                             nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                             
-                            # Buscar el curso (ya sabemos que existe)
+                            # Buscar el curso
                             try:
                                 nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
                                 
@@ -1579,7 +1575,6 @@ def promocion_anual_view(request):
                                     alumno.save()
                                     alumnos_procesados.add(alumno.id)
                             except Curso.DoesNotExist:
-                                # Si por alguna razón el curso no existe, lanzar error
                                 raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                 
                 elif "Medio" in curso_info:
@@ -1593,17 +1588,16 @@ def promocion_anual_view(request):
                         letra = letra_match.group(1) if letra_match else ""
                         
                         if nivel_actual < 4:
-                            # 1°-3° Medio pasan al siguiente medio
+                            # 1°-3° Medio pasan al siguiente nivel
                             nuevo_nivel = f"{nivel_actual + 1}° Medio"
                             nuevo_nombre = f"{nuevo_nivel} {letra}".strip()
                             
-                            # Buscar el curso (ya sabemos que existe)
+                            # Buscar el curso
                             try:
                                 nuevo_curso = Curso.objects.get(nombre__exact=nuevo_nombre)
                                 
                                 # Actualizar alumnos
                                 for alumno in alumnos_curso:
-                                    # Verificar si el alumno ya fue procesado
                                     if alumno.id in alumnos_procesados:
                                         continue
                                         
@@ -1611,7 +1605,6 @@ def promocion_anual_view(request):
                                     alumno.save()
                                     alumnos_procesados.add(alumno.id)
                             except Curso.DoesNotExist:
-                                # Si por alguna razón el curso no existe, lanzar error
                                 raise Exception(f'No se encontró el curso "{nuevo_nombre}"')
                         
                         elif nivel_actual == 4:

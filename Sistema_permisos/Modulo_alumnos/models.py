@@ -4,6 +4,7 @@ from django.utils.timezone import now
 from django.core.validators import RegexValidator
 import random, uuid, string
 
+# Modelo para el registro de retiros de alumnos
 class RegistroRetiro(models.Model):
     # Opciones para el motivo del retiro
     MOTIVO_CHOICES = [
@@ -23,7 +24,7 @@ class RegistroRetiro(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADOS_CHOICES, default='waiting')
     mensaje_respuesta = models.TextField(blank=True, null=True)
     
-    # Validador para RUT chileno (formato: 12.345.678-9)
+    # Validador para RUT
     rut_validator = RegexValidator(
         regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$',
         message='Ingrese un RUT válido en formato XX.XXX.XXX-X'
@@ -45,7 +46,7 @@ class RegistroRetiro(models.Model):
         return f"{self.nombre_estudiante} - {self.rut_estudiante}"
 
 
-
+# Modelo para el registro de justificativos de los alumnos
 class RegistroJustificativo(models.Model):
     MOTIVO_CHOICES = [
         ('Asuntos Medicos', 'Asuntos Médicos'),
@@ -60,7 +61,7 @@ class RegistroJustificativo(models.Model):
     ]
     
 
-    # Validador para RUT chileno (formato: 12.345.678-9)
+    # Validador para RUT 
     rut_validator = RegexValidator(
         regex=r'^\d{1,2}\.\d{3}\.\d{3}[-][0-9kK]$',
         message='Ingrese un RUT válido en formato XX.XXX.XXX-X'
@@ -79,7 +80,6 @@ class RegistroJustificativo(models.Model):
 
 
     def save(self, *args, **kwargs):
-        #Generar el codigo para cuando el apoderado selecciona con 'con_certificado'
         if self.tipo_justificacion == 'con_certificado' and not self.codigo_verificacion:
             self.codigo_verificacion = ''.join(random.choices(string.digits, k=5))
         super().save(*args, **kwargs)

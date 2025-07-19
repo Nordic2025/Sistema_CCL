@@ -3,13 +3,12 @@ from .models import RegistroSalida
 from Modulo_admin.models import Areas
 
 class Modulo_funcionariosForm(forms.ModelForm):
-    # Creamos un campo personalizado para mostrar los encargados
+    # Campo personalizado para mostrar los encargados
     autorizado_por = forms.ModelChoiceField(
         queryset=Areas.objects.all(),
         label="Autorizado por",
         widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_autorizado_por'}),
-        # Personalizamos cómo se muestra cada opción
-        to_field_name="id",  # Usamos el ID como valor
+        to_field_name="id", 
         empty_label="Seleccione un encargado"
     )
     
@@ -25,6 +24,5 @@ class Modulo_funcionariosForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Personalizamos las etiquetas que se muestran en el desplegable
         self.fields['autorizado_por'].label_from_instance = lambda obj: f"{obj.encargado}"
         self.fields['area_perteneciente'].required = False

@@ -45,7 +45,7 @@ class AdministradorForm(forms.ModelForm):
         return cleaned_data
     
 
-# Formulario para editar administrador (sin cambiar contraseña)
+# Formulario para editar administrador
 class AdministradorEditForm(forms.ModelForm):
    
     class Meta:
@@ -196,7 +196,6 @@ class CursoForm(forms.ModelForm):
         }
 
 #INSPECTORES FORM
-
 class InspectorForm(forms.ModelForm):
     class Meta:
         model = Inspector

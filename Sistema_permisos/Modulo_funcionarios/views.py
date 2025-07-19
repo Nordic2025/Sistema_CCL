@@ -22,15 +22,14 @@ def registrar_salida(request):
     if request.method == "POST":
         form = Modulo_funcionariosForm(request.POST)
         if form.is_valid():
-            # Guardamos el formulario sin la hora de regreso y generamos el código automáticamente
-            registro = form.save(commit=False)  # No guarda todavía
+            # Se registra el formulario sin guardar aun y se genera automáticamente el código
+            registro = form.save(commit=False) 
             
-            # Obtenemos el área del encargado seleccionado
             area_encargado = Areas.objects.get(id=request.POST.get('autorizado_por')).nombre
             registro.area_perteneciente = area_encargado
             
-            registro.hora_salida = timezone.now()  # Establecemos la hora de salida automáticamente
-            registro.save()  # Ahora se guarda el objeto con todos los datos
+            registro.hora_salida = timezone.now() 
+            registro.save()  
             
             return redirect('Modulo_funcionarios:confirmacion_permiso', registro_id=registro.id)
     else:
@@ -42,16 +41,15 @@ def registrar_salida(request):
 def confirmar_regreso(request, codigo):
     registro = get_object_or_404(RegistroSalida, codigo_registro=codigo, hora_regreso__isnull=True)
     registro.hora_regreso = timezone.now()
-    # La duración se calculará automáticamente en el método save()
     registro.save()
     return render(request, 'confirmar_registro.html', {'registro': registro})
 
 def ingreso_salida(request):
-    # Lógica para la vista de ingreso o salida
+
     return render(request, 'ingreso_salida.html')
 
 def formulario_permisos(request):
-    # Lógica para el formulario de permisos
+
     return render(request, 'formulario_permisos.html')
 
 def formulario_regreso(request):
@@ -69,7 +67,6 @@ def confirmacion_permiso(request, registro_id=None):
     if registro_id:
         registro = get_object_or_404(RegistroSalida, id=registro_id)
     else:
-        # Fallback por si no se proporciona ID (aunque no debería ocurrir)
         registro = RegistroSalida.objects.latest('hora_salida')
     
     return render(request, 'confirmacion_permiso.html', {'registro': registro})
@@ -86,7 +83,7 @@ def recuperar_codigo(request):
             ).order_by('-hora_salida').first()
             
             if ultimo_permiso:
-                # Si encontramos un permiso, mostramos el código
+                # Si hay permisos activos para ese RUT, se devuelve el código del último permiso
                 return render(request, 'recuperar_codigo.html', {
                     'codigo': ultimo_permiso.codigo_registro
                 })
@@ -100,10 +97,9 @@ def recuperar_codigo(request):
                 'error': f'Error al buscar: {str(e)}'
             })
     
-    # Para solicitudes GET, simplemente mostramos el formulario vacío
     return render(request, 'recuperar_codigo.html')
 
-# Nueva vista para manejar solicitudes AJAX
+# Vista para manejar solicitudes AJAX
 def recuperar_codigo_ajax(request):
     if request.method == "POST":
         rut = request.POST.get('rut')
