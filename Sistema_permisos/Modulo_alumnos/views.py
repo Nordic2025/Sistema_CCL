@@ -223,10 +223,9 @@ def formulario_retiro_view(request):
                 registro.hora_retiro = timezone.now()
                 registro.save()
                 
-                # NUEVO: Obtener el número de teléfono del inspector a cargo
+                # Obtener el número de teléfono del inspector a cargo
                 inspector_telefono = obtener_telefono_inspector(registro.inspector_cargo)
                 
-                # NUEVO: Enviar notificación por WhatsApp si hay teléfono disponible
                 if inspector_telefono:
                     success, message = enviar_notificacion_retiro(
                         inspector_telefono,
@@ -247,7 +246,6 @@ def formulario_retiro_view(request):
                 print("Errores en el formulario:", form.errors)
         except Exception as e:
             print("Error al procesar el formulario:", str(e))
-            # Puedes mostrar un mensaje de error al usuario
             messages.error(request, f"Error al procesar el formulario: {str(e)}")
     else:
         form = RegistroRetiroForm()
@@ -368,7 +366,6 @@ def procesar_retiro(request):
 def verificar_estado_retiro(request):
 
 
-    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         retiro_id = request.GET.get('retiro_id')
         estado = request.GET.get('estado')
