@@ -107,24 +107,36 @@ python manage.py runserver
 # 📸 Capturas del sistema
 
 ### 🟢 Inicio de sesión
-![Login](ruta/a/login.png)
+![Login](Sistema_permisos/imagenes_README/login.png)
 
 ### 🟢 Panel de administrador con gráficos
-![Dashboard](ruta/a/dashboard.png)
+![Dashboard](Sistema_permisos/imagenes_README/dashboard.png)
 
-### 🟢 CRUD de funcionarios
-![Tabla funcionarios](ruta/a/tabla_funcionarios.png)
-![Formulario funcionario](ruta/a/formulario_funcionario.png)
+### 🟢 Listado de permisos y formulario
+![Tabla de permisos](Sistema_permisos/imagenes_README/listado_permisos.png)
+![Formulario de permiso](Sistema_permisos/imagenes_README/formulario_permisos.png)
 
-### 🟢 Módulo de permisos y retiros
-![Listado de permisos](ruta/a/listado_permisos.png)
-![Formulario permiso](ruta/a/formulario_permiso.png)
+### 🟢 CRUD Administradores
+![Listado de administradores](Sistema_permisos/imagenes_README/listado_administradores.png)
+![Registrar administrador](Sistema_permisos/imagenes_README/registrar_administrador.png)
+![Editar administrador](Sistema_permisos/imagenes_README/editar_administrador.png)
+![Cambio de contraseña](Sistema_permisos/imagenes_README/cambiar_contraseña.png)
+
+### 🟢 Listado de retiros y formulario de retiro
+**RUTs censurados para evitar posibles problemas de privacidad.**
+
+![Listado de retiros](Sistema_permisos/imagenes_README/listado_retiros.png)
+![Formulario de retiro](Sistema_permisos/imagenes_README/formulario_retiro_parte1.png)
+![Formulario de retiro](Sistema_permisos/imagenes_README/formulario_retiro_parte2.png)
 
 ### 🟢 Mensaje automático por WhatsApp
-![Mensaje WhatsApp](ruta/a/mensaje_whatsapp.png)
+
+![Mensaje WhatsApp](Sistema_permisos/imagenes_README/mensaje_wsp.png)
 
 ### 🟢 Exportación a PDF
-![Exportar PDF](ruta/a/pdf_generado.png)
+![Exportar PDF](Sistema_permisos/imagenes_README/reporte_parte1.png)
+![Exportar PDF](Sistema_permisos/imagenes_README/reporte_parte2.png)
+![Exportar PDF](Sistema_permisos/imagenes_README/reporte_parte3.png)
 
 ---
 
