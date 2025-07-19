@@ -125,7 +125,7 @@ python manage.py runserver
 ### 🟢 Listado de retiros y formulario de retiro
 **RUTs censurados para evitar posibles problemas de privacidad.**
 
-![Listado de retiros](Sistema_permisos/imagenes_README/listado_retiros.png)
+![Listado de retiros](Sistema_permisos/imagenes_README/listado_retiros.PNG)
 ![Formulario de retiro](Sistema_permisos/imagenes_README/formulario_retiro_parte1.png)
 ![Formulario de retiro](Sistema_permisos/imagenes_README/formulario_retiro_parte2.png)
 
