@@ -117,7 +117,7 @@ python manage.py runserver
 ![Formulario de permiso](Sistema_permisos/imagenes_README/formulario_permisos.png)
 
 ### 🟢 CRUD Administradores
-![Listado de administradores](Sistema_permisos/imagenes_README/listado_administradores.png)
+![Listado de administradores](Sistema_permisos/imagenes_README/listado_administradores.PNG)
 ![Registrar administrador](Sistema_permisos/imagenes_README/registrar_administrador.png)
 ![Editar administrador](Sistema_permisos/imagenes_README/editar_administrador.png)
 ![Cambio de contraseña](Sistema_permisos/imagenes_README/cambiar_contraseña.png)
