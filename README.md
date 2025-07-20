@@ -150,7 +150,7 @@ python manage.py runserver
 # 📄 Licencia
 
 Este proyecto fue desarrollado como parte de la práctica profesional de la carrera Analista Programador del instituto CFT San Agustín, Linares en el Colegio Concepción Linares.  
-**El código es de uso académico y no está destinado para uso comercial.**
+**Este sistema fue desarrollado con fines académicos. Actualmente no está destinado para uso comercial sin una revisión y mejora previa de seguridad, estabilidad y usabilidad.**
 
 ---
 # ℹ️ Notas adicionales
