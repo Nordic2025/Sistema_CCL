@@ -51,7 +51,7 @@ Esta integración permitió una comunicación rápida y eficiente, mejorando el 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/ClaudioP/Sistema_CCL.git
+git clone https://github.com/Nordic2025/Sistema_CCL.git
 cd Sistema_CCL
 ```
 
